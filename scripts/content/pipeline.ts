@@ -1,8 +1,30 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { load as loadYaml } from 'js-yaml'
+import type {
+  GrammarPoint,
+  KanjiItem,
+  Pos,
+  VocabItem,
+} from '../../src/domain/types.ts'
+import {
+  grammarPointSchema,
+  kanjiItemSchema,
+  manifestSchema,
+  vocabItemSchema,
+} from '../../src/domain/schemas.ts'
+import type { Manifest } from '../../src/domain/types.ts'
+import {
+  buildEnrichMaps,
+  createEnrichReport,
+  enrichGrammarRow,
+  enrichKanjiRow,
+  enrichVocabRow,
+  linkRelatedVocab,
+} from './enrich.ts'
 import { ContentIssueCollector, formatIssue } from './errors.ts'
-import { grammarId, kanjiId, loadIdAliases, vocabId } from './ids.ts'
+import { loadIdAliases } from './ids.ts'
+import { loadPosOverrides, loadVerbGroupOverrides } from './overrides.ts'
 import { parseGrammarFile } from './parse-grammar.ts'
 import { parseKanjiFile } from './parse-kanji.ts'
 import { parseVocabFile } from './parse-vocab.ts'
@@ -13,8 +35,6 @@ import {
   validateKanjiCoverage,
   validateVocab,
 } from './validate-rules.ts'
-import { manifestSchema } from '../../src/domain/schemas.ts'
-import type { Manifest } from '../../src/domain/types.ts'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
@@ -24,6 +44,9 @@ interface ParsedBook {
   vocab?: RawVocabFile
   grammar?: RawGrammarFile
   kanji?: RawKanjiFile
+  enrichedVocab: VocabItem[]
+  enrichedGrammar: GrammarPoint[]
+  enrichedKanji: KanjiItem[]
 }
 
 export interface PipelineOptions {
@@ -40,6 +63,8 @@ export interface PipelineSummary {
     grammar: number
     kanji: number
   }[]
+  posCounts: Record<Pos, number>
+  verbGroupOverridesApplied: string[]
 }
 
 export interface PipelineResult {
@@ -63,14 +88,36 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
     )
   }
 
-  const summary: PipelineSummary = { books: [] }
+  const enrichReport = createEnrichReport()
+  const summary: PipelineSummary = {
+    books: [],
+    posCounts: enrichReport.posCounts,
+    verbGroupOverridesApplied: enrichReport.verbGroupOverridesApplied,
+  }
   if (!manifest) return { issues, summary }
+
+  const posOverridesPath = join(contentDir, 'overrides', 'pos.yaml')
+  const verbGroupOverridesPath = join(
+    contentDir,
+    'overrides',
+    'verb-groups.yaml',
+  )
+  const enrichMaps = buildEnrichMaps(
+    loadPosOverrides(posOverridesPath),
+    loadVerbGroupOverrides(verbGroupOverridesPath),
+  )
 
   const parsedBooks: ParsedBook[] = []
 
   for (const level of manifest.levels) {
     for (const book of level.books) {
-      const parsed: ParsedBook = { bookId: book.id, levelTitle: level.title }
+      const parsed: ParsedBook = {
+        bookId: book.id,
+        levelTitle: level.title,
+        enrichedVocab: [],
+        enrichedGrammar: [],
+        enrichedKanji: [],
+      }
 
       if (book.sources.vocab) {
         parsed.vocab = parseVocabFile(
@@ -128,6 +175,30 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
         }
       }
 
+      if (parsed.vocab) {
+        const filePath = join(contentDir, book.sources.vocab!)
+        parsed.enrichedVocab = parsed.vocab.rows.map((row) =>
+          enrichVocabRow(
+            book.id,
+            row,
+            enrichMaps,
+            enrichReport,
+            issues,
+            filePath,
+          ),
+        )
+      }
+      if (parsed.grammar) {
+        parsed.enrichedGrammar = parsed.grammar.rows.map((row) =>
+          enrichGrammarRow(book.id, row),
+        )
+      }
+      if (parsed.kanji) {
+        parsed.enrichedKanji = parsed.kanji.rows.map((row) =>
+          enrichKanjiRow(book.id, row),
+        )
+      }
+
       parsedBooks.push(parsed)
 
       summary.books.push({
@@ -159,6 +230,11 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
         )
       }
     }
+
+    // Liên kết Kanji ↔ từ vựng trong cùng cấp độ (mục 6.3 bước 4).
+    const levelVocab = booksInLevel.flatMap((b) => b.enrichedVocab)
+    const levelKanji = booksInLevel.flatMap((b) => b.enrichedKanji)
+    linkRelatedVocab(levelKanji, levelVocab)
   }
 
   if (issues.hasErrors || !write) {
@@ -202,15 +278,15 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
             book.vocab?.lessons.find((l) => l.lesson === lesson)?.title ??
             book.grammar?.lessons.find((l) => l.lesson === lesson)?.title ??
             ''
-          const vocab = (book.vocab?.rows ?? [])
-            .filter((r) => r.lesson === lesson)
-            .map((r) => ({
-              ...r,
-              id: vocabId(book.bookId, lesson, r.kana, r.kanji),
-            }))
-          const grammar = (book.grammar?.rows ?? [])
-            .filter((r) => r.lesson === lesson)
-            .map((r) => ({ ...r, id: grammarId(book.bookId, lesson, r.title) }))
+          const vocab = book.enrichedVocab.filter((v) => v.lesson === lesson)
+          const grammar = book.enrichedGrammar.filter(
+            (g) => g.lesson === lesson,
+          )
+
+          for (const item of vocab)
+            validateAgainstSchema(vocabItemSchema, item, issues, bookDir)
+          for (const item of grammar)
+            validateAgainstSchema(grammarPointSchema, item, issues, bookDir)
 
           writeFileSync(
             join(bookDir, `l${pad2(lesson)}.json`),
@@ -247,9 +323,12 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
 
     if (book.kanji) {
       const indexLessons = book.kanji.chapters.map((chapter) => {
-        const kanji = book
-          .kanji!.rows.filter((r) => r.chapter === chapter.chapter)
-          .map((r) => ({ ...r, id: kanjiId(r.char) }))
+        const kanji = book.enrichedKanji.filter(
+          (k) => k.chapter === chapter.chapter,
+        )
+        for (const item of kanji)
+          validateAgainstSchema(kanjiItemSchema, item, issues, bookDir)
+
         const fileName =
           chapter.chapter === 'appendix'
             ? 'appendix.json'
@@ -299,6 +378,22 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
   return { issues, summary }
 }
 
+function validateAgainstSchema(
+  schema: { parse: (value: unknown) => unknown },
+  value: unknown,
+  issues: ContentIssueCollector,
+  bookDir: string,
+): void {
+  try {
+    schema.parse(value)
+  } catch (err) {
+    issues.error(
+      bookDir,
+      `Dữ liệu sau enrich không khớp schema: ${(err as Error).message}`,
+    )
+  }
+}
+
 function writeReport(
   path: string,
   summary: PipelineSummary,
@@ -311,6 +406,19 @@ function writeReport(
     lines.push(`- Từ vựng mở rộng: ${book.vocabExtended}`)
     lines.push(`- Mẫu ngữ pháp: ${book.grammar}`)
     lines.push(`- Kanji: ${book.kanji}`)
+    lines.push('')
+  }
+
+  lines.push('## Từ vựng theo từ loại (pos)', '')
+  for (const [pos, count] of Object.entries(summary.posCounts)) {
+    if (count > 0) lines.push(`- ${pos}: ${count}`)
+  }
+  lines.push('')
+
+  if (summary.verbGroupOverridesApplied.length > 0) {
+    lines.push('## Động từ đã sửa nhóm bằng overrides/verb-groups.yaml', '')
+    for (const entry of summary.verbGroupOverridesApplied)
+      lines.push(`- ${entry}`)
     lines.push('')
   }
 
