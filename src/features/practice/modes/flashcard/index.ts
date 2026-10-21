@@ -1,10 +1,18 @@
-import { register, type QuestionType } from '@/domain/quiz/registry'
+import {
+  isVocabItem,
+  register,
+  type QuestionType,
+} from '@/domain/quiz/registry'
+import { vi } from '@/i18n/vi'
 import { FlashcardComponent } from './FlashcardComponent'
 import type { FlashcardQuestion, FlashcardRating } from './types'
 import type { VocabItem } from '@/domain/types'
 
-function isVocabItem(item: unknown): item is VocabItem {
-  return typeof item === 'object' && item !== null && 'kanjiChars' in item
+const RATING_LABEL: Record<FlashcardRating, string> = {
+  forgot: vi.flashcard.ratingForgot,
+  hard: vi.flashcard.ratingHard,
+  good: vi.flashcard.ratingGood,
+  easy: vi.flashcard.ratingEasy,
 }
 
 export const flashcardQuestionType: QuestionType<FlashcardQuestion> = {
@@ -14,10 +22,14 @@ export const flashcardQuestionType: QuestionType<FlashcardQuestion> = {
   skill: 'recognition',
   isEligible: (item) => isVocabItem(item),
   generate: (item) => ({ item: item as VocabItem }),
-  grade: (question, answer) => ({
-    correct: (answer as FlashcardRating) !== 'forgot',
-    expected: question.item.meaning,
-  }),
+  grade: (question, answer) => {
+    const rating = answer as FlashcardRating
+    return {
+      correct: rating !== 'forgot',
+      expected: question.item.meaning,
+      given: RATING_LABEL[rating],
+    }
+  },
   Component: FlashcardComponent,
 }
 

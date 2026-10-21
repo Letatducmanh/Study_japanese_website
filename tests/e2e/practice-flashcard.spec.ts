@@ -8,18 +8,21 @@ test('flashcard: học hết Bài 1 và lưu tiến độ mastery > 0', async ({
   await page.getByRole('link', { name: 'Luyện tập bài này' }).click()
   await expect(page).toHaveURL(/\/practice\/setup/)
 
-  await page.getByRole('button', { name: 'Flashcard' }).click()
+  // Flashcard được chọn mặc định — không cần bấm chọn lại.
+  await expect(page.getByRole('button', { name: 'Flashcard' })).toHaveClass(
+    /bg-primary-600/,
+  )
   await page.getByRole('button', { name: 'Bắt đầu luyện tập' }).click()
   await expect(page).toHaveURL(/\/practice\/run/)
 
   for (let i = 0; i < 40; i++) {
-    if (await page.getByText('Hoàn thành!').isVisible()) break
+    if (/\/practice\/result\//.test(page.url())) break
     await page.getByRole('button', { name: /Bấm hoặc nhấn Space/ }).click()
     await page.getByRole('button', { name: 'Nhớ' }).click()
   }
 
-  await expect(page.getByText('Hoàn thành!')).toBeVisible()
-  await expect(page.getByText('Bạn đã luyện xong 34 thẻ.')).toBeVisible()
+  await expect(page).toHaveURL(/\/practice\/result\//)
+  await expect(page.getByText('34/34')).toBeVisible()
 
   // Tải lại trang để chắc chắn tiến độ đã lưu vào IndexedDB, không chỉ còn trong bộ nhớ.
   await page.reload()

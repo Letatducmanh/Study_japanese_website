@@ -44,6 +44,27 @@ function score(correct: VocabItem, candidate: VocabItem): number {
   return total
 }
 
+/** Ứng viên hợp lệ làm đáp án nhiễu cho `correct` (không random — dùng để kiểm tra đủ số lượng). */
+export function findDistractorCandidates(
+  correct: VocabItem,
+  pool: VocabItem[],
+  field: DistractorField,
+): VocabItem[] {
+  const correctValue = normalize(fieldValue(correct, field))
+  const correctMeaning = normalize(correct.meaning)
+
+  return pool.filter((item) => {
+    if (item.id === correct.id) return false
+    if (item.bookId !== correct.bookId) return false
+    if (item.homographKey === correct.homographKey) return false
+    const value = fieldValue(item, field)
+    if (!value) return false
+    if (normalize(value) === correctValue) return false
+    if (normalize(item.meaning) === correctMeaning) return false
+    return true
+  })
+}
+
 /**
  * Chọn đáp án nhiễu cho `correct` từ `pool` (mục 6.4): ưu tiên cùng bài/gần bài, cùng từ
  * loại, độ dài gần nhau; loại từ cùng âm (homograph) hoặc cùng nghĩa với đáp án đúng.
@@ -54,19 +75,7 @@ export function pickDistractors(
   options: DistractorOptions,
   rng: Rng,
 ): VocabItem[] {
-  const correctValue = normalize(fieldValue(correct, options.field))
-  const correctMeaning = normalize(correct.meaning)
-
-  const candidates = pool.filter((item) => {
-    if (item.id === correct.id) return false
-    if (item.bookId !== correct.bookId) return false
-    if (item.homographKey === correct.homographKey) return false
-    const value = fieldValue(item, options.field)
-    if (!value) return false
-    if (normalize(value) === correctValue) return false
-    if (normalize(item.meaning) === correctMeaning) return false
-    return true
-  })
+  const candidates = findDistractorCandidates(correct, pool, options.field)
 
   const byScore = new Map<number, VocabItem[]>()
   for (const item of candidates) {

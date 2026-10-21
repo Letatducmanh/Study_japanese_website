@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ErrorState } from '@/components/ErrorState'
 import { LoadingState } from '@/components/LoadingState'
 import { loadLesson } from '@/data/content-loader'
@@ -8,6 +8,7 @@ import { get as getQuestionType } from '@/domain/quiz/registry'
 import { buildSession } from '@/domain/quiz/session'
 import {
   usePracticeSessionStore,
+  type AnsweredQuestion,
   type PendingSessionConfig,
 } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
@@ -37,6 +38,9 @@ export function PracticeRunPage() {
 }
 
 function SessionRunner({ config }: { config: PendingSessionConfig }) {
+  const navigate = useNavigate()
+  const setLastResult = usePracticeSessionStore((s) => s.setLastResult)
+
   const {
     data: lessonFile,
     loading,
@@ -48,70 +52,69 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
 
   const [seed] = useState(() => Date.now())
   const [sessionId] = useState(() => crypto.randomUUID())
+  const [startedAt] = useState(() => Date.now())
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [answers, setAnswers] = useState<AnsweredQuestion[]>([])
   const cardStartedAtRef = useRef(0)
 
-  const questionType = getQuestionType(config.questionTypeId)
+  const questionTypes = useMemo(
+    () =>
+      config.questionTypeIds
+        .map(getQuestionType)
+        .filter((qt) => qt !== undefined),
+    [config.questionTypeIds],
+  )
 
   const pool = useMemo(() => {
     if (!lessonFile) return []
-    return lessonFile.vocab.filter(
+    const bySection = lessonFile.vocab.filter(
       (v) => v.section === 'main' || config.includeExtended,
     )
-  }, [lessonFile, config.includeExtended])
+    if (!config.onlyItemIds) return bySection
+    return bySection.filter((v) => config.onlyItemIds!.includes(v.id))
+  }, [lessonFile, config.includeExtended, config.onlyItemIds])
 
   const session = useMemo(() => {
-    if (!questionType || pool.length === 0) return null
+    if (questionTypes.length === 0 || pool.length === 0) return null
     return buildSession({
       items: pool,
-      questionTypes: [questionType],
+      questionTypes,
       questionCount: config.questionCount,
       seed,
     })
-  }, [pool, questionType, config.questionCount, seed])
+  }, [pool, questionTypes, config.questionCount, seed])
 
   useEffect(() => {
     cardStartedAtRef.current = Date.now()
   }, [currentIndex])
 
+  const total = session?.questions.length ?? 0
+  const isFinished = session !== null && currentIndex >= total
+
+  useEffect(() => {
+    if (!isFinished) return
+    setLastResult({
+      sessionId,
+      bookId: config.bookId,
+      lesson: config.lesson,
+      startedAt,
+      finishedAt: Date.now(),
+      answers,
+    })
+    navigate(`/practice/result/${sessionId}`, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFinished])
+
   if (loading) return <LoadingState />
-  if (error || !lessonFile || !questionType) return <ErrorState />
+  if (error || !lessonFile || questionTypes.length === 0) return <ErrorState />
   if (!session || session.questions.length === 0) return <ErrorState />
-
-  const total = session.questions.length
-
-  if (currentIndex >= total) {
-    return (
-      <div className="flex flex-col items-center gap-3 p-8 text-center">
-        <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
-          {vi.practice.doneTitle}
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          {vi.practice.doneBody(total)}
-        </p>
-        <div className="flex gap-2">
-          <Link
-            to={`/b/${config.bookId}/${config.lesson}`}
-            className="min-h-11 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200"
-          >
-            {vi.practice.doneBackToLesson}
-          </Link>
-          <Link
-            to={`/practice/setup?bookId=${config.bookId}&lesson=${config.lesson}`}
-            className="min-h-11 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-medium text-white"
-          >
-            {vi.practice.doneRetry}
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  if (isFinished) return <LoadingState />
 
   const current = session.questions[currentIndex]
   const Comp = current.questionType.Component
 
   function handleAnswer(answer: unknown) {
-    const { correct, expected } = current.questionType.grade(
+    const { correct, expected, given } = current.questionType.grade(
       current.question,
       answer,
     )
@@ -130,6 +133,17 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
       ts: Date.now(),
     }
     void progressRepository.recordAttempt(attempt)
+    setAnswers((prev) => [
+      ...prev,
+      {
+        item: current.item,
+        questionType: current.questionType,
+        correct,
+        given: given ?? '',
+        expected,
+        responseMs,
+      },
+    ])
     setCurrentIndex((i) => i + 1)
   }
 

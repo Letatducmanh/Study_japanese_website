@@ -8,6 +8,7 @@ import { list as listQuestionTypes } from '@/domain/quiz/registry'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
 import { useAsyncData } from '@/lib/use-async-data'
+import { hasJapaneseVoice } from '@/lib/tts'
 
 const QUESTION_COUNT_OPTIONS = [10, 20, 50] as const
 type QuestionCountOption = (typeof QUESTION_COUNT_OPTIONS)[number] | 'all'
@@ -53,7 +54,7 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
 
   const [includeExtended, setIncludeExtended] = useState(false)
   const [questionCount, setQuestionCount] = useState<QuestionCountOption>('all')
-  const [modeId, setModeId] = useState<string | null>(null)
+  const [selectedModeIds, setSelectedModeIds] = useState<string[]>([])
 
   useEffect(() => {
     // Cài đặt tải bất đồng bộ — đồng bộ vào state cục bộ ngay khi có.
@@ -73,6 +74,7 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
       listQuestionTypes().filter(
         (qt) =>
           qt.itemType === 'vocab' &&
+          (qt.skill !== 'listening' || hasJapaneseVoice()) &&
           pool.some((item) => qt.isEligible(item, { pool })),
       ),
     [pool],
@@ -82,25 +84,33 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
     // Danh sách dạng bài phụ thuộc dữ liệu tải bất đồng bộ — chọn mặc định ngay khi có.
     /* eslint-disable react-hooks/set-state-in-effect */
     if (availableModes.length === 0) {
-      setModeId(null)
+      setSelectedModeIds([])
       return
     }
-    if (!modeId || !availableModes.some((m) => m.id === modeId)) {
-      setModeId(availableModes[0].id)
-    }
+    setSelectedModeIds((current) => {
+      const stillValid = current.filter((id) =>
+        availableModes.some((m) => m.id === id),
+      )
+      return stillValid.length > 0 ? stillValid : [availableModes[0].id]
+    })
     /* eslint-enable react-hooks/set-state-in-effect */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableModes])
+
+  function toggleMode(id: string) {
+    setSelectedModeIds((current) =>
+      current.includes(id) ? current.filter((m) => m !== id) : [...current, id],
+    )
+  }
 
   if (loading) return <LoadingState />
   if (error || !lessonFile) return <ErrorState />
 
   function handleStart() {
-    if (!modeId) return
+    if (selectedModeIds.length === 0) return
     setPendingConfig({
       bookId,
       lesson,
-      questionTypeId: modeId,
+      questionTypeIds: selectedModeIds,
       questionCount: questionCount === 'all' ? pool.length : questionCount,
       includeExtended,
     })
@@ -140,9 +150,9 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
               <button
                 key={m.id}
                 type="button"
-                onClick={() => setModeId(m.id)}
+                onClick={() => toggleMode(m.id)}
                 className={`min-h-11 rounded-full border px-4 text-sm font-medium ${
-                  modeId === m.id
+                  selectedModeIds.includes(m.id)
                     ? 'border-primary-600 bg-primary-600 text-white'
                     : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
                 }`}
@@ -179,7 +189,7 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
       <button
         type="button"
         onClick={handleStart}
-        disabled={!modeId}
+        disabled={selectedModeIds.length === 0}
         className="min-h-11 rounded-full bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
       >
         {vi.practice.startButton}

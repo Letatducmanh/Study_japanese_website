@@ -134,6 +134,17 @@ export const vi = {
     ratingEasy: 'Dễ',
   },
 
+  mcq: {
+    directionJpVi: 'Nhật → Nghĩa',
+    directionViJp: 'Nghĩa → Nhật',
+    directionKanjiReading: 'Kanji → Cách đọc',
+    directionKanaKanji: 'Kana → Kanji',
+    directionListenVi: 'Nghe → Nghĩa',
+    directionViKanji: 'Nghĩa → Kanji',
+    replay: 'Nghe lại',
+    next: 'Tiếp theo (Enter)',
+  },
+
   practice: {
     setupTitle: 'Thiết lập luyện tập',
     noScope: 'Hãy chọn một bài học để luyện tập.',
@@ -146,10 +157,18 @@ export const vi = {
     noModeAvailable: 'Bài này chưa có dạng luyện tập nào.',
     runNoConfig: 'Chưa chọn phiên luyện tập nào.',
     progress: (current: number, total: number) => `Câu ${current}/${total}`,
-    doneTitle: 'Hoàn thành!',
-    doneBody: (count: number) => `Bạn đã luyện xong ${count} thẻ.`,
-    doneBackToLesson: 'Về bài học',
-    doneRetry: 'Luyện lại',
+  },
+
+  result: {
+    title: 'Kết quả',
+    scoreLabel: 'Điểm',
+    timeLabel: 'Thời gian',
+    wrongListTitle: 'Câu sai',
+    givenLabel: 'Bạn chọn',
+    expectedLabel: 'Đáp án đúng',
+    retryWrongButton: 'Làm lại câu sai',
+    continueButton: 'Luyện tiếp',
+    notFound: 'Không tìm thấy kết quả phiên này.',
   },
 
   search: {

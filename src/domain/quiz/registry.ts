@@ -4,6 +4,10 @@ import type { GrammarPoint, KanjiItem, Skill, VocabItem } from '@/domain/types'
 export type QuizItem = VocabItem | GrammarPoint | KanjiItem
 export type QuizItemType = 'vocab' | 'grammar' | 'kanji'
 
+export function isVocabItem(item: QuizItem): item is VocabItem {
+  return 'kanjiChars' in item
+}
+
 export interface QuizContext {
   /** Toàn bộ mục trong phạm vi đang luyện — dùng để sinh đáp án nhiễu, v.v. */
   pool: QuizItem[]
@@ -12,6 +16,8 @@ export interface QuizContext {
 export interface GradeResult {
   correct: boolean
   expected: string
+  /** Mô tả dễ đọc về câu trả lời của người dùng — dùng ở màn hình kết quả. */
+  given?: string
 }
 
 /**

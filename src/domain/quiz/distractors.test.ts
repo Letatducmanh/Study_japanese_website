@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createRng } from '@/lib/rng'
-import { pickDistractors } from './distractors'
+import { findDistractorCandidates, pickDistractors } from './distractors'
 import type { VocabItem } from '@/domain/types'
 
 function makeVocab(overrides: Partial<VocabItem>): VocabItem {
@@ -98,5 +98,22 @@ describe('pickDistractors', () => {
       createRng(1),
     )
     expect(result).toHaveLength(1)
+  })
+})
+
+describe('findDistractorCandidates', () => {
+  const correct = makeVocab({
+    id: 'correct',
+    lesson: 3,
+    pos: 'verb',
+    meaning: 'ăn',
+  })
+
+  it('dùng để kiểm tra đủ ứng viên trước khi cho phép một hướng hỏi (isEligible)', () => {
+    const pool = [correct, makeVocab({ id: 'ok', homographKey: 'khac' })]
+    expect(findDistractorCandidates(correct, pool, 'meaning')).toHaveLength(1)
+    expect(
+      findDistractorCandidates(correct, [correct], 'meaning'),
+    ).toHaveLength(0)
   })
 })
