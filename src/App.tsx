@@ -5,8 +5,8 @@ function App() {
         🗾 Tự học tiếng Nhật cùng Mạnh
       </h1>
       <p className="text-primary-900/70 dark:text-slate-300">
-        Website tự học và kiểm tra tiếng Nhật — khung dự án đã khởi tạo
-        (Phase 0).
+        Website tự học và kiểm tra tiếng Nhật — khung dự án đã khởi tạo (Phase
+        0).
       </p>
     </main>
   )

@@ -3,3 +3,7 @@ public/content
 content-report.md
 playwright-report
 test-results
+
+# Nội dung do người dùng soạn (content-as-data) — KHÔNG để Prettier định dạng lại.
+content/**/*.md
+docs/**/*.md
