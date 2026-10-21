@@ -9,6 +9,8 @@ import { LevelPage } from '@/features/browse/LevelPage'
 import { LevelsPage } from '@/features/browse/LevelsPage'
 import { HomePage } from '@/features/home/HomePage'
 import { KanjiDetailPage } from '@/features/kanji/KanjiDetailPage'
+import { PracticeRunPage } from '@/features/practice/PracticeRunPage'
+import { PracticeSetupPage } from '@/features/practice/PracticeSetupPage'
 import { SearchPage } from '@/features/search/SearchPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 
@@ -21,8 +23,8 @@ export function AppRoutes() {
         <Route path="n/:level" element={<LevelPage />} />
         <Route path="b/:bookId" element={<BookPage />} />
         <Route path="b/:bookId/:lesson" element={<LessonPage />} />
-        <Route path="practice/setup" element={<ComingSoon />} />
-        <Route path="practice/run" element={<ComingSoon />} />
+        <Route path="practice/setup" element={<PracticeSetupPage />} />
+        <Route path="practice/run" element={<PracticeRunPage />} />
         <Route path="practice/result/:sessionId" element={<ComingSoon />} />
         <Route path="review" element={<ComingSoon />} />
         <Route path="weak" element={<ComingSoon />} />

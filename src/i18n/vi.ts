@@ -123,6 +123,35 @@ export const vi = {
     clearSuccess: 'Đã xóa toàn bộ tiến độ.',
   },
 
+  flashcard: {
+    faceKana: 'Kana',
+    faceKanji: 'Kanji',
+    faceMeaning: 'Nghĩa',
+    flipHint: 'Bấm hoặc nhấn Space để lật thẻ',
+    ratingForgot: 'Quên',
+    ratingHard: 'Khó',
+    ratingGood: 'Nhớ',
+    ratingEasy: 'Dễ',
+  },
+
+  practice: {
+    setupTitle: 'Thiết lập luyện tập',
+    noScope: 'Hãy chọn một bài học để luyện tập.',
+    backToBrowse: 'Chọn bài học',
+    modeLabel: 'Dạng bài',
+    countLabel: 'Số câu',
+    countAll: 'Tất cả',
+    includeExtendedLabel: 'Gồm từ vựng mở rộng',
+    startButton: 'Bắt đầu luyện tập',
+    noModeAvailable: 'Bài này chưa có dạng luyện tập nào.',
+    runNoConfig: 'Chưa chọn phiên luyện tập nào.',
+    progress: (current: number, total: number) => `Câu ${current}/${total}`,
+    doneTitle: 'Hoàn thành!',
+    doneBody: (count: number) => `Bạn đã luyện xong ${count} thẻ.`,
+    doneBackToLesson: 'Về bài học',
+    doneRetry: 'Luyện lại',
+  },
+
   search: {
     pageTitle: 'Tìm kiếm',
     hint: 'Gõ để tìm theo kana, Kanji, romaji hoặc nghĩa tiếng Việt (gõ không dấu cũng được).',

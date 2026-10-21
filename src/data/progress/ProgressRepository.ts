@@ -42,7 +42,7 @@ export interface ProgressRepository {
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   showRomaji: true,
   showFurigana: true,
-  includeExtended: true,
+  includeExtended: false,
   editionFilter: 'all',
   ttsRate: 1,
   defaultQuestionCount: 20,

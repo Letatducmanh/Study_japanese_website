@@ -124,7 +124,7 @@ function TextbookLesson({
       </div>
 
       <Link
-        to="/practice/setup"
+        to={`/practice/setup?bookId=${bookId}&lesson=${lessonNumber}`}
         className="flex min-h-11 items-center justify-center rounded-full bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
       >
         {vi.lesson.practiceCta}
