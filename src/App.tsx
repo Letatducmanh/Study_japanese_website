@@ -1,14 +1,49 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Layout } from '@/app/Layout'
+import { ComingSoon } from '@/components/ComingSoon'
+import { NotFound } from '@/components/NotFound'
+import { AboutPage } from '@/features/about/AboutPage'
+import { BookPage } from '@/features/browse/BookPage'
+import { LessonPage } from '@/features/browse/LessonPage'
+import { LevelPage } from '@/features/browse/LevelPage'
+import { LevelsPage } from '@/features/browse/LevelsPage'
+import { HomePage } from '@/features/home/HomePage'
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<HomePage />} />
+        <Route path="n" element={<LevelsPage />} />
+        <Route path="n/:level" element={<LevelPage />} />
+        <Route path="b/:bookId" element={<BookPage />} />
+        <Route path="b/:bookId/:lesson" element={<LessonPage />} />
+        <Route path="practice/setup" element={<ComingSoon />} />
+        <Route path="practice/run" element={<ComingSoon />} />
+        <Route path="practice/result/:sessionId" element={<ComingSoon />} />
+        <Route path="review" element={<ComingSoon />} />
+        <Route path="weak" element={<ComingSoon />} />
+        <Route path="mistakes" element={<ComingSoon />} />
+        <Route path="kanji/:char" element={<ComingSoon />} />
+        <Route path="search" element={<ComingSoon />} />
+        <Route path="stats" element={<ComingSoon />} />
+        <Route path="settings" element={<ComingSoon />} />
+        <Route path="login" element={<ComingSoon />} />
+        <Route path="register" element={<ComingSoon />} />
+        <Route path="forgot-password" element={<ComingSoon />} />
+        <Route path="account" element={<ComingSoon />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  )
+}
+
 function App() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center dark:bg-slate-900">
-      <h1 className="text-3xl font-bold text-primary-700 dark:text-primary-600">
-        🗾 Tự học tiếng Nhật cùng Mạnh
-      </h1>
-      <p className="text-primary-900/70 dark:text-slate-300">
-        Website tự học và kiểm tra tiếng Nhật — khung dự án đã khởi tạo (Phase
-        0).
-      </p>
-    </main>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   )
 }
 

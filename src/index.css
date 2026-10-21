@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Chuyển dark: sang bật/tắt bằng class .dark (do người dùng chọn), không chỉ theo hệ điều hành. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Noto Sans JP', system-ui, 'Segoe UI', Roboto, sans-serif;
 
@@ -16,13 +19,12 @@
 }
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary-600: #60a5fa;
-  }
+:root.dark {
+  color-scheme: dark;
+  --color-primary-600: #60a5fa;
 }
 
 body {
@@ -30,8 +32,6 @@ body {
   background: #ffffff;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #0f172a;
-  }
+.dark body {
+  background: #0f172a;
 }

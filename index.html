@@ -9,12 +9,29 @@
       content="Tự học và kiểm tra tiếng Nhật theo bài, giúp bạn phát hiện phần mình đang yếu."
     />
     <title>Tự học tiếng Nhật cùng Mạnh</title>
+    <meta name="theme-color" content="#2563eb" />
+    <meta property="og:title" content="Tự học tiếng Nhật cùng Mạnh" />
+    <meta
+      property="og:description"
+      content="Tự học và kiểm tra tiếng Nhật theo bài, giúp bạn phát hiện phần mình đang yếu."
+    />
+    <meta property="og:type" content="website" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Đặt class .dark trước khi vẽ trang để tránh nháy sáng/tối (FOUC).
+      try {
+        var stored = localStorage.getItem('theme')
+        var dark = stored
+          ? stored === 'dark'
+          : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.classList.toggle('dark', dark)
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
