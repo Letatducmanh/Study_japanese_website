@@ -14,3 +14,20 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList
 }
+
+// jsdom không cài sẵn Web Speech API — polyfill tối thiểu cho src/lib/tts.ts.
+if (typeof window !== 'undefined' && !window.SpeechSynthesisUtterance) {
+  class FakeSpeechSynthesisUtterance {
+    text: string
+    lang = ''
+    rate = 1
+    voice: SpeechSynthesisVoice | null = null
+    constructor(text: string) {
+      this.text = text
+    }
+  }
+  Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+    configurable: true,
+    value: FakeSpeechSynthesisUtterance,
+  })
+}

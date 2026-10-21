@@ -8,6 +8,8 @@ import { LessonPage } from '@/features/browse/LessonPage'
 import { LevelPage } from '@/features/browse/LevelPage'
 import { LevelsPage } from '@/features/browse/LevelsPage'
 import { HomePage } from '@/features/home/HomePage'
+import { KanjiDetailPage } from '@/features/kanji/KanjiDetailPage'
+import { SearchPage } from '@/features/search/SearchPage'
 
 export function AppRoutes() {
   return (
@@ -24,8 +26,8 @@ export function AppRoutes() {
         <Route path="review" element={<ComingSoon />} />
         <Route path="weak" element={<ComingSoon />} />
         <Route path="mistakes" element={<ComingSoon />} />
-        <Route path="kanji/:char" element={<ComingSoon />} />
-        <Route path="search" element={<ComingSoon />} />
+        <Route path="kanji/:char" element={<KanjiDetailPage />} />
+        <Route path="search" element={<SearchPage />} />
         <Route path="stats" element={<ComingSoon />} />
         <Route path="settings" element={<ComingSoon />} />
         <Route path="login" element={<ComingSoon />} />

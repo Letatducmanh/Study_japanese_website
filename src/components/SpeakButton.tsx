@@ -1,0 +1,43 @@
+import { useEffect, useState } from 'react'
+import { vi } from '@/i18n/vi'
+import {
+  hasJapaneseVoice,
+  isTtsSupported,
+  onVoicesChanged,
+  speakJapanese,
+} from '@/lib/tts'
+
+interface SpeakButtonProps {
+  text: string
+  className?: string
+}
+
+/** Nút 🔊 phát âm tiếng Nhật; tự ẩn khi thiết bị không có giọng đọc tiếng Nhật. */
+export function SpeakButton({ text, className }: SpeakButtonProps) {
+  const [available, setAvailable] = useState(() => hasJapaneseVoice())
+
+  useEffect(() => {
+    if (!isTtsSupported()) return
+    // Giọng đọc thường nạp bất đồng bộ sau lần render đầu — đồng bộ lại ngay khi effect chạy.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAvailable(hasJapaneseVoice())
+    return onVoicesChanged(() => setAvailable(hasJapaneseVoice()))
+  }, [])
+
+  if (!isTtsSupported() || !available) return null
+
+  return (
+    <button
+      type="button"
+      onClick={() => speakJapanese(text)}
+      aria-label={vi.common.speak}
+      title={vi.common.speak}
+      className={
+        className ??
+        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg hover:bg-primary-50 dark:hover:bg-slate-800'
+      }
+    >
+      🔊
+    </button>
+  )
+}

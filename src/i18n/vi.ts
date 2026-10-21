@@ -34,6 +34,18 @@ export const vi = {
     loadFailed: 'Không tải được dữ liệu, thử lại sau.',
   },
 
+  common: {
+    speak: 'Nghe phát âm',
+    showMeaning: 'Hiện nghĩa',
+    hideMeaning: 'Ẩn nghĩa',
+    showRomaji: 'Hiện romaji',
+    hideRomaji: 'Ẩn romaji',
+    showTranslation: 'Hiện bản dịch',
+    hideTranslation: 'Ẩn bản dịch',
+    supplemental: 'Bổ sung',
+    all: 'Tất cả',
+  },
+
   home: {
     heroTitle: 'Tự học tiếng Nhật cùng Mạnh',
     heroSubtitle:
@@ -55,6 +67,7 @@ export const vi = {
   book: {
     lessonsTitle: 'Danh sách bài',
     lessonLabelFallback: 'Bài',
+    appendixShortLabel: 'PL',
   },
 
   lesson: {
@@ -63,8 +76,40 @@ export const vi = {
     tabKanji: 'Kanji liên quan',
     practiceCta: 'Luyện tập bài này',
     vocabMainTitle: 'Từ vựng chính',
-    grammarComingSoon: 'Xem chi tiết ngữ pháp sẽ có ở giai đoạn sau.',
-    kanjiComingSoon: 'Danh sách Kanji liên quan sẽ có ở giai đoạn sau.',
+    vocabExtendedTitleFallback: 'Từ vựng mở rộng',
+    filterSectionAll: 'Tất cả',
+    filterSectionMain: 'Từ vựng chính',
+    filterSectionExtended: 'Mở rộng',
+    filterEditionNew: 'Bản mới',
+    filterEditionOld: 'Bản cũ',
+    noVocab: 'Bài này chưa có từ vựng.',
+    noGrammar: 'Bài này chưa có ngữ pháp.',
+    noKanjiRelated: 'Không có Kanji liên quan trong bài này.',
+  },
+
+  kanjiChapter: {
+    noKanji: 'Chương này chưa có Kanji.',
+  },
+
+  kanjiDetail: {
+    strokesLabel: 'Số nét',
+    kunLabel: 'Âm Kun',
+    onLabel: 'Âm On',
+    meaningLabel: 'Nghĩa Hán Việt',
+    examplesTitle: 'Ví dụ',
+    relatedVocabTitle: 'Từ vựng có chứa chữ này',
+    noRelatedVocab: 'Chưa có từ vựng nào dùng chữ này.',
+    kindKun: 'Âm Kun',
+    kindOn: 'Âm On',
+    kindSpecial: 'Đọc đặc biệt',
+    none: '-',
+  },
+
+  search: {
+    pageTitle: 'Tìm kiếm',
+    hint: 'Gõ để tìm theo kana, Kanji, romaji hoặc nghĩa tiếng Việt (gõ không dấu cũng được).',
+    empty: 'Không tìm thấy kết quả.',
+    resultCountSuffix: 'kết quả',
   },
 
   about: {

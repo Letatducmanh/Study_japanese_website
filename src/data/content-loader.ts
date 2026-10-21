@@ -9,6 +9,7 @@ import type {
   KanjiChapterFile,
   LessonFile,
   Manifest,
+  VocabItem,
 } from '@/domain/types'
 
 const BASE = '/content'
@@ -68,6 +69,53 @@ export function loadKanjiChapter(
   return cached(`kanji-chapter:${bookId}:${chapter}`, () =>
     fetchJson(`${BASE}/${bookId}/${fileName}`, kanjiChapterFileSchema),
   )
+}
+
+/** Tìm giáo trình Kanji (`type: 'kanji'`) cùng cấp độ với `bookId` đã cho, nếu có. */
+export function findKanjiBookIdForLevel(
+  manifest: Manifest,
+  levelId: string,
+): string | undefined {
+  const level = manifest.levels.find((l) => l.id === levelId)
+  return level?.books.find((b) => b.type === 'kanji')?.id
+}
+
+/** Tìm cấp độ (`levelId`) chứa `bookId` đã cho. */
+export function findLevelIdForBook(
+  manifest: Manifest,
+  bookId: string,
+): string | undefined {
+  return manifest.levels.find((l) => l.books.some((b) => b.id === bookId))?.id
+}
+
+const VOCAB_ID_PATTERN = /^(.+)-l(\d+)-/
+
+/** Tải và gộp các bài có chứa `vocabIds`, trả về đúng thứ tự `vocabIds` (bỏ qua ID không tìm thấy). */
+export async function resolveVocabItems(
+  vocabIds: string[],
+): Promise<VocabItem[]> {
+  const lessonsNeeded = new Map<string, { bookId: string; lesson: number }>()
+  for (const id of vocabIds) {
+    const match = VOCAB_ID_PATTERN.exec(id)
+    if (!match) continue
+    const key = `${match[1]}:${match[2]}`
+    lessonsNeeded.set(key, { bookId: match[1], lesson: Number(match[2]) })
+  }
+
+  const lessonFiles = await Promise.all(
+    [...lessonsNeeded.values()].map(({ bookId, lesson }) =>
+      loadLesson(bookId, lesson),
+    ),
+  )
+
+  const byId = new Map<string, VocabItem>()
+  for (const file of lessonFiles) {
+    for (const item of file.vocab) byId.set(item.id, item)
+  }
+
+  return vocabIds
+    .map((id) => byId.get(id))
+    .filter((item): item is VocabItem => item !== undefined)
 }
 
 /** Chỉ dùng trong test: xoá cache giữa các ca kiểm thử. */
