@@ -100,7 +100,7 @@ export const kanjiItemSchema = z.object({
 })
 
 export const attemptSchema = z.object({
-  id: z.number().int().optional(),
+  id: z.string().min(1),
   itemId: z.string().min(1),
   itemType: z.enum(['vocab', 'grammar', 'kanji']),
   skill: skillSchema,
@@ -206,3 +206,50 @@ export const posOverrideSchema = z.object({
 export const posOverridesSchema = z.array(posOverrideSchema)
 
 export const idAliasesSchema = z.record(z.string(), z.string())
+
+// --- Lưu trữ tiến độ (src/data/progress) ---
+
+export const srsCardStateSchema = z.object({
+  due: z.number(),
+  stability: z.number(),
+  difficulty: z.number(),
+  elapsedDays: z.number(),
+  scheduledDays: z.number(),
+  learningSteps: z.number(),
+  reps: z.number().int().nonnegative(),
+  lapses: z.number().int().nonnegative(),
+  state: z.number().int(),
+  lastReview: z.number().optional(),
+})
+
+export const srsCardRecordSchema = z.object({
+  itemId: z.string().min(1),
+  due: z.number(),
+  card: srsCardStateSchema,
+  updatedTs: z.number().int().nonnegative(),
+})
+
+export const mistakeRecordSchema = z.object({
+  itemId: z.string().min(1),
+  addedTs: z.number().int().nonnegative(),
+  correctStreak: z.number().int().nonnegative(),
+})
+
+export const appSettingsSchema = z.object({
+  showRomaji: z.boolean(),
+  showFurigana: z.boolean(),
+  includeExtended: z.boolean(),
+  editionFilter: z.union([z.literal('all'), editionSchema]),
+  ttsRate: z.number().positive(),
+  defaultQuestionCount: z.number().int().positive(),
+})
+
+export const progressExportSchema = z.object({
+  schemaVersion: z.number().int().positive(),
+  exportedAt: z.number().int().nonnegative(),
+  attempts: z.array(attemptSchema),
+  mastery: z.array(masterySchema),
+  srsCards: z.array(srsCardRecordSchema),
+  mistakes: z.array(mistakeRecordSchema),
+  settings: appSettingsSchema,
+})

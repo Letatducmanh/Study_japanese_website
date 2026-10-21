@@ -92,7 +92,8 @@ export interface KanjiItem {
 }
 
 export interface Attempt {
-  id?: number
+  /** uuid tạo ở máy khách (mục 6.8) — để đồng bộ an toàn ở Phase 11, không dùng số tự tăng. */
+  id: string
   itemId: string
   itemType: 'vocab' | 'grammar' | 'kanji'
   skill: Skill
@@ -112,6 +113,55 @@ export interface Mastery {
   attempts: number
   streak: number
   lastTs: number
+}
+
+// --- Lưu trữ tiến độ (src/data/progress, mục 6.5-6.7) ---
+
+/** Trạng thái thẻ FSRS, lưu dạng thuần (không phụ thuộc kiểu `Card` nội bộ của ts-fsrs). */
+export interface SrsCardState {
+  due: number
+  stability: number
+  difficulty: number
+  elapsedDays: number
+  scheduledDays: number
+  learningSteps: number
+  reps: number
+  lapses: number
+  state: number
+  lastReview?: number
+}
+
+export interface SrsCardRecord {
+  itemId: string
+  due: number
+  card: SrsCardState
+  updatedTs: number
+}
+
+export interface MistakeRecord {
+  itemId: string
+  addedTs: number
+  /** Số lần đúng liên tiếp kể từ khi vào sổ; gỡ khỏi sổ khi đạt 3 (mục 3.5). */
+  correctStreak: number
+}
+
+export interface AppSettings {
+  showRomaji: boolean
+  showFurigana: boolean
+  includeExtended: boolean
+  editionFilter: EditionFilter
+  ttsRate: number
+  defaultQuestionCount: number
+}
+
+export interface ProgressExport {
+  schemaVersion: number
+  exportedAt: number
+  attempts: Attempt[]
+  mastery: Mastery[]
+  srsCards: SrsCardRecord[]
+  mistakes: MistakeRecord[]
+  settings: AppSettings
 }
 
 // --- content/manifest.yaml ---

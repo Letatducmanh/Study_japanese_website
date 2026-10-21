@@ -10,6 +10,7 @@ import { LevelsPage } from '@/features/browse/LevelsPage'
 import { HomePage } from '@/features/home/HomePage'
 import { KanjiDetailPage } from '@/features/kanji/KanjiDetailPage'
 import { SearchPage } from '@/features/search/SearchPage'
+import { SettingsPage } from '@/features/settings/SettingsPage'
 
 export function AppRoutes() {
   return (
@@ -29,7 +30,7 @@ export function AppRoutes() {
         <Route path="kanji/:char" element={<KanjiDetailPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="stats" element={<ComingSoon />} />
-        <Route path="settings" element={<ComingSoon />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="login" element={<ComingSoon />} />
         <Route path="register" element={<ComingSoon />} />
         <Route path="forgot-password" element={<ComingSoon />} />

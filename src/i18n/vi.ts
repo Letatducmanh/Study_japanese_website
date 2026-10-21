@@ -105,6 +105,24 @@ export const vi = {
     none: '-',
   },
 
+  settings: {
+    pageTitle: 'Cài đặt',
+    themeLabel: 'Giao diện sáng / tối',
+    dataSectionTitle: 'Dữ liệu học tập',
+    exportButton: 'Xuất tiến độ ra file',
+    exportSuccess: 'Đã tải file sao lưu tiến độ.',
+    importButton: 'Nhập tiến độ từ file',
+    importSuccess: 'Đã nhập tiến độ thành công.',
+    importError: 'File không hợp lệ, không nhập được.',
+    clearButton: 'Xóa toàn bộ tiến độ',
+    clearConfirmTitle: 'Xóa toàn bộ tiến độ trên máy này?',
+    clearConfirmBody:
+      'Thao tác này không thể hoàn tác. Hãy xuất file sao lưu trước nếu muốn giữ lại.',
+    clearConfirmYes: 'Xác nhận xóa',
+    clearConfirmCancel: 'Hủy',
+    clearSuccess: 'Đã xóa toàn bộ tiến độ.',
+  },
+
   search: {
     pageTitle: 'Tìm kiếm',
     hint: 'Gõ để tìm theo kana, Kanji, romaji hoặc nghĩa tiếng Việt (gõ không dấu cũng được).',
