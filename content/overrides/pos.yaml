@@ -1,0 +1,3 @@
+# Sửa từ loại (pos) khi luật đoán tự động trong enrich.ts đoán sai.
+# Dạng: { kana: <kana>, pos: noun | verb | i-adj | na-adj | adverb | expression | counter | affix | other }
+[]

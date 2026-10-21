@@ -1,0 +1,10 @@
+# Động từ có âm い trước ます nhưng thuộc nhóm II (ngoại lệ với luật đoán mặc định)
+- { kana: みます, kanji: 見ます, group: 2 }
+- { kana: おきます, kanji: 起きます, group: 2 } # khác 置きます (nhóm I)
+- { kana: かります, kanji: 借ります, group: 2 }
+- { kana: あびます, kanji: 浴びます, group: 2 }
+- { kana: おります, kanji: 降ります, group: 2 }
+- { kana: できます, kanji: "-", group: 2 }
+- { kana: います, kanji: "-", group: 2 }
+- { kana: きます, kanji: 着ます, group: 2 } # khác 来ます (nhóm III)
+- { kana: たります, kanji: 足ります, group: 2 }

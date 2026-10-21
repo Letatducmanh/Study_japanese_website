@@ -1,0 +1,5 @@
+dist
+public/content
+content-report.md
+playwright-report
+test-results

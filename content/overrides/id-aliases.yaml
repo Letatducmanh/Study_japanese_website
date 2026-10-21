@@ -1,0 +1,3 @@
+# Khi sửa kana/kanji của một mục làm ID (hash) đổi, khai báo "id cũ: id mới" ở đây
+# để giữ tiến độ người dùng. Xem mục 6.2 của docs/Ke_hoach_Website.md.
+{}

@@ -1,0 +1,24 @@
+schemaVersion: 1
+levels:
+  - id: N5
+    title: "JLPT N5 — Sơ cấp"
+    order: 5
+    books:
+      - id: mnn1
+        title: "Minna no Nihongo 1"
+        type: textbook
+        lessonLabel: "Bài"
+        lessonRange: [1, 25]
+        sources:
+          vocab: n5/mnn1/vocab.md
+          grammar: n5/mnn1/grammar.md
+        editions: [old, new]
+        defaultEdition: new
+        editionFilterDefault: all
+      - id: kanji-master-n5
+        title: "Kanji Master N5"
+        type: kanji
+        lessonLabel: "Chương"
+        sources:
+          kanji: n5/kanji-master-n5/kanji.md
+  # - id: N4 ... (thêm sau, xem mục 9 của docs/Ke_hoach_Website.md)
