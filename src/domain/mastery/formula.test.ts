@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   averageMastery,
+  comprehensiveGrade,
   isWeak,
+  lessonMasteryScore,
   nextMasteryScore,
   recencyFactor,
   weaknessScore,
@@ -82,5 +84,38 @@ describe('averageMastery', () => {
 
   it('tính trung bình', () => {
     expect(averageMastery([0, 0.5, 1])).toBeCloseTo(0.5)
+  })
+})
+
+describe('lessonMasteryScore', () => {
+  it('từ chưa làm lần nào tính 0 trong mẫu số', () => {
+    // 2 từ đã làm (điểm 1.0 mỗi từ) trên tổng 10 từ chính của bài → 0.2
+    expect(lessonMasteryScore([1, 1], 10)).toBeCloseTo(0.2)
+  })
+
+  it('bài không có từ chính nào trả về 0', () => {
+    expect(lessonMasteryScore([1], 0)).toBe(0)
+  })
+
+  it('kẹp tối đa 1', () => {
+    expect(lessonMasteryScore([1, 1, 1], 2)).toBe(1)
+  })
+})
+
+describe('comprehensiveGrade', () => {
+  it('A khi ≥ 90%', () => {
+    expect(comprehensiveGrade(9, 10)).toBe('A')
+  })
+
+  it('B khi ≥ 70% và < 90%', () => {
+    expect(comprehensiveGrade(7, 10)).toBe('B')
+  })
+
+  it('C khi < 70%', () => {
+    expect(comprehensiveGrade(5, 10)).toBe('C')
+  })
+
+  it('tổng = 0 trả về C', () => {
+    expect(comprehensiveGrade(0, 0)).toBe('C')
   })
 })

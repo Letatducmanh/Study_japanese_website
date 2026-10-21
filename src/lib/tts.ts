@@ -4,14 +4,41 @@ export function isTtsSupported(): boolean {
   return typeof window !== 'undefined' && !!window.speechSynthesis
 }
 
+// Web Speech API không có trường "giới tính giọng đọc" chuẩn hóa giữa các trình duyệt —
+// đoán qua tên giọng (các tên thường gặp của hệ điều hành/engine phổ biến).
+const FEMALE_VOICE_HINTS = [
+  'haruka',
+  'nanami',
+  'kyoko',
+  'o-ren',
+  'oren',
+  'ayumi',
+  'sayaka',
+  'female',
+  '女性',
+]
+const MALE_VOICE_HINTS = ['ichiro', 'keita', 'otoya', 'male', '男性']
+
+function femaleVoiceScore(voice: SpeechSynthesisVoice): number {
+  const name = (voice.name ?? '').toLowerCase()
+  if (FEMALE_VOICE_HINTS.some((hint) => name.includes(hint))) return 2
+  if (MALE_VOICE_HINTS.some((hint) => name.includes(hint))) return -1
+  return 0
+}
+
 function getJapaneseVoice(): SpeechSynthesisVoice | null {
   if (!isTtsSupported()) return null
   const voices = window.speechSynthesis.getVoices()
-  return (
-    voices.find((v) => v.lang === 'ja-JP') ??
-    voices.find((v) => v.lang.toLowerCase().startsWith('ja')) ??
-    null
-  )
+  const exact = voices.filter((v) => v.lang === 'ja-JP')
+  const candidates =
+    exact.length > 0
+      ? exact
+      : voices.filter((v) => v.lang.toLowerCase().startsWith('ja'))
+  if (candidates.length === 0) return null
+  // Ưu tiên giọng nữ (dễ nghe hơn theo phản hồi) khi thiết bị có nhiều lựa chọn.
+  return [...candidates].sort(
+    (a, b) => femaleVoiceScore(b) - femaleVoiceScore(a),
+  )[0]
 }
 
 /** true nếu trình duyệt có ít nhất một giọng đọc tiếng Nhật đã nạp xong. */

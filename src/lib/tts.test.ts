@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { hasJapaneseVoice, isTtsSupported, speakJapanese } from './tts'
 
-function makeVoice(lang: string): SpeechSynthesisVoice {
-  return { lang } as SpeechSynthesisVoice
+function makeVoice(lang: string, name = ''): SpeechSynthesisVoice {
+  return { lang, name } as SpeechSynthesisVoice
 }
 
 describe('tts', () => {
@@ -59,5 +59,14 @@ describe('tts', () => {
   it('không gọi speak khi văn bản rỗng', () => {
     speakJapanese('   ')
     expect(speak).not.toHaveBeenCalled()
+  })
+
+  it('ưu tiên giọng nữ khi có nhiều lựa chọn tiếng Nhật', () => {
+    const male = makeVoice('ja-JP', 'Microsoft Ichiro - Japanese (Japan)')
+    const female = makeVoice('ja-JP', 'Microsoft Nanami - Japanese (Japan)')
+    getVoices.mockReturnValue([male, female])
+    speakJapanese('こんにちは')
+    const utterance = speak.mock.calls[0][0] as SpeechSynthesisUtterance
+    expect(utterance.voice).toBe(female)
   })
 })

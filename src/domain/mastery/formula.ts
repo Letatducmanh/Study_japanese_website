@@ -52,3 +52,30 @@ export function averageMastery(scores: number[]): number {
   if (scores.length === 0) return 0
   return scores.reduce((sum, s) => sum + s, 0) / scores.length
 }
+
+/**
+ * Độ thành thạo một bài = trung bình các từ *chính* trong bài — từ chưa làm lần nào tính 0
+ * (mục 6.5), nên mẫu số là `totalMainWords`, không phải `itemAverageScores.length`.
+ */
+export function lessonMasteryScore(
+  itemAverageScores: number[],
+  totalMainWords: number,
+): number {
+  if (totalMainWords <= 0) return 0
+  const sum = itemAverageScores.reduce((s, v) => s + v, 0)
+  return Math.min(1, sum / totalMainWords)
+}
+
+export type ComprehensiveGrade = 'A' | 'B' | 'C'
+
+/** Xếp loại bài kiểm tra tổng hợp (mục 10, Phase 10): A ≥ 90% · B ≥ 70% · còn lại là C. */
+export function comprehensiveGrade(
+  correctCount: number,
+  total: number,
+): ComprehensiveGrade {
+  if (total <= 0) return 'C'
+  const percent = correctCount / total
+  if (percent >= 0.9) return 'A'
+  if (percent >= 0.7) return 'B'
+  return 'C'
+}

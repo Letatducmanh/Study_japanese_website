@@ -152,6 +152,8 @@ export interface AppSettings {
   editionFilter: EditionFilter
   ttsRate: number
   defaultQuestionCount: number
+  /** Điểm kỷ lục dạng "Đúng/Sai tốc độ" (mục 3.2 dạng 7). */
+  speedTrueFalseHighScore: number
 }
 
 export interface ProgressExport {
@@ -220,6 +222,8 @@ export interface BookLessonSummary {
   lesson: number | 'appendix'
   title: string
   vocabCount: number
+  /** Số từ vựng *chính* (không gồm mở rộng) — mẫu số tính độ thành thạo bài (mục 6.5). */
+  mainVocabCount: number
   grammarCount: number
   kanjiCount: number
 }

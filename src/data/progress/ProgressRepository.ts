@@ -18,6 +18,8 @@ export interface ProgressRepository {
 
   getMastery(itemId: string, skill: Skill): Promise<Mastery | undefined>
   listMasteryForItem(itemId: string): Promise<Mastery[]>
+  /** Toàn bộ bản ghi độ thành thạo — dùng để tính bản đồ nhiệt theo bài (mục 3.5, 7.1). */
+  listAllMastery(): Promise<Mastery[]>
   /** Các cặp (mục, kỹ năng) yếu nhất, sắp xếp từ yếu nhất; mặc định tối đa 20. */
   listWeak(limit?: number): Promise<Mastery[]>
 
@@ -46,4 +48,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   editionFilter: 'all',
   ttsRate: 1,
   defaultQuestionCount: 20,
+  speedTrueFalseHighScore: 0,
 }

@@ -2,16 +2,25 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ErrorState } from '@/components/ErrorState'
 import { LoadingState } from '@/components/LoadingState'
-import { loadLesson } from '@/data/content-loader'
+import {
+  findBookMeta,
+  findKanjiBookIdForLevel,
+  findLevelIdForBook,
+  loadKanjiChapter,
+  loadLesson,
+  loadManifest,
+} from '@/data/content-loader'
+import { loadAllKanjiForBook } from '@/data/kanji-lookup'
 import { progressRepository } from '@/data/progress/dexie-repo'
-import { get as getQuestionType } from '@/domain/quiz/registry'
-import { buildSession } from '@/domain/quiz/session'
+import { get as getQuestionType, type QuizItem } from '@/domain/quiz/registry'
+import { buildComprehensiveSession, buildSession } from '@/domain/quiz/session'
 import {
   usePracticeSessionStore,
   type AnsweredQuestion,
   type PendingSessionConfig,
 } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
+import { playCorrectSound, playWrongSound } from '@/lib/sfx'
 import { useAsyncData } from '@/lib/use-async-data'
 import type { Attempt } from '@/domain/types'
 
@@ -41,13 +50,50 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
   const navigate = useNavigate()
   const setLastResult = usePracticeSessionStore((s) => s.setLastResult)
 
+  const { data: manifest } = useAsyncData(loadManifest, [])
+  const isKanjiBook = manifest
+    ? findBookMeta(manifest, config.bookId)?.type === 'kanji'
+    : undefined
+
   const {
     data: lessonFile,
-    loading,
-    error,
+    loading: lessonLoading,
+    error: lessonError,
   } = useAsyncData(
-    () => loadLesson(config.bookId, config.lesson),
-    [config.bookId, config.lesson],
+    () =>
+      isKanjiBook === false
+        ? loadLesson(config.bookId, config.lesson)
+        : Promise.resolve(null),
+    [config.bookId, config.lesson, isKanjiBook],
+  )
+  const {
+    data: kanjiChapter,
+    loading: kanjiLoading,
+    error: kanjiError,
+  } = useAsyncData(
+    () =>
+      isKanjiBook === true
+        ? loadKanjiChapter(config.bookId, config.lesson)
+        : Promise.resolve(null),
+    [config.bookId, config.lesson, isKanjiBook],
+  )
+
+  const isComprehensive = config.comprehensive !== undefined
+  const levelId = manifest
+    ? findLevelIdForBook(manifest, config.bookId)
+    : undefined
+  const kanjiBookId =
+    manifest && levelId ? findKanjiBookIdForLevel(manifest, levelId) : undefined
+  const {
+    data: allKanjiForLevel,
+    loading: allKanjiLoading,
+    error: allKanjiError,
+  } = useAsyncData(
+    () =>
+      isComprehensive && kanjiBookId
+        ? loadAllKanjiForBook(kanjiBookId)
+        : Promise.resolve([]),
+    [isComprehensive, kanjiBookId],
   )
 
   const [seed] = useState(() => Date.now())
@@ -65,16 +111,44 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
     [config.questionTypeIds],
   )
 
-  const pool = useMemo(() => {
+  const pool: QuizItem[] = useMemo(() => {
+    if (isKanjiBook) {
+      const kanji = kanjiChapter?.kanji ?? []
+      return config.onlyItemIds
+        ? kanji.filter((k) => config.onlyItemIds!.includes(k.id))
+        : kanji
+    }
     if (!lessonFile) return []
     const bySection = lessonFile.vocab.filter(
       (v) => v.section === 'main' || config.includeExtended,
     )
-    if (!config.onlyItemIds) return bySection
-    return bySection.filter((v) => config.onlyItemIds!.includes(v.id))
-  }, [lessonFile, config.includeExtended, config.onlyItemIds])
+    const vocab = config.onlyItemIds
+      ? bySection.filter((v) => config.onlyItemIds!.includes(v.id))
+      : bySection
+    // Ngữ pháp luôn có mặt trong pool (không lọc theo onlyItemIds) để các dạng như
+    // "Điền từ vào câu" tìm được câu ví dụ chứa từ, dù dạng đó không tự sinh câu hỏi từ nó.
+    return [...vocab, ...lessonFile.grammar]
+  }, [isKanjiBook, kanjiChapter, lessonFile, config.includeExtended, config.onlyItemIds])
 
   const session = useMemo(() => {
+    if (config.comprehensive) {
+      if (!lessonFile) return null
+      const vocabItems = lessonFile.vocab.filter(
+        (v) => v.section === 'main' || config.includeExtended,
+      )
+      const kanjiChars = new Set(vocabItems.flatMap((v) => v.kanjiChars))
+      const kanjiItems = (allKanjiForLevel ?? []).filter((k) =>
+        kanjiChars.has(k.char),
+      )
+      return buildComprehensiveSession({
+        vocabItems,
+        grammarItems: lessonFile.grammar,
+        kanjiItems,
+        ratio: config.comprehensive,
+        questionCount: config.questionCount,
+        seed,
+      })
+    }
     if (questionTypes.length === 0 || pool.length === 0) return null
     return buildSession({
       items: pool,
@@ -82,7 +156,16 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
       questionCount: config.questionCount,
       seed,
     })
-  }, [pool, questionTypes, config.questionCount, seed])
+  }, [
+    config.comprehensive,
+    lessonFile,
+    allKanjiForLevel,
+    config.includeExtended,
+    pool,
+    questionTypes,
+    config.questionCount,
+    seed,
+  ])
 
   useEffect(() => {
     cardStartedAtRef.current = Date.now()
@@ -100,13 +183,29 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
       startedAt,
       finishedAt: Date.now(),
       answers,
+      isComprehensive: config.comprehensive !== undefined,
     })
     navigate(`/practice/result/${sessionId}`, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFinished])
 
-  if (loading) return <LoadingState />
-  if (error || !lessonFile || questionTypes.length === 0) return <ErrorState />
+  if (
+    isKanjiBook === undefined ||
+    lessonLoading ||
+    kanjiLoading ||
+    (isComprehensive && allKanjiLoading)
+  ) {
+    return <LoadingState />
+  }
+  if (
+    lessonError ||
+    kanjiError ||
+    (isComprehensive && allKanjiError) ||
+    (isKanjiBook ? !kanjiChapter : !lessonFile) ||
+    (!isComprehensive && questionTypes.length === 0)
+  ) {
+    return <ErrorState />
+  }
   if (!session || session.questions.length === 0) return <ErrorState />
   if (isFinished) return <LoadingState />
 
@@ -118,6 +217,8 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
       current.question,
       answer,
     )
+    if (correct) playCorrectSound()
+    else playWrongSound()
     const responseMs = Date.now() - cardStartedAtRef.current
     const attempt: Attempt = {
       id: crypto.randomUUID(),

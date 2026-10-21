@@ -179,6 +179,7 @@ export const bookLessonSummarySchema = z.object({
   lesson: z.union([z.number().int().positive(), z.literal('appendix')]),
   title: z.string(),
   vocabCount: z.number().int().nonnegative(),
+  mainVocabCount: z.number().int().nonnegative(),
   grammarCount: z.number().int().nonnegative(),
   kanjiCount: z.number().int().nonnegative(),
 })
@@ -242,6 +243,7 @@ export const appSettingsSchema = z.object({
   editionFilter: z.union([z.literal('all'), editionSchema]),
   ttsRate: z.number().positive(),
   defaultQuestionCount: z.number().int().positive(),
+  speedTrueFalseHighScore: z.number().int().nonnegative(),
 })
 
 export const progressExportSchema = z.object({

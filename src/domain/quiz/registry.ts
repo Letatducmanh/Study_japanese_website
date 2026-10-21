@@ -8,6 +8,14 @@ export function isVocabItem(item: QuizItem): item is VocabItem {
   return 'kanjiChars' in item
 }
 
+export function isGrammarItem(item: QuizItem): item is GrammarPoint {
+  return 'examples' in item && !('char' in item)
+}
+
+export function isKanjiItem(item: QuizItem): item is KanjiItem {
+  return 'char' in item
+}
+
 export interface QuizContext {
   /** Toàn bộ mục trong phạm vi đang luyện — dùng để sinh đáp án nhiễu, v.v. */
   pool: QuizItem[]

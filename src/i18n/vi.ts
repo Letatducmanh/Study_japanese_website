@@ -47,13 +47,19 @@ export const vi = {
   },
 
   home: {
-    heroTitle: 'Tự học tiếng Nhật cùng Mạnh',
+    heroTitle: 'Học từ, nhớ lâu, không học lan man.',
     heroSubtitle:
-      'Học và kiểm tra tiếng Nhật theo từng bài, tự phát hiện phần mình đang yếu.',
+      'Luyện theo từng bài, mỗi lượt trả lời đều được ghi lại để chỉ ra đúng chỗ bạn đang yếu.',
     browseCta: 'Bắt đầu học',
+    weakCta: 'Xem điểm yếu của tôi',
+    mascotSpeech: 'がんばって！ Cùng học nào!',
     reviewTitle: 'Ôn tập hôm nay',
+    reviewBody: 'Đang xây dựng — sắp tới sẽ nhắc đúng từ bạn sắp quên.',
     weakTitle: 'Điểm yếu nổi bật',
+    weakBody: 'Xem những từ bạn hay sai và luyện lại ngay.',
+    weakBodyEmpty: 'Luyện vài bài rồi quay lại đây — chỗ yếu sẽ hiện ra ngay.',
     streakTitle: 'Chuỗi ngày học',
+    streakBody: 'Đang xây dựng — sắp tới sẽ đếm số ngày bạn học liên tục.',
   },
 
   levels: {
@@ -143,6 +149,127 @@ export const vi = {
     directionViKanji: 'Nghĩa → Kanji',
     replay: 'Nghe lại',
     next: 'Tiếp theo (Enter)',
+  },
+
+  typing: {
+    label: 'Gõ đáp án',
+    placeholder: 'Gõ romaji, tự đổi sang hiragana...',
+    showHint: 'Xem gợi ý chữ đầu',
+    hintPrefix: 'Chữ đầu: ',
+    submit: 'Kiểm tra (Enter)',
+  },
+
+  dictation: {
+    label: 'Chính tả nghe',
+    placeholder: 'Nghe và gõ lại bằng kana...',
+    replay: 'Nghe lại',
+    submit: 'Kiểm tra (Enter)',
+  },
+
+  matching: {
+    label: 'Ghép cặp',
+    timeLabel: 'Thời gian',
+    allCorrect: 'Khớp đúng cả 6 cặp',
+    mistakeCount: (mistakes: number) =>
+      mistakes === 0 ? 'Khớp đúng ngay lần đầu' : `${mistakes} lần ghép sai`,
+  },
+
+  speedTrueFalse: {
+    label: 'Đúng / Sai tốc độ',
+    timeLabel: 'Thời gian còn lại',
+    notEnoughItems: 'Bài này chưa đủ từ để chơi dạng này.',
+    scoreLabel: (score: number) => `Điểm: ${score}`,
+    highScoreLabel: (score: number) => `Kỷ lục: ${score}`,
+  },
+
+  fillBlank: {
+    label: 'Điền từ vào câu',
+  },
+
+  particle: {
+    label: 'Chọn trợ từ',
+  },
+
+  sentenceOrder: {
+    label: 'Sắp xếp câu',
+    placeholder: 'Chạm vào từ bên dưới để xếp vào đây',
+    showHint: 'Xem gợi ý nghĩa',
+    submit: 'Kiểm tra',
+  },
+
+  sentenceMeaning: {
+    label: 'Hiểu nghĩa câu',
+  },
+
+  grammarPattern: {
+    label: 'Chọn mẫu ngữ pháp',
+    promptHint: 'Câu này dùng mẫu ngữ pháp nào?',
+  },
+
+  conjugation: {
+    labelMcq: 'Chia động từ (chọn)',
+    labelTyping: 'Chia động từ (gõ)',
+    formTe: 'thể て',
+    formTa: 'thể た',
+    formNai: 'thể ない',
+    formDictionary: 'thể từ điển',
+    promptPrefix: (masu: string, formLabel: string) => `${masu} → ${formLabel}?`,
+    placeholder: 'Gõ romaji, tự đổi sang hiragana...',
+    submit: 'Kiểm tra (Enter)',
+  },
+
+  kanjiQuiz: {
+    labelReadingOn: 'Kanji: cách đọc (On)',
+    labelReadingKun: 'Kanji: cách đọc (Kun)',
+    labelHanViet: 'Kanji: Hán Việt',
+    labelInVocab: 'Kanji trong từ vựng',
+  },
+
+  skills: {
+    recognition: 'Nhận biết',
+    meaning: 'Nghĩa',
+    recall: 'Nhớ lại',
+    reading: 'Cách đọc',
+    listening: 'Nghe',
+    writing: 'Viết',
+    usage: 'Cách dùng',
+    particle: 'Trợ từ',
+    grammar: 'Ngữ pháp',
+    conjugation: 'Chia động từ',
+    'kanji-on': 'Kanji (âm On)',
+    'kanji-kun': 'Kanji (âm Kun)',
+    'kanji-meaning': 'Kanji (nghĩa)',
+  },
+
+  weak: {
+    pageTitle: 'Điểm yếu của tôi',
+    topWordsTitle: 'Top từ yếu nhất',
+    weakLessonsTitle: 'Bài có độ thành thạo thấp nhất',
+    weakSkillTitle: 'Kỹ năng yếu nhất',
+    practiceNowButton: 'Luyện ngay 20 câu yếu nhất',
+    empty: 'Chưa có đủ dữ liệu — hãy luyện tập vài bài trước.',
+    scoreSuffix: (percent: number) => `${percent}% thuộc`,
+    goToMistakes: 'Xem sổ lỗi sai',
+  },
+
+  mistakes: {
+    pageTitle: 'Sổ lỗi sai',
+    empty: 'Sổ lỗi sai đang trống — chúc mừng!',
+    lessonFilterAll: 'Tất cả bài',
+    streakSuffix: (streak: number) => `Đúng liên tiếp: ${streak}/3`,
+    reviewButton: 'Ôn lại',
+  },
+
+  comprehensive: {
+    toggleLabel: 'Bài kiểm tra tổng hợp (trộn Từ vựng · Ngữ pháp · Kanji)',
+    ratioHint: 'Tỉ lệ số câu mỗi phần (không cần tổng đúng 100, sẽ tự quy đổi)',
+    ratioVocab: 'Từ vựng %',
+    ratioGrammar: 'Ngữ pháp %',
+    ratioKanji: 'Kanji %',
+    gradeLabel: 'Xếp loại',
+    gradeA: 'A — Xuất sắc (≥ 90%)',
+    gradeB: 'B — Khá (≥ 70%)',
+    gradeC: 'C — Cần ôn lại',
   },
 
   practice: {

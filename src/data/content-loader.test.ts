@@ -38,6 +38,7 @@ const VALID_BOOK_INDEX = {
       lesson: 1,
       title: 'Bài 1',
       vocabCount: 10,
+      mainVocabCount: 10,
       grammarCount: 2,
       kanjiCount: 0,
     },

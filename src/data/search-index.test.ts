@@ -43,6 +43,7 @@ const bookIndex = {
       lesson: 2,
       title: 'Bài 2',
       vocabCount: 1,
+      mainVocabCount: 1,
       grammarCount: 0,
       kanjiCount: 0,
     },

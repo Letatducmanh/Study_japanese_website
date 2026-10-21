@@ -9,6 +9,7 @@ import type {
   KanjiChapterFile,
   LessonFile,
   Manifest,
+  ManifestBook,
   VocabItem,
 } from '@/domain/types'
 
@@ -86,6 +87,14 @@ export function findLevelIdForBook(
   bookId: string,
 ): string | undefined {
   return manifest.levels.find((l) => l.books.some((b) => b.id === bookId))?.id
+}
+
+/** Tìm khai báo giáo trình (`type: 'textbook' | 'kanji'`...) ứng với `bookId`. */
+export function findBookMeta(
+  manifest: Manifest,
+  bookId: string,
+): ManifestBook | undefined {
+  return manifest.levels.flatMap((l) => l.books).find((b) => b.id === bookId)
 }
 
 const VOCAB_ID_PATTERN = /^(.+)-l(\d+)-/

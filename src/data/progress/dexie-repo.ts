@@ -131,6 +131,10 @@ export class DexieProgressRepository implements ProgressRepository {
     return this.db.mastery.where('itemId').equals(itemId).toArray()
   }
 
+  listAllMastery(): Promise<Mastery[]> {
+    return this.db.mastery.toArray()
+  }
+
   async listWeak(limit = 20): Promise<Mastery[]> {
     const all = await this.db.mastery.toArray()
     const now = Date.now()

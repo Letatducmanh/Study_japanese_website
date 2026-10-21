@@ -161,11 +161,21 @@ function KanjiChapterLesson({
           {vi.kanjiChapter.noKanji}
         </p>
       ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {data.kanji.map((item) => (
-            <KanjiCard key={item.id} item={item} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {data.kanji.map((item) => (
+              <KanjiCard key={item.id} item={item} />
+            ))}
+          </div>
+          {chapter !== 'appendix' && (
+            <Link
+              to={`/practice/setup?bookId=${bookId}&lesson=${chapter}`}
+              className="flex min-h-11 items-center justify-center rounded-full bg-primary-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-primary-700"
+            >
+              {vi.lesson.practiceCta}
+            </Link>
+          )}
+        </>
       )}
     </div>
   )

@@ -1,9 +1,16 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Ruby } from '@/components/Ruby'
+import { comprehensiveGrade } from '@/domain/mastery/formula'
 import { isVocabItem } from '@/domain/quiz/registry'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
 import { formatDuration } from '@/lib/format-duration'
+
+const GRADE_LABEL = {
+  A: vi.comprehensive.gradeA,
+  B: vi.comprehensive.gradeB,
+  C: vi.comprehensive.gradeC,
+} as const
 
 export function PracticeResultPage() {
   const { sessionId } = useParams<{ sessionId: string }>()
@@ -31,6 +38,9 @@ export function PracticeResultPage() {
   const correctCount = lastResult.answers.filter((a) => a.correct).length
   const wrong = lastResult.answers.filter((a) => !a.correct)
   const duration = formatDuration(lastResult.finishedAt - lastResult.startedAt)
+  const grade = lastResult.isComprehensive
+    ? comprehensiveGrade(correctCount, total)
+    : null
 
   function handleRetryWrong() {
     setPendingConfig({
@@ -63,7 +73,23 @@ export function PracticeResultPage() {
           </p>
           <p className="text-xs text-slate-400">{vi.result.timeLabel}</p>
         </div>
+        {grade && (
+          <div className="text-center">
+            <p className="text-3xl font-bold text-primary-700 dark:text-primary-500">
+              {grade}
+            </p>
+            <p className="text-xs text-slate-400">
+              {vi.comprehensive.gradeLabel}
+            </p>
+          </div>
+        )}
       </div>
+
+      {grade && (
+        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+          {GRADE_LABEL[grade]}
+        </p>
+      )}
 
       {wrong.length > 0 && (
         <section className="flex flex-col gap-2">

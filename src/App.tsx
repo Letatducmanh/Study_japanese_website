@@ -14,6 +14,8 @@ import { PracticeRunPage } from '@/features/practice/PracticeRunPage'
 import { PracticeSetupPage } from '@/features/practice/PracticeSetupPage'
 import { SearchPage } from '@/features/search/SearchPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
+import { MistakesPage } from '@/features/weakness/MistakesPage'
+import { WeaknessPage } from '@/features/weakness/WeaknessPage'
 
 export function AppRoutes() {
   return (
@@ -31,8 +33,8 @@ export function AppRoutes() {
           element={<PracticeResultPage />}
         />
         <Route path="review" element={<ComingSoon />} />
-        <Route path="weak" element={<ComingSoon />} />
-        <Route path="mistakes" element={<ComingSoon />} />
+        <Route path="weak" element={<WeaknessPage />} />
+        <Route path="mistakes" element={<MistakesPage />} />
         <Route path="kanji/:char" element={<KanjiDetailPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="stats" element={<ComingSoon />} />

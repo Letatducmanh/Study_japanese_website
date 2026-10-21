@@ -301,6 +301,7 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
             lesson,
             title,
             vocabCount: vocab.length,
+            mainVocabCount: vocab.filter((v) => v.section === 'main').length,
             grammarCount: grammar.length,
             kanjiCount: 0,
           }
@@ -352,6 +353,7 @@ export function runContentPipeline(options: PipelineOptions): PipelineResult {
           lesson: chapter.chapter,
           title: chapter.title,
           vocabCount: 0,
+          mainVocabCount: 0,
           grammarCount: 0,
           kanjiCount: kanji.length,
         }
