@@ -1,3 +1,4 @@
+import { Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { vi } from '@/i18n/vi'
 import {
@@ -12,7 +13,7 @@ interface SpeakButtonProps {
   className?: string
 }
 
-/** Nút 🔊 phát âm tiếng Nhật; tự ẩn khi thiết bị không có giọng đọc tiếng Nhật. */
+/** Nút phát âm tiếng Nhật; tự ẩn khi thiết bị không có giọng đọc tiếng Nhật. */
 export function SpeakButton({ text, className }: SpeakButtonProps) {
   const [available, setAvailable] = useState(() => hasJapaneseVoice())
 
@@ -34,10 +35,10 @@ export function SpeakButton({ text, className }: SpeakButtonProps) {
       title={vi.common.speak}
       className={
         className ??
-        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-lg hover:bg-primary-50 dark:hover:bg-slate-800'
+        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-primary-50 dark:hover:bg-slate-800'
       }
     >
-      🔊
+      <Volume2 size={22} strokeWidth={2} aria-hidden="true" />
     </button>
   )
 }

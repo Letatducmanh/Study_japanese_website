@@ -4,10 +4,20 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Noto Sans JP', system-ui, 'Segoe UI', Roboto, sans-serif;
-  /* Chữ tiêu đề vui, bo tròn (mục 7.2 kế hoạch) — chỉ dùng ở các điểm nhấn, không thay --font-sans. */
-  --font-display: 'M PLUS Rounded 1c', var(--font-sans);
+  /* SPEC mục 3: giao diện + tiếng Việt đứng trước để đủ dấu, chữ Nhật rơi vào Zen Kaku Gothic New. */
+  --font-sans:
+    'Be Vietnam Pro', 'Zen Kaku Gothic New', 'Noto Sans JP', system-ui,
+    sans-serif;
+  /* Giữ biến này để không phá các nơi đang dùng font-display; trỏ về cùng font-stack SPEC (không còn M PLUS Rounded 1c). */
+  --font-display: var(--font-sans);
 
+  /* SPEC mục 4: bo góc. */
+  --radius-btn: 12px;
+  --radius-card: 14px;
+  --radius-frame: 20px;
+  --radius-pill: 999px;
+
+  /* Token tạm giữ lại để không phá các trang chưa chuyển sang token SPEC (xoá khi hoàn tất migrate). */
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
   --color-primary-500: #3b82f6;
@@ -26,6 +36,23 @@
   --color-sun-500: #fbb03b;
   --color-shiba-300: #f2c498;
   --color-shiba-500: #e8a456;
+
+  /* SPEC mục 2: token thiết kế mới, giao diện sáng. Giá trị tối đổi trong :root.dark dưới đây. */
+  --color-bg: #f2f6fc;
+  --color-surface: #ffffff;
+  --color-ink: #0c1b38;
+  --color-muted: #4a5b78;
+  --color-line: #1565e8;
+  --color-deep: #0a2a66;
+  --color-yellow: #ffd21f;
+  --color-ink-on-yellow: #0c1b38;
+  --color-tint: #e3edfd;
+  --color-track: #c5d3ea;
+  --color-border: #d7e1f2;
+  --color-border-strong: #b7c5dd;
+  --color-wrong: #c2410c;
+  --color-wrong-bg: #fff1e6;
+  --color-wrong-ink: #7c2d12;
 }
 
 :root {
@@ -35,6 +62,25 @@
 :root.dark {
   color-scheme: dark;
   --color-primary-600: #60a5fa;
+
+  /* SPEC mục 2: giao diện tối. bg/surface/ink/muted/line lấy đúng giá trị SPEC;
+     deep/tint/track/border/border-strong/wrong* do tôi suy ra và đã kiểm tra tương phản
+     (xem /styleguide — ghi chú tỉ lệ WCAG cạnh mỗi token). yellow giữ nguyên, chữ trên vàng dùng #08142b. */
+  --color-bg: #08142b;
+  --color-surface: #101f3f;
+  --color-ink: #e9f0ff;
+  --color-muted: #9cb0d0;
+  --color-line: #5b9bff;
+  --color-deep: #3e66b0;
+  --color-yellow: #ffd21f;
+  --color-ink-on-yellow: #08142b;
+  --color-tint: #1c2e57;
+  --color-track: #2a3c63;
+  --color-border: #26334f;
+  --color-border-strong: #4c6190;
+  --color-wrong: #ff8f5a;
+  --color-wrong-bg: #3a2013;
+  --color-wrong-ink: #ffd3b0;
 }
 
 body {

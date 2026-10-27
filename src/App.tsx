@@ -7,6 +7,7 @@ import { BookPage } from '@/features/browse/BookPage'
 import { LessonPage } from '@/features/browse/LessonPage'
 import { LevelPage } from '@/features/browse/LevelPage'
 import { LevelsPage } from '@/features/browse/LevelsPage'
+import { StyleguidePage } from '@/features/dev/StyleguidePage'
 import { HomePage } from '@/features/home/HomePage'
 import { KanjiDetailPage } from '@/features/kanji/KanjiDetailPage'
 import { PracticeResultPage } from '@/features/practice/PracticeResultPage'
@@ -44,6 +45,9 @@ export function AppRoutes() {
         <Route path="forgot-password" element={<ComingSoon />} />
         <Route path="account" element={<ComingSoon />} />
         <Route path="about" element={<AboutPage />} />
+        {import.meta.env.DEV && (
+          <Route path="styleguide" element={<StyleguidePage />} />
+        )}
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

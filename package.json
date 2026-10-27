@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "dexie": "^4.4.6",
+    "lucide-react": "^1.62.0",
     "minisearch": "^7.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
