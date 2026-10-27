@@ -51,7 +51,7 @@ export function KanjiDetailPage() {
   const item = itemState.data
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 py-4">
       <div className="flex items-center gap-4">
         <span className="text-6xl leading-none">{item.char}</span>
         <div className="flex flex-col gap-1">

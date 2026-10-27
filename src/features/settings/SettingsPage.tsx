@@ -44,7 +44,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-6 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.settings.pageTitle}
       </h1>

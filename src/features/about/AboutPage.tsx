@@ -2,7 +2,7 @@ import { vi } from '@/i18n/vi'
 
 export function AboutPage() {
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-6 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.about.pageTitle}
       </h1>

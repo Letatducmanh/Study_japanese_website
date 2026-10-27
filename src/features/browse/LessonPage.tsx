@@ -88,7 +88,7 @@ function TextbookLesson({
   ]
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {lessonMeta.title}
       </h1>
@@ -152,7 +152,7 @@ function KanjiChapterLesson({
   if (error || !data) return <ErrorState />
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {data.title}
       </h1>

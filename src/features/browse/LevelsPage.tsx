@@ -14,7 +14,7 @@ export function LevelsPage() {
   const levels = [...manifest.levels].sort((a, b) => b.order - a.order)
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.levels.pageTitle}
       </h1>

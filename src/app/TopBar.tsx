@@ -36,10 +36,10 @@ export function TopBar() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `rounded-[var(--radius-btn)] px-2 py-2 text-xs font-medium whitespace-nowrap transition-colors lg:px-3 lg:text-sm ${
+                `rounded-t-[var(--radius-btn)] border-b-[3px] px-2 py-2 text-xs font-medium whitespace-nowrap transition-colors lg:px-3 lg:text-sm ${
                   isActive
-                    ? 'text-ink font-semibold'
-                    : 'text-muted hover:text-ink'
+                    ? 'border-line text-ink font-semibold'
+                    : 'border-transparent text-muted hover:text-ink'
                 }`
               }
             >

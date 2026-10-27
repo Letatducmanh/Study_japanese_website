@@ -22,7 +22,7 @@ export function SearchPage() {
   )
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.search.pageTitle}
       </h1>

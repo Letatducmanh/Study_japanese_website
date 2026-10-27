@@ -58,7 +58,10 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
     loading: lessonLoading,
     error: lessonError,
   } = useAsyncData(
-    () => (isKanjiBook === false ? loadLesson(bookId, lesson) : Promise.resolve(null)),
+    () =>
+      isKanjiBook === false
+        ? loadLesson(bookId, lesson)
+        : Promise.resolve(null),
     [bookId, lesson, isKanjiBook],
   )
   const {
@@ -180,7 +183,7 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.practice.setupTitle}
       </h1>
@@ -218,12 +221,27 @@ function SetupForm({ bookId, lesson }: { bookId: string; lesson: number }) {
           <div className="grid grid-cols-3 gap-2">
             {(
               [
-                { label: vi.comprehensive.ratioVocab, value: ratioVocab, set: setRatioVocab },
-                { label: vi.comprehensive.ratioGrammar, value: ratioGrammar, set: setRatioGrammar },
-                { label: vi.comprehensive.ratioKanji, value: ratioKanji, set: setRatioKanji },
+                {
+                  label: vi.comprehensive.ratioVocab,
+                  value: ratioVocab,
+                  set: setRatioVocab,
+                },
+                {
+                  label: vi.comprehensive.ratioGrammar,
+                  value: ratioGrammar,
+                  set: setRatioGrammar,
+                },
+                {
+                  label: vi.comprehensive.ratioKanji,
+                  value: ratioKanji,
+                  set: setRatioKanji,
+                },
               ] as const
             ).map((r) => (
-              <label key={r.label} className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400">
+              <label
+                key={r.label}
+                className="flex flex-col gap-1 text-xs text-slate-500 dark:text-slate-400"
+              >
                 {r.label}
                 <input
                   type="number"

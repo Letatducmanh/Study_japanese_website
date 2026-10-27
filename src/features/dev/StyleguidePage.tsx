@@ -126,7 +126,7 @@ export function StyleguidePage() {
   const [chipOn, setChipOn] = useState(true)
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-10 bg-bg p-6 text-ink">
+    <div className="mx-auto flex max-w-4xl flex-col gap-10 bg-bg py-6 text-ink">
       <header>
         <h1 className="text-2xl font-bold">
           Styleguide — token &amp; thành phần dùng chung

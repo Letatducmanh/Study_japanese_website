@@ -56,15 +56,18 @@ export const vi = {
     weakCta: 'Xem điểm yếu của tôi',
     mascotSpeech: 'がんばって！ Cùng học nào!',
     reviewTitle: 'Ôn tập hôm nay',
-    reviewBody: 'Đang xây dựng — sắp tới sẽ nhắc đúng từ bạn sắp quên.',
+    reviewBody:
+      'Chưa có thẻ nào cần ôn. Học vài từ rồi quay lại, hệ thống sẽ nhắc đúng từ bạn sắp quên.',
     reviewCardCta: 'Học bài đầu tiên',
     weakTitle: 'Điểm yếu nổi bật',
     weakBody: 'Xem những từ bạn hay sai và luyện lại ngay.',
     weakBodyEmpty: 'Luyện vài bài rồi quay lại đây — chỗ yếu sẽ hiện ra ngay.',
     weakCardCta: 'Làm bài luyện tập',
     streakTitle: 'Chuỗi ngày học',
-    streakBody: 'Đang xây dựng — sắp tới sẽ đếm số ngày bạn học liên tục.',
+    streakBody: 'Học hôm nay để bắt đầu chuỗi ngày đầu tiên.',
     streakCardCta: 'Bắt đầu hôm nay',
+    streakDayLabels: ['Nay', '+1', '+2', '+3', '+4'],
+    firstStationLabel: 'Ga đầu tiên',
   },
 
   levels: {

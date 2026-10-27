@@ -30,10 +30,7 @@ export function MistakesPage() {
     () => (mistakes ?? []).filter((m) => classifyItemId(m.itemId) === 'vocab'),
     [mistakes],
   )
-  const ids = useMemo(
-    () => vocabMistakes.map((m) => m.itemId),
-    [vocabMistakes],
-  )
+  const ids = useMemo(() => vocabMistakes.map((m) => m.itemId), [vocabMistakes])
   const {
     data: resolvedVocab,
     loading: vocabLoading,
@@ -58,7 +55,9 @@ export function MistakesPage() {
 
   const lessons = [...new Set(rows.map((r) => r.lesson))].sort((a, b) => a - b)
   const filtered =
-    lessonFilter === 'all' ? rows : rows.filter((r) => r.lesson === lessonFilter)
+    lessonFilter === 'all'
+      ? rows
+      : rows.filter((r) => r.lesson === lessonFilter)
 
   function handleReview(item: VocabItem, lesson: number) {
     const parsed = parseVocabItemId(item.id)
@@ -75,7 +74,7 @@ export function MistakesPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.mistakes.pageTitle}
       </h1>
@@ -130,7 +129,8 @@ export function MistakesPage() {
                     />
                   </span>
                   <span className="text-xs text-slate-400">
-                    {item.meaning} — {vi.mistakes.streakSuffix(mistake.correctStreak)}
+                    {item.meaning} —{' '}
+                    {vi.mistakes.streakSuffix(mistake.correctStreak)}
                   </span>
                 </div>
                 <button

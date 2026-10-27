@@ -128,7 +128,13 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
     // Ngữ pháp luôn có mặt trong pool (không lọc theo onlyItemIds) để các dạng như
     // "Điền từ vào câu" tìm được câu ví dụ chứa từ, dù dạng đó không tự sinh câu hỏi từ nó.
     return [...vocab, ...lessonFile.grammar]
-  }, [isKanjiBook, kanjiChapter, lessonFile, config.includeExtended, config.onlyItemIds])
+  }, [
+    isKanjiBook,
+    kanjiChapter,
+    lessonFile,
+    config.includeExtended,
+    config.onlyItemIds,
+  ])
 
   const session = useMemo(() => {
     if (config.comprehensive) {
@@ -249,7 +255,7 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 py-4">
       <p className="text-center text-xs text-slate-400">
         {vi.practice.progress(currentIndex + 1, total)}
       </p>

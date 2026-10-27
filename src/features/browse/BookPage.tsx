@@ -50,7 +50,7 @@ export function BookPage() {
   const lessonLabel = bookMeta.lessonLabel || vi.book.lessonLabelFallback
 
   return (
-    <div className="flex flex-col gap-3 p-4">
+    <div className="flex flex-col gap-3 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {bookMeta.title}
       </h1>
@@ -62,7 +62,7 @@ export function BookPage() {
           const score =
             lesson.lesson === 'appendix'
               ? null
-              : lessonScores.get(lesson.lesson) ?? null
+              : (lessonScores.get(lesson.lesson) ?? null)
           return (
             <Link
               key={lesson.lesson}

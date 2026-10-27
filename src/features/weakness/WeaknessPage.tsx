@@ -58,8 +58,9 @@ export function WeaknessPage() {
 
   const textbookBooks = useMemo(
     () =>
-      manifest?.levels.flatMap((l) => l.books).filter((b) => b.type === 'textbook') ??
-      [],
+      manifest?.levels
+        .flatMap((l) => l.books)
+        .filter((b) => b.type === 'textbook') ?? [],
     [manifest],
   )
   const {
@@ -115,7 +116,13 @@ export function WeaknessPage() {
   ) {
     return <LoadingState />
   }
-  if (manifestError || weakError || allError || vocabError || bookIndexesError) {
+  if (
+    manifestError ||
+    weakError ||
+    allError ||
+    vocabError ||
+    bookIndexesError
+  ) {
     return <ErrorState />
   }
 
@@ -146,7 +153,7 @@ export function WeaknessPage() {
   }
 
   return (
-    <div className="flex flex-col gap-5 p-4">
+    <div className="flex flex-col gap-5 py-4">
       <h1 className="text-lg font-bold text-primary-900 dark:text-slate-100">
         {vi.weak.pageTitle}
       </h1>
