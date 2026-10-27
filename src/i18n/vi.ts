@@ -1,6 +1,6 @@
 export const vi = {
   appName: 'Tự học tiếng Nhật cùng Mạnh',
-  appNameShort: 'Học tiếng Nhật cùng Mạnh',
+  appNameShort: 'Tự học tiếng Nhật',
 
   nav: {
     home: 'Trang chủ',
@@ -51,15 +51,20 @@ export const vi = {
     heroSubtitle:
       'Luyện theo từng bài, mỗi lượt trả lời đều được ghi lại để chỉ ra đúng chỗ bạn đang yếu.',
     browseCta: 'Bắt đầu học',
+    continueCtaPrefix: 'Tiếp tục',
+    todayTitle: 'Hôm nay của bạn',
     weakCta: 'Xem điểm yếu của tôi',
     mascotSpeech: 'がんばって！ Cùng học nào!',
     reviewTitle: 'Ôn tập hôm nay',
     reviewBody: 'Đang xây dựng — sắp tới sẽ nhắc đúng từ bạn sắp quên.',
+    reviewCardCta: 'Học bài đầu tiên',
     weakTitle: 'Điểm yếu nổi bật',
     weakBody: 'Xem những từ bạn hay sai và luyện lại ngay.',
     weakBodyEmpty: 'Luyện vài bài rồi quay lại đây — chỗ yếu sẽ hiện ra ngay.',
+    weakCardCta: 'Làm bài luyện tập',
     streakTitle: 'Chuỗi ngày học',
     streakBody: 'Đang xây dựng — sắp tới sẽ đếm số ngày bạn học liên tục.',
+    streakCardCta: 'Bắt đầu hôm nay',
   },
 
   levels: {
@@ -213,7 +218,8 @@ export const vi = {
     formTa: 'thể た',
     formNai: 'thể ない',
     formDictionary: 'thể từ điển',
-    promptPrefix: (masu: string, formLabel: string) => `${masu} → ${formLabel}?`,
+    promptPrefix: (masu: string, formLabel: string) =>
+      `${masu} → ${formLabel}?`,
     placeholder: 'Gõ romaji, tự đổi sang hiragana...',
     submit: 'Kiểm tra (Enter)',
   },

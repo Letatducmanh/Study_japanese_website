@@ -1,43 +1,73 @@
 import { Mountain, Search, Settings } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import { Container } from '@/components/ui'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { vi } from '@/i18n/vi'
+import { navItems } from './nav-items'
 
+const iconButtonClass =
+  'flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-tint'
+
+/**
+ * Thanh trên: logo + (từ 768px) nav 5 mục theo SPEC mục 7 + tìm kiếm/đổi giao diện/cài đặt.
+ * Thanh tab dưới (BottomNav) đảm nhiệm điều hướng dưới 768px.
+ */
 export function TopBar() {
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900">
-      <Link to="/" className="flex min-w-0 items-center gap-2">
-        <Mountain
-          size={22}
-          strokeWidth={2}
-          aria-hidden="true"
-          className="shrink-0 text-primary-700 dark:text-primary-600"
-        />
-        <span className="truncate text-sm font-bold text-primary-700 dark:text-primary-600 sm:text-base">
-          <span className="hidden sm:inline">{vi.appName}</span>
-          <span className="sm:hidden">{vi.appNameShort}</span>
-        </span>
-      </Link>
+    <header className="sticky top-0 z-10 border-b border-border bg-surface">
+      <Container className="flex h-14 items-center gap-2">
+        <Link to="/" className="flex min-w-0 items-center gap-2">
+          <Mountain
+            size={22}
+            strokeWidth={2}
+            aria-hidden="true"
+            className="shrink-0 text-line"
+          />
+          <span className="truncate text-sm font-bold text-ink lg:text-base">
+            <span className="hidden lg:inline">{vi.appName}</span>
+            <span className="lg:hidden">{vi.appNameShort}</span>
+          </span>
+        </Link>
 
-      <div className="ml-auto flex items-center gap-1">
-        <Link
-          to="/search"
-          aria-label={vi.topbar.searchPlaceholder}
-          title={vi.topbar.searchPlaceholder}
-          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-primary-50 dark:hover:bg-slate-800"
-        >
-          <Search size={22} strokeWidth={2} aria-hidden="true" />
-        </Link>
-        <ThemeToggle />
-        <Link
-          to="/settings"
-          aria-label={vi.topbar.settings}
-          title={vi.topbar.settings}
-          className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-primary-50 dark:hover:bg-slate-800"
-        >
-          <Settings size={22} strokeWidth={2} aria-hidden="true" />
-        </Link>
-      </div>
+        <nav className="ml-3 hidden items-center gap-0.5 md:flex lg:ml-6 lg:gap-1">
+          {navItems.map(({ to, label, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) =>
+                `rounded-[var(--radius-btn)] px-2 py-2 text-xs font-medium whitespace-nowrap transition-colors lg:px-3 lg:text-sm ${
+                  isActive
+                    ? 'text-ink font-semibold'
+                    : 'text-muted hover:text-ink'
+                }`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-1">
+          <Link
+            to="/search"
+            aria-label={vi.topbar.searchPlaceholder}
+            title={vi.topbar.searchPlaceholder}
+            className={iconButtonClass}
+          >
+            <Search size={22} strokeWidth={2} aria-hidden="true" />
+          </Link>
+          <ThemeToggle />
+          <Link
+            to="/settings"
+            aria-label={vi.topbar.settings}
+            title={vi.topbar.settings}
+            className={iconButtonClass}
+          >
+            <Settings size={22} strokeWidth={2} aria-hidden="true" />
+          </Link>
+        </div>
+      </Container>
     </header>
   )
 }

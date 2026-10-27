@@ -17,7 +17,9 @@ import {
   Button,
   Card,
   Chip,
+  Container,
   EmptyState,
+  LinkButton,
   SegmentedControl,
   StationBadge,
   Switch,
@@ -200,6 +202,28 @@ export function StyleguidePage() {
             Đã khoá
           </Button>
         </div>
+        <div className="flex flex-wrap gap-3 rounded-[var(--radius-card)] bg-deep p-4">
+          <Button variant="inverse">Inverse (trên nền deep)</Button>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <LinkButton to="/" variant="primary">
+            LinkButton chính
+          </LinkButton>
+          <LinkButton to="/" variant="secondary">
+            LinkButton phụ
+          </LinkButton>
+        </div>
+      </Section>
+
+      <Section title="Container (SPEC mục 7)">
+        <p className="text-sm text-muted">
+          Full width dưới 768px, 720px từ 768px, tối đa 1200px từ 1024px.
+        </p>
+        <Container className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface py-3">
+          <p className="text-center text-xs text-muted">
+            Nội dung bên trong Container
+          </p>
+        </Container>
       </Section>
 
       <Section title="Chip toggle">
@@ -253,6 +277,12 @@ export function StyleguidePage() {
           title="Chưa có dữ liệu"
           description="Luyện vài bài rồi quay lại đây."
         />
+        <Card className="max-w-xs p-4">
+          <p className="mb-2 text-sm font-semibold text-ink">
+            variant=&quot;inline&quot; (dùng trong thẻ đã có tiêu đề)
+          </p>
+          <EmptyState variant="inline" />
+        </Card>
       </Section>
 
       <Section title="Mascot">

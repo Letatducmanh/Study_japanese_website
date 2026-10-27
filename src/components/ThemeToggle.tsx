@@ -15,7 +15,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={label}
       title={label}
-      className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-primary-50 dark:hover:bg-slate-800"
+      className="flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-tint"
     >
       {theme === 'dark' ? (
         <Sun size={22} strokeWidth={2} aria-hidden="true" />

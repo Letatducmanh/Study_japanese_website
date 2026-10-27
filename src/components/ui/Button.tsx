@@ -1,21 +1,15 @@
 import type { ButtonHTMLAttributes } from 'react'
-
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost'
+import {
+  buttonBaseClass,
+  buttonVariantClass,
+  type ButtonVariant,
+} from './button-styles'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
 }
 
-const base =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-btn)] px-5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-line disabled:cursor-not-allowed disabled:opacity-50'
-
-const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-yellow text-ink-on-yellow hover:brightness-95',
-  secondary: 'border-2 border-line bg-transparent text-line hover:bg-tint',
-  ghost: 'bg-transparent text-line hover:bg-tint',
-}
-
-/** Nút dùng chung theo SPEC mục 5 — chính (vàng), phụ (viền xanh), ghost. */
+/** Nút dùng chung theo SPEC mục 5 — chính (vàng), phụ (viền xanh), ghost. Xem `LinkButton` cho điều hướng. */
 export function Button({
   variant = 'primary',
   className,
@@ -24,7 +18,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`${base} ${variants[variant]} ${className ?? ''}`}
+      className={`${buttonBaseClass} ${buttonVariantClass[variant]} ${className ?? ''}`}
       {...props}
     />
   )
