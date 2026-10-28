@@ -68,6 +68,11 @@ export const vi = {
     streakCardCta: 'Bắt đầu hôm nay',
     streakDayLabels: ['Nay', '+1', '+2', '+3', '+4'],
     firstStationLabel: 'Ga đầu tiên',
+    currentStationLabel: 'Ga đang học',
+    reviewShort: 'Chưa có thẻ cần ôn',
+    weakShort: 'Luyện vài bài, chỗ yếu sẽ hiện ra',
+    weakShortWithData: 'Xem những từ bạn hay sai',
+    streakShort: 'Học hôm nay để bắt đầu chuỗi',
   },
 
   levels: {

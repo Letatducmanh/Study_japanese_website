@@ -11,8 +11,10 @@ export function BottomNav() {
           to={to}
           end={end}
           className={({ isActive }) =>
-            `flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] ${
-              isActive ? 'text-line' : 'text-muted'
+            `-mt-px flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 border-t-[3px] py-2 text-[11px] whitespace-nowrap ${
+              isActive
+                ? 'border-line text-line'
+                : 'border-transparent text-muted'
             }`
           }
         >
