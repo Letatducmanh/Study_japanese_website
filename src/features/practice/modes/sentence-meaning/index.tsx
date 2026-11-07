@@ -1,4 +1,4 @@
-import { TextChoiceCard } from '@/components/TextChoiceCard'
+import { TextChoiceCard } from '@/ui/quiz/TextChoiceCard'
 import {
   isGrammarItem,
   register,

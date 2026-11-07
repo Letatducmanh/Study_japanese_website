@@ -1,5 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Ruby } from '@/components/Ruby'
+import { Ruby } from '@/ui/jp/Ruby'
 import { comprehensiveGrade } from '@/domain/mastery/formula'
 import { isVocabItem } from '@/domain/quiz/registry'
 import { usePracticeSessionStore } from '@/features/practice/session-store'

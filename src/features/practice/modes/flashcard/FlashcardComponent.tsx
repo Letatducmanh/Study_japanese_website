@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Ruby } from '@/components/Ruby'
-import { SpeakButton } from '@/components/SpeakButton'
+import { Ruby } from '@/ui/jp/Ruby'
+import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { vi } from '@/i18n/vi'
 import type { FlashcardFace, FlashcardQuestion, FlashcardRating } from './types'
 

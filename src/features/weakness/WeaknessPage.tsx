@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ErrorState } from '@/ui/primitives/ErrorState'
 import { LoadingState } from '@/ui/primitives/LoadingState'
-import { Ruby } from '@/components/Ruby'
+import { Ruby } from '@/ui/jp/Ruby'
 import {
   loadBookIndex,
   loadManifest,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ErrorState } from '@/ui/primitives/ErrorState'
-import { KanjiCard } from '@/components/KanjiCard'
+import { KanjiCard } from './KanjiCard'
 import { LoadingState } from '@/ui/primitives/LoadingState'
 import { NotFound } from '@/ui/primitives/NotFound'
 import {

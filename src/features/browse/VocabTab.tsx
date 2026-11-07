@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { SpeakButton } from '@/components/SpeakButton'
-import { Ruby } from '@/components/Ruby'
+import { SpeakButton } from '@/ui/jp/SpeakButton'
+import { Ruby } from '@/ui/jp/Ruby'
 import { vi } from '@/i18n/vi'
 import type { EditionFilter, VocabItem } from '@/domain/types'
 
