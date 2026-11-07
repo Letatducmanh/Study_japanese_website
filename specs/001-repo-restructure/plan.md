@@ -183,7 +183,7 @@ Audit đặt từng file theo vai trò, nhưng không xét *ai dùng nó*. Khi �
 
 ## Complexity Tracking
 
-Các ngoại lệ **đã có sẵn** trong mã, **không** sửa ở feature này (sửa cần đổi logic hoặc nằm ngoài phạm vi). TD-1, TD-2, E-1 là ngoại lệ luật phụ thuộc (nguyên tắc III), mỗi dòng là một khai báo có tên trong `eslint.config.js` (G7). Q-1 là ngoại lệ nguyên tắc IV.
+Các ngoại lệ **đã có sẵn** trong mã, **không** sửa ở feature này (sửa cần đổi logic hoặc nằm ngoài phạm vi). TD-1, TD-2, E-1 là ngoại lệ luật phụ thuộc (nguyên tắc III), mỗi dòng là một khai báo có tên trong `eslint.config.js` (G7). Q-1 và Q-2 là ngoại lệ nguyên tắc IV.
 
 | Mã | Vi phạm | File (số lượng) | Vì sao chưa sửa | Hướng sửa về sau |
 |---|---|---|---|---|
@@ -191,5 +191,6 @@ Các ngoại lệ **đã có sẵn** trong mã, **không** sửa ở feature nà
 | TD-2 | `features/weakness` import `features/practice` | `src/features/weakness/WeaknessPage.tsx`, `src/features/weakness/MistakesPage.tsx` (2 file) | Cả hai mở phiên luyện bằng `session-store`; đưa store xuống nơi dùng chung là đổi cấu trúc trạng thái | `practice-ui-migration`: chuyển `session-store` xuống chỗ dùng chung hoặc đưa hành động "bắt đầu phiên" ra |
 | E-1 | `features/dev` import `app/` | `src/features/dev/StyleguidePage.tsx` (1 file) | Trang chỉ có khi phát triển, trình bày mọi thành phần, trong đó có `Container` ở `app/layouts/`; mục "Hỏi" chưa có quyết định | Xem lại khi quyết định số phận `StyleguidePage` |
 | Q-1 | Nguyên tắc IV: `npm run check` PHẢI xanh trước mọi commit; CI chặn merge khi đỏ | `scripts/content/pipeline.test.ts` (1 test: `… sinh được file JSON khi write:true`) | Test quá hạn 5 giây khi chạy mặc định (cả bộ chạy song song); chạy riêng thì đạt. Sửa gốc (tăng `testTimeout`) là sửa test, nằm ngoài phạm vi feature này (FR-013). Cổng của feature chạy kèm `--testTimeout=30000` (cờ dòng lệnh) nên vẫn xanh; **CI trên Pull Request có thể đỏ ngẫu nhiên**, khi đó chạy lại | Spec `quality-gaps`: nâng `testTimeout` cho test này |
+| Q-2 | Nguyên tắc IV: bộ test (gồm e2e) PHẢI xanh | `tests/e2e/browse.spec.ts` (1 test: "mở trang chủ → vào N5 → Minna no Nihongo 1 → Bài 1") | Đỏ có sẵn từ commit `8746c15`: test tìm heading "Tự học tiếng Nhật cùng Mạnh" nhưng trang chủ đã đổi heading hero. Sửa là sửa test có sẵn, ngoài phạm vi feature (FR-013). Cổng e2e của feature: chỉ test này được đỏ; test nào khác đỏ là FAIL | Spec `quality-gaps`: cập nhật assertion heading của test này |
 
 TD-1, TD-2, E-1 là **toàn bộ** vi phạm luật phụ thuộc mà mô phỏng trên mã hiện tại tìm thấy sau khi áp dụng bảng đích của plan (xem `research.md` mục R3): 4 import. Nếu giữ đúng bảng audit thì mô phỏng ra 10 import vi phạm: 4 ở trên cộng 6 do chọn nơi đặt.

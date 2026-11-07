@@ -78,7 +78,7 @@ Thứ tự bắt buộc:
 
 1. `npm run build` → thoát mã 0, kích thước JS không tăng so với mốc.
 2. Cổng đầy đủ: `node specs/001-repo-restructure/verify-baseline.mjs --also-default` → `PASS`. Chạy thêm `npm run check` và ghi kết quả (có thể đỏ ngẫu nhiên vì Q-1; đỏ thì chạy lại một lần và ghi cả hai).
-3. `npm run test:e2e` → cả 6 file giống mốc; hai test `browse.spec.ts` (mở trang chủ → N5 → Minna no Nihongo 1 → Bài 1; mở thẳng `/b/mnn1/5`) và hai test 360×740 của `repo-restructure.spec.ts` đạt.
+3. `npm run test:e2e` → cả 6 file giống mốc (10 đạt, đúng 1 đỏ có sẵn là Q-2: `browse.spec.ts` "mở trang chủ → N5 → …"); test "mở thẳng `/b/mnn1/5`" của `browse.spec.ts` và hai test 360×740 của `repo-restructure.spec.ts` đạt.
 4. Duyệt toàn bộ route (smoke), SC-001:
    ```bash
    node specs/001-repo-restructure/shoot.mjs smoke after

@@ -37,7 +37,19 @@ Người học mở website sau khi repo được sắp xếp lại. Mọi trang
 | `npm run content:validate` | Thoát mã 0. **0 lỗi, 568 cảnh báo.** Số liệu: mnn1 1.023 từ chính, 272 từ mở rộng, 132 mẫu ngữ pháp; kanji-master-n5 134 Kanji. |
 | `npm run build` | Thoát mã 0, **thành công** (2.152 module). Đầu ra: JS 608,42 kB (nén 185,23 kB), CSS 35,63 kB (nén 7,39 kB). Có sẵn 1 cảnh báo "chunk lớn hơn 500 kB" của công cụ dựng; không có cảnh báo hay lỗi nào khác. |
 
-Các dòng sau được bổ sung ở nhóm G0, trước khi dời file đầu tiên (T007, T011): `npm test` chạy kèm cờ ở FR-011, `npm run lint`, `npm run test:e2e` (gồm file `tests/e2e/repo-restructure.spec.ts` ở 360×740), kết quả duyệt toàn bộ route (smoke) và số bản ghi từng bảng tiến độ (progress).
+Các dòng sau được bổ sung ở nhóm G0 (T007 đến T011), đo trên cây chưa dời file nào, cùng ngày 2026-11-07:
+
+| Lệnh / bước | Kết quả mốc |
+|---|---|
+| `npm test` mặc định (chạy lại ở G0) | Thoát mã 0. **220/220 test, 44/44 file, không test nào fail.** Lần đo đầu (bảng trên) fail `pipeline.test.ts` quá hạn 5 giây; lần này đạt. Hai lần đo khác kết quả trên cùng mã nguồn, nên test này chập chờn (xem Q-1 ở `plan.md`). |
+| `npm test -- --testTimeout=30000` | Thoát mã 0. **220/220 test, 44/44 file.** |
+| `npm run content:validate` | Thoát mã 0, 0 lỗi, **568 cảnh báo** (như bảng trên). |
+| `npm run build` | Thoát mã 0, JS **608,42 kB**, 1 cảnh báo chunk (như bảng trên). |
+| `npm run lint` | Thoát mã 0 (xanh). |
+| `npm run test:e2e` | 6 file spec, 11 test: **10 đạt, 1 đỏ có sẵn.** Test đỏ: `browse.spec.ts` › "mở trang chủ → vào N5 → Minna no Nihongo 1 → Bài 1" (tìm heading "Tự học tiếng Nhật cùng Mạnh" nhưng trang chủ từ commit `8746c15` hiện heading của hero; sửa ở spec `quality-gaps`, mã **Q-2** ở `plan.md`). Hai test của `repo-restructure.spec.ts` (360×740: `/` và `/b/mnn1/5`) đạt; `browse.spec.ts` › "mở thẳng /b/mnn1/5 không bị 404" đạt. |
+| Smoke (duyệt route) | **21 route** (`/`, 19 route trong bảng route, 1 đường dẫn không tồn tại → 404), không trang trắng, không `pageerror`, không `console.error`. `/styleguide`: bản dựng hiện trang 404, bản `npm run dev` hiện bình thường. |
+| Progress (IndexedDB `progress`) | `attempts` 44, `mastery` 44, `mistakes` 6, `outbox` 94, `settings` 0, `srsCards` 0; localStorage có khóa `theme`. |
+| Ảnh "trước" | 36 ảnh (6 trang × 3 cỡ × sáng/tối) trong `.screens/001/before/`; chụp hai lần liên tiếp, 36/36 giống hệt. |
 
 ---
 
@@ -139,7 +151,7 @@ Quy tắc "lớp nào được dùng lớp nào" trong `docs/ARCHITECTURE.md` §
 
   **Quy tắc dừng:** bất kỳ test nào fail khi chạy kèm cờ (kể cả `pipeline.test.ts`), hoặc bất kỳ lệnh nào lệch mốc → **DỪNG và báo Mạnh**, không sang nhóm sau. Kết quả chạy mặc định (`npm test` không cờ) được ghi kèm cho biết mức chập chờn của test `pipeline.test.ts` (quá hạn 5 giây), nhưng không dùng làm điều kiện dừng.
 
-  Ngoài bốn lệnh trên: không phát sinh lỗi kiểm kiểu; `npm run test:e2e` đạt, gồm file `tests/e2e/repo-restructure.spec.ts` (chạy ở viewport 360×740, mở `/` và `/b/mnn1/5`, kiểm có nội dung chính; file này được thêm ở G0 và giữ lại); duyệt toàn bộ route (smoke) và đối chiếu số bản ghi tiến độ (progress) giống mốc trước.
+  Ngoài bốn lệnh trên: không phát sinh lỗi kiểm kiểu; `npm run test:e2e` khớp mốc ở User Story 1 (**10 đạt, và đúng 1 test được phép đỏ**: `browse.spec.ts` › "mở trang chủ → vào N5 → Minna no Nihongo 1 → Bài 1", đỏ có sẵn từ commit `8746c15`, mã Q-2; **bất kỳ test e2e nào khác đỏ là FAIL**), gồm file `tests/e2e/repo-restructure.spec.ts` (chạy ở viewport 360×740, mở `/` và `/b/mnn1/5`, kiểm có nội dung chính; file này được thêm ở G0 và giữ lại); duyệt toàn bộ route (smoke) và đối chiếu số bản ghi tiến độ (progress) giống mốc trước.
 - **FR-012**: Quy tắc phụ thuộc giữa các lớp theo `docs/ARCHITECTURE.md` §4.2 PHẢI được bộ kiểm tra chung của dự án kiểm tự động. Mọi vi phạm có sẵn mà chỉ sửa được bằng cách viết lại logic PHẢI được ghi là ngoại lệ có lý do, không sửa trong feature này.
 - **FR-013**: Feature này PHẢI KHÔNG: đổi dữ liệu bài học trong `content/**` (từ vựng, ngữ pháp, Kanji và các giá trị khai báo trong manifest, overrides); thuật toán sinh câu hỏi, chấm điểm, cách lưu tiến độ, cấu hình dựng và đưa lên mạng, phiên bản hay danh sách thư viện; PHẢI KHÔNG thêm tính năng hay thư viện mới. Chú thích (`#`) trong file cấu hình yaml của `content/**` được phép sửa để cập nhật đường dẫn tài liệu.
 - **FR-014**: Các mục thuộc nhóm "Hỏi" trong audit mà Mạnh chưa quyết (`public/content/README.md`, `StyleguidePage`, `lib/sfx`, hai thư mục ngoài Git) và ba file loại trừ khỏi nhóm "Dời" (`lib/tts.ts`, `lib/theme.ts`, `lib/use-theme.ts`) PHẢI giữ nguyên chỗ cũ và không bị xóa.
