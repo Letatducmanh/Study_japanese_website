@@ -2,7 +2,7 @@
 
 Website tự học và kiểm tra tiếng Nhật (N5 → N2), giúp người học phát hiện phần mình đang yếu.
 
-Kế hoạch đầy đủ: [`docs/Ke_hoach_Website.md`](./docs/Ke_hoach_Website.md). Quy tắc làm việc cho Claude Code: [`CLAUDE.md`](./CLAUDE.md).
+Kế hoạch đầy đủ: [`docs/reference/Ke_hoach_Website.md`](./docs/reference/Ke_hoach_Website.md). Quy tắc làm việc cho Claude Code: [`CLAUDE.md`](./CLAUDE.md).
 
 ## Lệnh
 

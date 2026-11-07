@@ -21,4 +21,4 @@ levels:
         lessonLabel: 'Chương'
         sources:
           kanji: n5/kanji-master-n5/kanji.md
-  # - id: N4 ... (thêm sau, xem mục 9 của docs/Ke_hoach_Website.md)
+  # - id: N4 ... (thêm sau, xem mục 9 của docs/reference/Ke_hoach_Website.md)
