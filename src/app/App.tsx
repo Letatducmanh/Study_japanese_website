@@ -1,19 +1,19 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { Layout } from '@/app/Layout'
-import { ComingSoon } from '@/components/ComingSoon'
+import { AppShell } from '@/app/layouts/AppShell'
+import { ComingSoon } from './ComingSoon'
 import { NotFound } from '@/components/NotFound'
-import { AboutPage } from '@/features/about/AboutPage'
+import { AboutPage } from '@/features/settings/AboutPage'
 import { BookPage } from '@/features/browse/BookPage'
 import { LessonPage } from '@/features/browse/LessonPage'
 import { LevelPage } from '@/features/browse/LevelPage'
 import { LevelsPage } from '@/features/browse/LevelsPage'
 import { StyleguidePage } from '@/features/dev/StyleguidePage'
 import { HomePage } from '@/features/home/HomePage'
-import { KanjiDetailPage } from '@/features/kanji/KanjiDetailPage'
+import { KanjiPage } from '@/features/browse/KanjiPage'
 import { PracticeResultPage } from '@/features/practice/PracticeResultPage'
 import { PracticeRunPage } from '@/features/practice/PracticeRunPage'
 import { PracticeSetupPage } from '@/features/practice/PracticeSetupPage'
-import { SearchPage } from '@/features/search/SearchPage'
+import { SearchPage } from '@/features/browse/SearchPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { MistakesPage } from '@/features/weakness/MistakesPage'
 import { WeaknessPage } from '@/features/weakness/WeaknessPage'
@@ -21,7 +21,7 @@ import { WeaknessPage } from '@/features/weakness/WeaknessPage'
 export function AppRoutes() {
   return (
     <Routes>
-      <Route element={<Layout />}>
+      <Route element={<AppShell />}>
         <Route index element={<HomePage />} />
         <Route path="n" element={<LevelsPage />} />
         <Route path="n/:level" element={<LevelPage />} />
@@ -36,7 +36,7 @@ export function AppRoutes() {
         <Route path="review" element={<ComingSoon />} />
         <Route path="weak" element={<WeaknessPage />} />
         <Route path="mistakes" element={<MistakesPage />} />
-        <Route path="kanji/:char" element={<KanjiDetailPage />} />
+        <Route path="kanji/:char" element={<KanjiPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="stats" element={<ComingSoon />} />
         <Route path="settings" element={<SettingsPage />} />

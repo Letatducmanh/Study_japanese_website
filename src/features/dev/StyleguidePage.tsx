@@ -12,12 +12,12 @@ import {
   Volume2,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
+import { Container } from '@/app/layouts/Container'
 import { ShibaMascot } from '@/components/mascot/ShibaMascot'
 import {
   Button,
   Card,
   Chip,
-  Container,
   EmptyState,
   LinkButton,
   SegmentedControl,

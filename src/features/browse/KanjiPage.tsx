@@ -16,7 +16,7 @@ const KIND_LABEL: Record<KanjiExample['kind'], string> = {
   special: vi.kanjiDetail.kindSpecial,
 }
 
-export function KanjiDetailPage() {
+export function KanjiPage() {
   const { char } = useParams<{ char: string }>()
 
   const manifestState = useAsyncData(loadManifest, [])

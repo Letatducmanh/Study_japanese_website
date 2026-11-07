@@ -1,7 +1,6 @@
 export { Button } from './Button'
 export type { ButtonVariant } from './button-styles'
 export { Card } from './Card'
-export { Container } from './Container'
 export { LinkButton } from './LinkButton'
 export { Chip } from './Chip'
 export { EmptyState } from './EmptyState'
