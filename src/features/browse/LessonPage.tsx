@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
+import { ErrorState } from '@/ui/primitives/ErrorState'
 import { KanjiCard } from '@/components/KanjiCard'
-import { LoadingState } from '@/components/LoadingState'
-import { NotFound } from '@/components/NotFound'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { NotFound } from '@/ui/primitives/NotFound'
 import {
   findLevelIdForBook,
   loadBookIndex,

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
 import { loadManifest } from '@/data/content-loader'
 import { vi } from '@/i18n/vi'
 import { useAsyncData } from '@/data/hooks/use-async-data'

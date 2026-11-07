@@ -7,9 +7,9 @@ import {
 } from 'lucide-react'
 import type { ComponentType, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ShibaMascot } from '@/components/mascot/ShibaMascot'
-import { TrainPlatformScene } from '@/components/mascot/TrainPlatformScene'
-import { Card, LinkButton } from '@/components/ui'
+import { ShibaMascot } from '@/ui/signature/mascot/ShibaMascot'
+import { TrainPlatformScene } from '@/ui/signature/mascot/TrainPlatformScene'
+import { Card, LinkButton } from '@/ui/primitives'
 import { progressRepository } from '@/data/progress/dexie-repo'
 import { loadContinueLesson } from '@/features/home/continue-lesson'
 import {

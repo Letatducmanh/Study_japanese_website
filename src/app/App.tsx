@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/app/layouts/AppShell'
 import { ComingSoon } from './ComingSoon'
-import { NotFound } from '@/components/NotFound'
+import { NotFound } from '@/ui/primitives/NotFound'
 import { AboutPage } from '@/features/settings/AboutPage'
 import { BookPage } from '@/features/browse/BookPage'
 import { LessonPage } from '@/features/browse/LessonPage'

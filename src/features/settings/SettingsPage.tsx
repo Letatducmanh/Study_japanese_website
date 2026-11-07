@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { progressRepository } from '@/data/progress/dexie-repo'
 import { vi } from '@/i18n/vi'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { ThemeToggle } from '@/ui/primitives/ThemeToggle'
 
 type Status = { type: 'success' | 'error'; message: string } | null
 
