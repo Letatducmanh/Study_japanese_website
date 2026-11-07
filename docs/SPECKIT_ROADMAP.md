@@ -51,7 +51,7 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 
 | Thứ tự | Spec | Trạng thái |
 |---|---|---|
-| 1 | repo-restructure | ⬜ |
+| 1 | repo-restructure | ✅ |
 | 2 | data-and-logic-fixes | ⬜ |
 | 3 | ui-kit-and-shell | ⬜ |
 | 4 | practice-ui-migration | ⬜ |
@@ -70,7 +70,10 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 
 Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ NÀO). Dán đúng sau lệnh slash.
 
-### 4.1 repo-restructure ⬜
+### 4.1 repo-restructure ✅
+
+> **Đã xong (spec `001-repo-restructure`).** Còn để lại cho feature sau: `lib/theme.ts`, `lib/use-theme.ts` và `lib/tts.ts` chưa dời (vị trí cuối chốt ở `ui-kit-and-shell`; `tts.ts` vào `platform/`); ngoại lệ Q-1 (`pipeline.test.ts` quá hạn 5 giây khi chạy mặc định) và Q-2 (test e2e `browse.spec.ts` "mở trang chủ → …" đỏ từ commit `8746c15`) chuyển cho `quality-gaps`; nợ luật phụ thuộc TD-1, TD-2, E-1 ghi ở `specs/001-repo-restructure/plan.md`.
+
 ```
 /speckit-specify Sắp xếp lại cấu trúc repo cho gọn và nhất quán để tôi và Claude Code luôn biết mỗi loại file nằm ở đâu, theo bảng phân loại trong docs/reference/audit-hien-trang.md (các nhóm "Dời" và "Xóa"). Website đang chạy trên Vercel phải hoạt động y như cũ: mọi trang mở được, không mất nội dung, không đổi giao diện. Không còn file .md lẻ ở gốc repo (trừ CLAUDE.md và README.md), không còn file bản sao hay build cũ. Link hỏng trong README.md được sửa. Ngoài phạm vi: đổi màu, đổi font, đổi giao diện, thêm layout làm bài, lazy loading.
 ```

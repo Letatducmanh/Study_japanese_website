@@ -1,6 +1,6 @@
 # Bằng chứng nghiệm thu: repo-restructure (spec 001)
 
-**Nhánh**: `001-repo-restructure` | **Mốc so sánh**: commit `dca3700`, đo ngày 2026-11-07 | **Trạng thái**: đang ghi dần. Mục chưa làm ghi rõ "chưa làm" kèm số task; T072 chỉ hoàn thành khi mọi mục đã có số liệu.
+**Nhánh**: `001-repo-restructure` | **Mốc so sánh**: commit `dca3700`, đo ngày 2026-11-07 | **Trạng thái**: đã đủ số liệu, chỉ còn SC-009 (mục 15) chờ Mạnh trả lời.
 
 Đường dẫn ảnh tính từ gốc repo `Source code/Code/`. Thư mục `.screens/` đã gitignore, chỉ có trên máy của Mạnh.
 
@@ -88,7 +88,7 @@ Mạnh đã xem 4 cặp ảnh 360px trước/sau: trang chủ sáng, trang chủ
 - `git diff -M --name-status dca3700 HEAD`: cả 43 hàng được Git nhận là đổi tên (SC-008: 100%, không file nào thành xóa-và-thêm); 36 hàng đạt ≥ 95% tương đồng.
 - 7 hàng dưới 95%, đều là file nhỏ có sửa dòng import hoặc tên export (bắt buộc theo task): `format-duration.test.ts` 90%, `App.tsx` 84%, `Layout.tsx` 88%, `TopBar.tsx` 94%, `KanjiDetailPage.tsx` 93%, `SearchPage.tsx` 92%, `components/ui/index.ts` 69%.
 - `git log --follow` trên `src/ui/jp/Ruby.tsx` thấy 2 commit.
-- Phần "nhóm Xóa còn tồn tại là 0" của SC-004: **chưa làm (T069)**.
+- Phần "nhóm Xóa còn tồn tại là 0" của SC-004: xem mục 12 (T069, T070).
 
 ## 8. Luật phụ thuộc ESLint (SC-007), 10 ca
 
@@ -123,14 +123,40 @@ Kiểm thêm: ba ngoại lệ có tên không báo ở đúng file, vẫn báo �
 
 Danh sách `file:dòng — trước → sau` ở báo cáo G6 (commit `545a77a`): `docs/FRONTEND.md` §3 (dòng 59, 67, 68, 70, 75, 183, 223) và §8 (dòng 298, 303, 306, 312); `docs/ARCHITECTURE.md:432`; `docs/SPECKIT_ROADMAP.md:41, 94`; `README.md`; bốn README trong `src/`. Thêm ngoài danh sách: các đường dẫn `design/…` thành `docs/reference/design/…` (FRONTEND 5, 103, 442, 466; ARCHITECTURE 485; ROADMAP 26, 37, 44, 86) và `(xem index.css)` thành `(xem tokens.css)` (FRONTEND 172 đến 180, 208). Không sửa gì trong `docs/reference/**`.
 
-## 11. Chưa có bằng chứng (đang chờ)
+## 11. Pull Request (T067) và Vercel Preview (T068)
 
-| Mục | Task | Trạng thái |
+- Mạnh đồng ý đẩy ngày 2026-11-07 theo cách: `main` cục bộ (`dca3700`) đẩy lên nhánh `staging`, **không** đẩy vào `origin/main`, vì 7 commit giao diện và tài liệu trên `main` cục bộ chưa được duyệt đưa lên `main`. Nhánh `001-repo-restructure` đẩy lên `origin`; Pull Request có base `staging`, compare `001-repo-restructure`, 16 commit (`git log origin/staging..001-repo-restructure`). Lần đẩy đầu bị GitHub từ chối (GH007, email riêng tư); sau khi Mạnh tắt tuỳ chọn chặn thì hai lệnh push thành công.
+- CI (`.github/workflows/ci.yml`) chỉ chạy cho base `main`, nên không chạy cho PR vào `staging`; cổng đã chạy đủ cục bộ (mục 1). Không sửa workflow.
+- **T068 đạt (Mạnh xác nhận):** mở Vercel Preview của nhánh trên điện thoại ổn: trang chủ, `/b/mnn1/5`, luyện 2–3 câu, chế độ sáng và tối; không trang trắng, không mất chữ. Đường dẫn: https://study-japanese-website-git-001-repo-restructure-le-tat-duc-manh.vercel.app/
+- Cách so sánh: so với ứng dụng cục bộ ở `dca3700` (ảnh `.screens/001/before/`), **không** so với website production, vì production chưa có 7 commit giao diện và tài liệu của `main` cục bộ.
+- Tiến độ học cũ không kiểm trên Preview (khác origin nên IndexedDB trống); đã kiểm bằng progress ở mục 4.
+
+## 12. Dọn file build cũ và kiểm cây repo (T069 đến T071)
+
+- Đã xóa cục bộ (đều gitignore, không tạo commit): `dist/`, `playwright-report/`, `test-results/`, `public/content-report.md` (bản cũ ngày 21/10). Giữ nguyên: `content-report.md` ở gốc repo (ngoại lệ ARCHITECTURE §8.2), `public/content/**`, `node_modules/`, `.screens/`.
+- Quy tắc dừng của T069: sau khi xóa, chạy `npm run content:build` ("Xong, 568 cảnh báo, xem content-report.md"); `public/content-report.md` **không** sinh lại, báo cáo chỉ ghi ở `content-report.md` gốc. Không phải dừng, không sửa `scripts/content/pipeline.ts`.
+- T070: `git status --short` rỗng; `find . -maxdepth 1 -name '*.md'` chỉ ra `CLAUDE.md`, `README.md`, `content-report.md` (đã gitignore); `git ls-files | grep -E '(^|/)(old|backup|new)/|-copy.|-v2.'` rỗng.
+- T071: mọi link và đường dẫn trong `README.md` (kể cả `docs/reference/Ke_hoach_Website.md`, `CLAUDE.md`, các thư mục `src/*`) trỏ tới file/thư mục có thật (SC-005, 0 link hỏng).
+
+## 13. Roadmap (T073)
+
+`docs/SPECKIT_ROADMAP.md`: `repo-restructure` đổi ⬜ thành ✅ ở §3 và §4.1, ghi `lib/theme.ts`, `lib/use-theme.ts`, `lib/tts.ts` chưa dời (vị trí cuối ở `ui-kit-and-shell`) và Q-1, Q-2 chuyển cho `quality-gaps`.
+
+## 14. Tóm tắt theo tiêu chí
+
+| Tiêu chí | Bằng chứng ở mục | Trạng thái |
 |---|---|---|
-| Đẩy nhánh và tạo Pull Request | T067 | chờ Mạnh đồng ý |
-| Vercel Preview trên điện thoại | T068 | chưa làm. So với ứng dụng cục bộ ở `dca3700`, không so với website production (7 commit giao diện và tài liệu chưa duyệt đưa lên `main`; PR dùng base `staging`) |
-| Xóa file build cũ, nhóm "Xóa" của SC-004 | T069 | chưa làm |
-| `git status`, file bản sao | T070 | chưa làm |
-| Kiểm link `README.md` lần cuối (SC-005) | T071 | chưa làm |
-| Đánh dấu hoàn thành trong roadmap | T073 | chưa làm |
-| 10 câu "file X đặt ở đâu" (SC-009) | T074 | chưa làm |
+| SC-001 | 3 | đạt |
+| SC-002 | 5, 6, 11 | đạt (ảnh lệch 20 điểm ảnh được Mạnh chấp nhận) |
+| SC-003 | 1, 2 | đạt |
+| SC-004 | 7, 12 | đạt |
+| SC-005 | 10, 12 | đạt |
+| SC-006 | 4 | đạt |
+| SC-007 | 8 | đạt |
+| SC-008 | 7 | đạt |
+| SC-009 | 15 | chờ Mạnh trả lời |
+
+## 15. SC-009: mười câu "file loại X đặt ở đâu"
+
+Chờ Mạnh trả lời (T074). Kết quả (số câu đúng, câu nào phải đoán) ghi vào đây.
+
