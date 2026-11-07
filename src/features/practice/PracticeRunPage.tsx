@@ -21,7 +21,7 @@ import {
 } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
 import { playCorrectSound, playWrongSound } from '@/lib/sfx'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { Attempt } from '@/domain/types'
 
 export function PracticeRunPage() {

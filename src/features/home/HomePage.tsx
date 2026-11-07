@@ -19,7 +19,7 @@ import {
   type StationRailItem,
 } from '@/features/home/hero-book'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 

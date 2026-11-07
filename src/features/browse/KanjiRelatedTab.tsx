@@ -4,7 +4,7 @@ import { LoadingState } from '@/components/LoadingState'
 import { findKanjiBookIdForLevel, loadManifest } from '@/data/content-loader'
 import { loadAllKanjiForBook } from '@/data/kanji-lookup'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { VocabItem } from '@/domain/types'
 
 interface KanjiRelatedTabProps {

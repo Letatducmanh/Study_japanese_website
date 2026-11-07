@@ -15,7 +15,7 @@ import { GrammarTab } from '@/features/browse/GrammarTab'
 import { KanjiRelatedTab } from '@/features/browse/KanjiRelatedTab'
 import { VocabTab } from '@/features/browse/VocabTab'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { EditionFilter } from '@/domain/types'
 
 type Tab = 'vocab' | 'grammar' | 'kanji'

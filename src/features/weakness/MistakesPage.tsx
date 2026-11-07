@@ -8,7 +8,7 @@ import { progressRepository } from '@/data/progress/dexie-repo'
 import { classifyItemId, parseVocabItemId } from '@/domain/quiz/item-id'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { MistakeRecord, VocabItem } from '@/domain/types'
 
 /** Dạng bài dùng cho "Ôn lại" — bộ cố định, đủ để ôn nhanh nhận biết + nhớ lại. */

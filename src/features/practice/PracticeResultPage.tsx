@@ -4,7 +4,7 @@ import { comprehensiveGrade } from '@/domain/mastery/formula'
 import { isVocabItem } from '@/domain/quiz/registry'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
-import { formatDuration } from '@/lib/format-duration'
+import { formatDuration } from '@/lib/format'
 
 const GRADE_LABEL = {
   A: vi.comprehensive.gradeA,

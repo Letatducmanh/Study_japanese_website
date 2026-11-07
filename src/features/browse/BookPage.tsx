@@ -8,7 +8,7 @@ import { progressRepository } from '@/data/progress/dexie-repo'
 import { computeLessonScores } from '@/domain/mastery/lesson-scores'
 import { vi } from '@/i18n/vi'
 import { heatmapClass } from '@/lib/heatmap'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 
 export function BookPage() {
   const { bookId } = useParams<{ bookId: string }>()

@@ -4,7 +4,7 @@ import { LoadingState } from '@/components/LoadingState'
 import { NotFound } from '@/components/NotFound'
 import { loadManifest } from '@/data/content-loader'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 
 export function LevelPage() {
   const { level: levelId } = useParams<{ level: string }>()

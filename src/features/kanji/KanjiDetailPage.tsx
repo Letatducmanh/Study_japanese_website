@@ -7,7 +7,7 @@ import { SpeakButton } from '@/components/SpeakButton'
 import { loadManifest, resolveVocabItems } from '@/data/content-loader'
 import { loadAllKanjiForBook } from '@/data/kanji-lookup'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { KanjiExample, KanjiItem } from '@/domain/types'
 
 const KIND_LABEL: Record<KanjiExample['kind'], string> = {

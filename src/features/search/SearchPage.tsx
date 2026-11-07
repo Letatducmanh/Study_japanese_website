@@ -5,7 +5,7 @@ import { Ruby } from '@/components/Ruby'
 import { SpeakButton } from '@/components/SpeakButton'
 import { searchVocab } from '@/data/search-index'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams()

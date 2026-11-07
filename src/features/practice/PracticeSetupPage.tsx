@@ -12,7 +12,7 @@ import {
 import { list as listQuestionTypes } from '@/domain/quiz/registry'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import { hasJapaneseVoice } from '@/lib/tts'
 import type { QuizItem } from '@/domain/quiz/registry'
 
