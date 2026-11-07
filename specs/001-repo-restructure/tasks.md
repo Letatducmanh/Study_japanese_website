@@ -190,7 +190,7 @@ description: "Danh sách việc cho feature 001-repo-restructure"
 - [X] T071 Mở lại `README.md` lần cuối và xác nhận không còn link hỏng (SC-005)
 - [X] T072 Tạo `specs/001-repo-restructure/evidence.md`: bảng SC-001 … SC-009 với bằng chứng từng tiêu chí (lệnh đã chạy, kết quả, đường dẫn ảnh, kết quả smoke và progress, kết quả Preview của T068, xác nhận của Mạnh ở T066, các dòng đã sửa ở T055, bốn ngoại lệ TD-1/TD-2/E-1/Q-1, 10 ca ESLint, kết quả cả hai cách chạy `npm test`)
 - [X] T073 Đánh dấu hoàn thành `repo-restructure` trong `docs/SPECKIT_ROADMAP.md` (quy tắc Development Workflow mục 5): đổi ⬜/🟨 của feature này thành ✅, ghi `lib/theme.ts`, `lib/use-theme.ts`, `lib/tts.ts` chưa dời (vị trí cuối ở `ui-kit-and-shell`) và ghi Q-1 chuyển cho `quality-gaps`
-- [ ] T074 Gửi Mạnh **10 câu "file loại X đặt ở đâu"** ở `quickstart.md` mục 6 (kèm đáp án để Mạnh tự đối chiếu sau khi trả lời) để Mạnh tự trả lời, ghi kết quả vào `evidence.md` (SC-009). Rồi commit cuối `docs: bằng chứng nghiệm thu và cập nhật roadmap cho spec 001` và nhờ Mạnh duyệt Pull Request trước khi gộp vào `main`
+- [X] T074 Gửi Mạnh **10 câu "file loại X đặt ở đâu"** ở `quickstart.md` mục 6 (kèm đáp án để Mạnh tự đối chiếu sau khi trả lời) để Mạnh tự trả lời, ghi kết quả vào `evidence.md` (SC-009). Rồi commit cuối `docs: bằng chứng nghiệm thu và cập nhật roadmap cho spec 001` và nhờ Mạnh duyệt Pull Request trước khi gộp vào `main`
 
 ---
 

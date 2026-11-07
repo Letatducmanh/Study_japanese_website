@@ -1,6 +1,6 @@
 # Bằng chứng nghiệm thu: repo-restructure (spec 001)
 
-**Nhánh**: `001-repo-restructure` | **Mốc so sánh**: commit `dca3700`, đo ngày 2026-11-07 | **Trạng thái**: đã đủ số liệu, chỉ còn SC-009 (mục 15) chờ Mạnh trả lời.
+**Nhánh**: `001-repo-restructure` | **Mốc so sánh**: commit `dca3700`, đo ngày 2026-11-07 | **Trạng thái**: đủ số liệu. SC-009 (mục 15) được đối chiếu 10/10 nhưng có ghi chú trung thực về người trả lời.
 
 Đường dẫn ảnh tính từ gốc repo `Source code/Code/`. Thư mục `.screens/` đã gitignore, chỉ có trên máy của Mạnh.
 
@@ -154,9 +154,25 @@ Danh sách `file:dòng — trước → sau` ở báo cáo G6 (commit `545a77a`)
 | SC-006 | 4 | đạt |
 | SC-007 | 8 | đạt |
 | SC-008 | 7 | đạt |
-| SC-009 | 15 | chờ Mạnh trả lời |
+| SC-009 | 15 | đối chiếu 10/10 với cây thư mục; **chưa chứng minh được đúng nghĩa tiêu chí** (xem ghi chú ở mục 15) |
 
 ## 15. SC-009: mười câu "file loại X đặt ở đâu"
 
-Chờ Mạnh trả lời (T074). Kết quả (số câu đúng, câu nào phải đoán) ghi vào đây.
+**Ghi chú trung thực về người trả lời.** Mười đáp án dưới đây **không do Mạnh tự nghĩ ra**: chúng do trợ lý (Claude trong cuộc trò chuyện thiết kế) suy ra chỉ từ `docs/ARCHITECTURE.md` §8.1/§8.2 và `docs/FRONTEND.md` §3. Mạnh đã đối chiếu từng đáp án với tài liệu rồi gửi lại để chấm. Vì vậy kết quả này chứng minh **tài liệu đủ để suy ra đúng vị trí** (một người, hoặc một trợ lý, đọc tài liệu thì trả lời đúng cả 10 câu), nhưng **không chứng minh** vế "Mạnh tự trả lời đúng mà chỉ cần nhìn cây thư mục" của SC-009. Nếu cần bằng chứng đúng nghĩa, Mạnh trả lời lại 10 câu ở `quickstart.md` mục 6 không xem tài liệu và ghi vào đây.
 
+Chấm theo cây thư mục thật (lệnh `test -e` cho từng đường dẫn và `ls` các thư mục) ngày 2026-11-07:
+
+| # | Loại file | Đáp án đã gửi | Đúng? | Vị trí thật (bằng chứng) |
+|---|---|---|---|---|
+| 1 | Nút bấm dùng chung | `src/ui/primitives/` | Đúng | `src/ui/primitives/Button.tsx`, `LinkButton.tsx`, `button-styles.ts` |
+| 2 | `Ruby` (chữ Nhật kèm furigana) | `src/ui/jp/` | Đúng | `src/ui/jp/Ruby.tsx` |
+| 3 | Trang "Điểm yếu" | `src/features/weakness/` | Đúng | `src/features/weakness/WeaknessPage.tsx` |
+| 4 | Hook `use-async-data` | `src/data/hooks/` | Đúng | `src/data/hooks/use-async-data.ts` |
+| 5 | `BACKLOG.md` | `docs/reference/BACKLOG.md` | Đúng | file có thật ở đó; gốc repo không còn |
+| 6 | Ảnh thiết kế tham chiếu | `docs/reference/design/` | Đúng | thư mục có thật (2 tài liệu + 11 ảnh) |
+| 7 | Token (màu, font, bo góc) | `src/ui/tokens.css` | Đúng | file có thật |
+| 8 | Chú chó Shiba | `src/ui/signature/mascot/` | Đúng | `ShibaMascot.tsx` cùng `TrainPlatformScene.tsx`, `JapanMotifBackground.tsx` |
+| 9 | Từ vựng Minna no Nihongo 1 | `content/n5/mnn1/vocab.md` | Đúng | file có thật; khớp mẫu `content/<level>/<book>/*.md` ở §8.2 |
+| 10 | Ý tưởng tính năng mới | `specs/NNN-ten/spec.md` | Đúng | khớp §8.2; ví dụ thật `specs/001-repo-restructure/spec.md` |
+
+**Kết quả: 10/10 đúng** (Mạnh đã đối chiếu từng đáp án với tài liệu; câu nào "phải đoán" không áp dụng vì Mạnh không tự trả lời). Không câu nào sai nên không có đoạn tài liệu gây hiểu nhầm cần sửa. Nhận xét về nguồn: §8.2 trực tiếp trả lời câu 5, 6, 9, 10 (và hàng "Tài liệu cũ" cho 5, 6); câu 1, 2, 4, 7, 8 dựa vào cây `src/ui/` ở FRONTEND §3 và câu 3 dựa vào `features/` ở ARCHITECTURE §8.1.
