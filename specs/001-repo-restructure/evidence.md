@@ -128,7 +128,7 @@ Danh sách `file:dòng — trước → sau` ở báo cáo G6 (commit `545a77a`)
 | Mục | Task | Trạng thái |
 |---|---|---|
 | Đẩy nhánh và tạo Pull Request | T067 | chờ Mạnh đồng ý |
-| Vercel Preview trên điện thoại | T068 | chưa làm |
+| Vercel Preview trên điện thoại | T068 | chưa làm. So với ứng dụng cục bộ ở `dca3700`, không so với website production (7 commit giao diện và tài liệu chưa duyệt đưa lên `main`; PR dùng base `staging`) |
 | Xóa file build cũ, nhóm "Xóa" của SC-004 | T069 | chưa làm |
 | `git status`, file bản sao | T070 | chưa làm |
 | Kiểm link `README.md` lần cuối (SC-005) | T071 | chưa làm |
