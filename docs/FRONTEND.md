@@ -2,7 +2,7 @@
 
 > **Vị trí trong repo:** `docs/FRONTEND.md` · **Phiên bản:** 2.0 (29/10/2026), thay hoàn toàn v1.
 > **Đọc file này trước MỌI việc có đụng tới giao diện** (màn hình, component, màu, chữ, layout, app native). Thứ tự ưu tiên: constitution → `docs/ARCHITECTURE.md` → file này → `specs/NNN/plan.md`.
-> **Nhận diện hình ảnh** của dự án đã được chọn trong `design/SPEC.md` ("Tuyến tàu" xanh dương + vàng biển báo + chú chó Shiba). v2 giữ nguyên nhận diện đó và bổ sung phần còn thiếu: cấu trúc code, quy trình, tiếp cận, web ↔ app, danh sách việc chuyển đổi. Khi `design/SPEC.md` và file này khác nhau ở màu/chữ/hình dạng, **file này là bản chuẩn** (nó đã gộp SPEC và đo lại tương phản).
+> **Nhận diện hình ảnh** của dự án đã được chọn trong `docs/reference/design/SPEC.md` ("Tuyến tàu" xanh dương + vàng biển báo + chú chó Shiba). v2 giữ nguyên nhận diện đó và bổ sung phần còn thiếu: cấu trúc code, quy trình, tiếp cận, web ↔ app, danh sách việc chuyển đổi. Khi `docs/reference/design/SPEC.md` và file này khác nhau ở màu/chữ/hình dạng, **file này là bản chuẩn** (nó đã gộp SPEC và đo lại tương phản).
 > **Người chủ dự án (Mạnh) chưa có kinh nghiệm frontend.** Tự quyết các chi tiết kỹ thuật theo file này; chỉ hỏi khi một lựa chọn làm thay đổi thứ người học nhìn thấy mà file này chưa quy định. Khi báo cáo, giải thích bằng lời thường và kèm ảnh chụp màn hình.
 
 ## Mục lục
@@ -56,7 +56,7 @@
 
 ## 3. Cấu trúc `src/`
 
-Đích đến của việc dọn cấu trúc (feature `repo-restructure` và `ui-kit-and-shell`). Hiện còn `src/components/` và `src/components/ui/`; sau khi chuyển, các thư mục đó không còn.
+Đích đến của việc dọn cấu trúc (feature `repo-restructure` và `ui-kit-and-shell`). Feature `repo-restructure` đã chuyển `src/components/` và `src/components/ui/` sang `src/ui/`, `src/app/` và `src/features/browse/`; hai thư mục đó không còn.
 
 ```
 src/
@@ -64,15 +64,15 @@ src/
 ├── app/
 │   ├── App.tsx   router.tsx     # route + lazy() theo trang (§6.5)
 │   ├── layouts/  AppShell.tsx (TopBar + TabBar dưới 768px)   FocusShell.tsx (không TabBar)   Container.tsx
-│   ├── theme.ts                 # sáng/tối/theo hệ thống
-│   └── NotFound.tsx  ComingSoon.tsx
+│   ├── theme.ts                 # sáng/tối/theo hệ thống (tạm ở lib/theme.ts và lib/use-theme.ts; chốt vị trí ở ui-kit-and-shell)
+│   └── ComingSoon.tsx           # NotFound.tsx đã ở ui/primitives/
 ├── features/                    # mỗi thư mục = một vùng tính năng, không import lẫn nhau
-│   ├── home/  browse/  practice/(+modes/<id>/)  review/  weakness/  stats/  auth/  settings/(+AboutPage)
+│   ├── home/  browse/(+KanjiCard)  practice/(+modes/<id>/)  review/  weakness/  stats/  auth/  settings/(+AboutPage)
 ├── ui/                          # DESIGN SYSTEM — chỉ nhận props, không tự lấy dữ liệu
 │   ├── tokens.css               # ⭐ nguồn duy nhất của màu, chữ, bo góc, chuyển động
 │   ├── fonts.ts                 # import @fontsource/*
 │   ├── primitives/              # Button, IconButton, Chip, SegmentedControl, Switch, Card, ListRow,
-│   │                            # EmptyState, Skeleton, Sheet, Dialog, Toast, ProgressBar
+│   │                            # EmptyState, ErrorState, LoadingState, NotFound, ThemeToggle, Skeleton, Sheet, Dialog, Toast, ProgressBar
 │   ├── jp/                      # JpText, Ruby, KanaInput, SpeakButton, KanjiGlyph
 │   ├── quiz/                    # PracticeShell, ProgressLine, FeedbackSheet, OptionButton, ChoiceGrid,
 │   │                            # FlipCard, MatchBoard, PromptBlock, ResultSummary
@@ -100,7 +100,7 @@ src/
 | Hộp thoại, tab, menu | Radix UI Primitives (headless) **hoặc** tự viết đúng ARIA | Không dùng bộ UI có sẵn giao diện (MUI, Ant, Chakra, shadcn để nguyên) |
 | Icon | **`lucide-react`** (đã cài), nét 2px, cỡ 22–24 | Không emoji làm icon. Icon riêng (ga, tàu) vẽ SVG trong `ui/signature` |
 | Font | `@fontsource/be-vietnam-pro` (400, 500, 700) và `@fontsource/zen-kaku-gothic-new` (500, 700) | Tự host, chạy offline. **Bỏ** Google Fonts, Noto Sans JP, M PLUS Rounded 1c. Nếu tên gói không có trên npm thì báo Mạnh, không tự đổi font |
-| Kéo thả | **Không cần.** Sắp xếp câu dùng "chạm để đặt" như `design/` | `@dnd-kit` chỉ thêm khi Mạnh yêu cầu |
+| Kéo thả | **Không cần.** Sắp xếp câu dùng "chạm để đặt" như `docs/reference/design/` | `@dnd-kit` chỉ thêm khi Mạnh yêu cầu |
 
 **Mẫu component đúng chuẩn:**
 
@@ -169,18 +169,18 @@ Giá trị sáng lấy từ SPEC §2. Cột "Đo" là tỉ lệ tương phản �
 | `ink` | `#0C1B38` | `#E9F0FF` | chữ chính | 15.75 trên `bg`, 17.08 trên `surface` |
 | `muted` | `#4A5B78` | `#9CB0D0` | chữ phụ | 6.33 trên `bg`, 5.82 trên `tint` |
 | `line` | `#1565E8` | `#5B9BFF` | **màu chính**: nút, liên kết, tuyến, đáp án đúng | 5.17 trên `surface`, 4.77 trên `bg`, chữ trắng trên `line` 5.17 |
-| `deep` | `#0A2A66` | (xem `index.css`) | thẻ chính, biển ga, viền điểm hiện tại, chữ trên `tint` | 13.67 với chữ trắng; 11.59 trên `tint` |
+| `deep` | `#0A2A66` | (xem `tokens.css`) | thẻ chính, biển ga, viền điểm hiện tại, chữ trên `tint` | 13.67 với chữ trắng; 11.59 trên `tint` |
 | `yellow` | `#FFD21F` | giữ nguyên | CTA bước tiếp theo, ga hiện tại. **Chữ trên vàng dùng `ink`** (tối: `bg` tối) | 11.79 (sáng), 12.65 (tối) |
-| `tint` | `#E3EDFD` | (xem `index.css`) | nền nhẹ, thẻ đã chọn / đúng | |
-| `track` | `#C5D3EA` | (xem `index.css`) | đường ray, thanh tiến độ chưa đạt | |
-| `border` | `#D7E1F2` | (xem `index.css`) | viền thẻ | |
-| `border-strong` | `#B7C5DD` | (xem `index.css`) | viền nút/chip chưa chọn | **1.74 — chưa đạt 3:1** (xem lưu ý dưới) |
-| `wrong` | `#C2410C` | (xem `index.css`) | sai, chưa đúng (cam đậm), chữ và viền | 5.18 trên `surface`, 4.68 trên `wrong-bg` |
-| `wrong-bg` | `#FFF1E6` | (xem `index.css`) | nền khối sai | |
-| `wrong-ink` | `#7C2D12` | (xem `index.css`) | chữ đậm trên nền sai | 8.47 trên `wrong-bg` |
+| `tint` | `#E3EDFD` | (xem `tokens.css`) | nền nhẹ, thẻ đã chọn / đúng | |
+| `track` | `#C5D3EA` | (xem `tokens.css`) | đường ray, thanh tiến độ chưa đạt | |
+| `border` | `#D7E1F2` | (xem `tokens.css`) | viền thẻ | |
+| `border-strong` | `#B7C5DD` | (xem `tokens.css`) | viền nút/chip chưa chọn | **1.74 — chưa đạt 3:1** (xem lưu ý dưới) |
+| `wrong` | `#C2410C` | (xem `tokens.css`) | sai, chưa đúng (cam đậm), chữ và viền | 5.18 trên `surface`, 4.68 trên `wrong-bg` |
+| `wrong-bg` | `#FFF1E6` | (xem `tokens.css`) | nền khối sai | |
+| `wrong-ink` | `#7C2D12` | (xem `tokens.css`) | chữ đậm trên nền sai | 8.47 trên `wrong-bg` |
 | `shiba-*` | `#E8A456`, `#F2C498`, `#FFB0C4` | — | chỉ trong SVG chú chó | |
 
-- Giá trị tối của `deep`, `tint`, `track`, `border`, `border-strong`, `wrong*` nằm trong `src/index.css` (đã suy ra và kiểm tra khi làm giai đoạn 1). **Không đổi nếu chưa cần**; nếu đổi thì đo lại và cập nhật bảng này.
+- Giá trị tối của `deep`, `tint`, `track`, `border`, `border-strong`, `wrong*` nằm trong `src/ui/tokens.css` (đã suy ra và kiểm tra khi làm giai đoạn 1). **Không đổi nếu chưa cần**; nếu đổi thì đo lại và cập nhật bảng này.
 - **Đúng = `line` + ✓, sai = `wrong` + ✗. Không dùng đỏ hay xanh lá** (SPEC §5: cặp xanh–cam dễ phân biệt hơn đỏ–xanh lá với người mù màu). Luôn có biểu tượng **và chữ**, màu không bao giờ là tín hiệu duy nhất.
 - **Chữ `line` trên nền `tint` chỉ đạt 4.39:1** → trên `tint` dùng chữ `deep` hoặc `ink`. `line` chỉ dùng cho chữ trên `surface`/`bg`.
 - **Điểm vàng** (ga hiện tại, chốt thanh tiến độ) gần như vô hình trên `bg` (1.34:1) nên **luôn có viền `deep` 3px**.
@@ -205,7 +205,7 @@ Cỡ chữ (px): hero **56** (mobile **36**) · H2 **28** · tiêu đề thẻ *
 
 ### 5.4 Hình dạng, khoảng cách
 
-- **Bo góc theo cấp bậc:** nút `control` 12 · thẻ `card` 14 · khung lớn `panel` 16–20 · chip/pill `full`. Tên token trong `index.css` (`--radius-control`, `--radius-card`, `--radius-panel`); nếu chưa có thì thêm, không viết số px trong component.
+- **Bo góc theo cấp bậc:** nút `control` 12 · thẻ `card` 14 · khung lớn `panel` 16–20 · chip/pill `full`. Tên token trong `tokens.css` (`--radius-control`, `--radius-card`, `--radius-panel`); nếu chưa có thì thêm, không viết số px trong component.
 - **Thang khoảng cách:** 4, 8, 12, 16, 20, 24, 32, 48. Mobile: 16 hai bên.
 - Vùng chạm ≥ **44px**. Viền 1px (`border`); nhấn 2px (`line`).
 - **Không đổ bóng, không gradient, không glassmorphism, không emoji làm icon.** Phân lớp bằng màu nền (`bg` → `surface`) và viền.
@@ -220,7 +220,7 @@ Cỡ chữ (px): hero **56** (mobile **36**) · H2 **28** · tiêu đề thẻ *
 
 ### 5.6 File token
 
-Hiện nằm trong `src/index.css` (khối `@theme`, cùng token cũ `primary-*`, `success`, `danger`, `warning` còn dùng ở 31 file). Ở feature `ui-kit-and-shell` chuyển sang `src/ui/tokens.css` và **thêm token mới song song**; chỉ xóa `primary-*` khi toàn bộ 37 file đã chuyển xong (§13). Tên token theo bảng §5.2: `--color-bg`, `--color-surface`, `--color-ink`, `--color-muted`, `--color-line`, `--color-deep`, `--color-yellow`, `--color-tint`, `--color-track`, `--color-border`, `--color-border-strong`, `--color-wrong`, `--color-wrong-bg`, `--color-wrong-ink`. Đổi giao diện sáng/tối bằng class `.dark` đặt lại các biến này.
+Nằm trong `src/ui/tokens.css` (khối `@theme`, cùng token cũ `primary-*`, `success`, `danger`, `warning` còn dùng ở 31 file; feature `repo-restructure` đã dời file từ `src/index.css` sang đây, không đổi nội dung). Ở feature `ui-kit-and-shell` **thêm token mới song song**; chỉ xóa `primary-*` khi toàn bộ 37 file đã chuyển xong (§13). Tên token theo bảng §5.2: `--color-bg`, `--color-surface`, `--color-ink`, `--color-muted`, `--color-line`, `--color-deep`, `--color-yellow`, `--color-tint`, `--color-track`, `--color-border`, `--color-border-strong`, `--color-wrong`, `--color-wrong-bg`, `--color-wrong-ink`. Đổi giao diện sáng/tối bằng class `.dark` đặt lại các biến này.
 
 ---
 
@@ -295,19 +295,21 @@ Theo *Ke_hoach_Website §7.1* (đã có trong `App.tsx`). Phân layout: `/practi
 
 ## 8. Thư viện component và trạng thái hiện tại
 
-Cột "Trạng thái" lấy từ audit 29/10. **Có** = đã có trong `src/components/ui/` (sẽ chuyển vào `src/ui/`); **Mới** = chưa có.
+Cột "Trạng thái" lấy từ audit 29/10. **Có** = đã có trong `src/ui/` (feature `repo-restructure` đã chuyển từ `src/components/`); **Mới** = chưa có.
 
 | Nhóm | Component | Trạng thái | Ghi chú |
 |---|---|---|---|
 | primitives | `Button` (primary, solid, outline, wrong, ghost) | Có | Thêm biến thể `wrong`; bỏ nút copy-paste ở ≥ 10 nơi |
-| | `Chip`, `SegmentedControl`, `Switch`, `Card`, `EmptyState`, `Container` | Có | `Container` → `app/layouts/` |
+| | `Chip`, `SegmentedControl`, `Switch`, `Card`, `EmptyState`, `ErrorState`, `LoadingState`, `NotFound`, `ThemeToggle` | Có (ở `ui/primitives/`) | `ThemeToggle` dùng `lib/use-theme.ts` (tạm ở `lib/`, chốt vị trí ở `ui-kit-and-shell`) |
+| | `Container` | Có (ở `app/layouts/`) | Đã dời khỏi `ui/` để `ui/` không import `app/` |
 | | `IconButton` (≥ 44×44), `ListRow` (≥ 56px), `Skeleton`, `ProgressBar`, `Sheet`, `Dialog`, `Toast` | Mới | |
-| jp | `Ruby`, `SpeakButton`, `KanjiCard` | Có (ở `components/`) | `SpeakButton` được phép dùng `platform.tts` |
+| jp | `Ruby`, `SpeakButton` | Có (ở `ui/jp/`) | `SpeakButton` được phép dùng `platform.tts` |
+| | `KanjiCard` | Có (ở `features/browse/`) | Chỉ vùng duyệt nội dung dùng; quy tắc "≥ 2 feature mới vào `ui/`" (§3) nên chưa lên `ui/jp/` |
 | | `JpText`, `KanaInput`, `KanjiGlyph` | Mới | `KanaInput`: `autocapitalize="off"`, `autocorrect="off"`, `spellcheck=false`, cỡ ≥ 18px |
 | quiz | `PracticeShell`, `ProgressLine`, `FeedbackSheet`, `OptionButton`, `PromptBlock`, `ChoiceGrid`, `FlipCard`, `MatchBoard`, `ResultSummary` | Mới | `TextChoiceCard` và `BlankChoiceCard` (10/16 dạng dùng) được thay bằng `OptionButton` + `FeedbackSheet`. Dạng bài mới **phải** dựng từ các khối này |
 | signature | `StationBadge` | Có | Đang chỉ dùng trong trang styleguide; phải dùng ở Tab Học, trang chủ, lưới bài |
 | | `StationList` (tuyến dọc/ngang, có % thành thạo) | Mới | Thay lưới ô vuông của `BookPage` |
-| | `mascot/*` | Có (ở `components/mascot/`) | Quy tắc đặt Shiba ở §5.1 |
+| | `mascot/*` | Có (ở `ui/signature/mascot/`) | Quy tắc đặt Shiba ở §5.1 |
 | charts | `BarChart`, `SkillBars` | Mới | SVG tự viết, có bảng dữ liệu ẩn cho trình đọc màn hình |
 
 **`StationBadge` (SPEC §5):** vòng tròn 44px, viền 3–4px màu `line`, chữ mã ga. Bài đang học: nền vàng, viền `deep`. Bài đã học: đặc màu `line`. `aria-label="Bài 5, tuyến L"`.
@@ -437,7 +439,7 @@ Thứ tự đề xuất: (1) khung và trang chủ (đã làm một phần), (2)
 2. Liệt kê component sẽ dùng từ §8; chỉ tạo mới khi thật cần, đặt đúng thư mục §3.
 3. Dựng ở 360–390px trước bằng dữ liệu thật; xử lý đủ 3 trạng thái loading / rỗng / lỗi.
 4. Mở rộng cho 768px và 1440px; kiểm tra chế độ tối.
-5. **Chụp ảnh để tự xem:** `npm run ui:shot -- <route>` (script Playwright `tests/visual/shoot.ts`; chụp 390×844, 768×1024, 1440×900, sáng + tối, lưu vào `.screens/` đã gitignore). Mở ảnh chụp **cạnh ảnh tham chiếu trong `design/`**, soát từng điểm lệch và §12, sửa rồi chụp lại.
+5. **Chụp ảnh để tự xem:** `npm run ui:shot -- <route>` (script Playwright `tests/visual/shoot.ts`; chụp 390×844, 768×1024, 1440×900, sáng + tối, lưu vào `.screens/` đã gitignore). Mở ảnh chụp **cạnh ảnh tham chiếu trong `docs/reference/design/`**, soát từng điểm lệch và §12, sửa rồi chụp lại.
 6. Chạy `npm run check` và e2e liên quan (viewport 360×740).
 7. Báo cáo cho Mạnh: đã làm gì (lời thường), đường dẫn ảnh chụp, điểm nào cần Mạnh quyết.
 
@@ -461,7 +463,7 @@ Thứ tự đề xuất: (1) khung và trang chủ (đã làm một phần), (2)
 
 ## 15. Prompt mẫu cho Mạnh
 
-- **Sửa một màn hình:** "Màn hình Kết quả trên điện thoại bị chật, nút 'Làm lại câu sai' bị đẩy xuống dưới. Sửa theo docs/FRONTEND.md §7 (màn hình số 10), so với ảnh `Luyện tập · Kết quả` trong design/, chụp lại 390px và 1440px cho tôi xem."
+- **Sửa một màn hình:** "Màn hình Kết quả trên điện thoại bị chật, nút 'Làm lại câu sai' bị đẩy xuống dưới. Sửa theo docs/FRONTEND.md §7 (màn hình số 10), so với ảnh `Luyện tập · Kết quả` trong docs/reference/design/, chụp lại 390px và 1440px cho tôi xem."
 - **Thấy giao diện lệch bản thiết kế:** "Soát trang chủ theo docs/FRONTEND.md §12 và §14.2, so với ảnh `App · Trang chủ`. Liệt kê từng điểm lệch, sửa hết rồi gửi ảnh trước và sau."
 - **Màn hình mới chưa có ảnh:** "Tôi muốn thêm trang X để làm Y. Phác wireframe 390px và 1440px theo phong cách docs/FRONTEND.md §7 trước, đừng code, chờ tôi duyệt."
 - **Đổi màu hoặc chữ:** "Đổi `yellow` sang tông ấm hơn. Chỉ sửa token trong src/ui/tokens.css, đo lại tương phản theo §5.2 và cập nhật bảng ở docs/FRONTEND.md."

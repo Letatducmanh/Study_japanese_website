@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
-import { Ruby } from '@/components/Ruby'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { Ruby } from '@/ui/jp/Ruby'
 import { resolveVocabItems } from '@/data/content-loader'
 import { progressRepository } from '@/data/progress/dexie-repo'
 import { classifyItemId, parseVocabItemId } from '@/domain/quiz/item-id'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { MistakeRecord, VocabItem } from '@/domain/types'
 
 /** Dạng bài dùng cho "Ôn lại" — bộ cố định, đủ để ôn nhanh nhận biết + nhớ lại. */

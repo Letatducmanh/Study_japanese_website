@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { KanjiCard } from '@/components/KanjiCard'
-import { LoadingState } from '@/components/LoadingState'
-import { NotFound } from '@/components/NotFound'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { KanjiCard } from './KanjiCard'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { NotFound } from '@/ui/primitives/NotFound'
 import {
   findLevelIdForBook,
   loadBookIndex,
@@ -15,7 +15,7 @@ import { GrammarTab } from '@/features/browse/GrammarTab'
 import { KanjiRelatedTab } from '@/features/browse/KanjiRelatedTab'
 import { VocabTab } from '@/features/browse/VocabTab'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { EditionFilter } from '@/domain/types'
 
 type Tab = 'vocab' | 'grammar' | 'kanji'

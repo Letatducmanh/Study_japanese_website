@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { navItems } from './nav-items'
+import { navItems } from '../nav-items'
 
 /** Thanh tab dưới — chỉ hiện dưới 768px (SPEC mục 7); từ 768px dùng nav trong TopBar. */
 export function BottomNav() {

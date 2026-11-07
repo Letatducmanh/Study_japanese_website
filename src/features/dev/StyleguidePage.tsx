@@ -12,18 +12,18 @@ import {
   Volume2,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { ShibaMascot } from '@/components/mascot/ShibaMascot'
+import { Container } from '@/app/layouts/Container'
+import { ShibaMascot } from '@/ui/signature/mascot/ShibaMascot'
+import { StationBadge } from '@/ui/signature/StationBadge'
 import {
   Button,
   Card,
   Chip,
-  Container,
   EmptyState,
   LinkButton,
   SegmentedControl,
-  StationBadge,
   Switch,
-} from '@/components/ui'
+} from '@/ui/primitives'
 
 const colorTokens: Array<{
   name: string

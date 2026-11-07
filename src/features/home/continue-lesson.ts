@@ -12,7 +12,7 @@ export interface ContinueLesson {
 
 /**
  * Mastery mới nhất (lastTs lớn nhất) có itemId đọc được bookId/lesson qua `parseVocabItemId`.
- * Bỏ qua mastery của grammar/kanji vì chưa có cách đọc bookId/lesson cho các loại đó (xem BACKLOG.md).
+ * Bỏ qua mastery của grammar/kanji vì chưa có cách đọc bookId/lesson cho các loại đó (xem docs/reference/BACKLOG.md).
  */
 export function findLatestVocabMastery(list: Mastery[]): Mastery | null {
   let latest: Mastery | null = null

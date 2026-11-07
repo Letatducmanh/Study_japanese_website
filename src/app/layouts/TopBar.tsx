@@ -1,9 +1,9 @@
 import { Mountain, Search, Settings } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
-import { Container } from '@/components/ui'
-import { ThemeToggle } from '@/components/ThemeToggle'
+import { Container } from './Container'
+import { ThemeToggle } from '@/ui/primitives/ThemeToggle'
 import { vi } from '@/i18n/vi'
-import { navItems } from './nav-items'
+import { navItems } from '../nav-items'
 
 const iconButtonClass =
   'flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-tint'

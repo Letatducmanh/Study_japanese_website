@@ -23,7 +23,7 @@
 
 | # | Việc | Quyết định | Trạng thái |
 |---|---|---|---|
-| 1 | Giao diện theo tài liệu nào | Giữ nhận diện trong `design/SPEC.md` (Tuyến tàu, vàng, ga `L01`, Shiba). `docs/FRONTEND.md` v2 là bản chuẩn | Chốt |
+| 1 | Giao diện theo tài liệu nào | Giữ nhận diện trong `docs/reference/design/SPEC.md` (Tuyến tàu, vàng, ga `L01`, Shiba). `docs/FRONTEND.md` v2 là bản chuẩn | Chốt |
 | 2 | Chú chó Shiba | Giữ; chỉ đặt ở trang chủ, tab Học, kết quả, trạng thái rỗng (FRONTEND §5.1) | Chốt |
 | 3 | Âm thanh đúng/sai (`lib/sfx.ts`) | Giữ, **mặc định tắt**, có công tắc trong Cài đặt | Đề xuất, chờ Mạnh |
 | 4 | Số từ chính 1.023 hay 1.020 | Đã xác định 3 hàng thừa: `DVD` (Bài 6), `おなかが すきます` và `のどが かわきます` (Bài 13). **Chuyển cả 3 sang từ vựng mở rộng**: từ chính 1.020, từ mở rộng 275 (làm ở `data-and-logic-fixes`). Nếu sau này đối chiếu sách in thấy `DVD` có trong Bài 6 bản mới thì chuyển lại | Chốt |
@@ -34,14 +34,14 @@
 | 9 | Viền ô chưa chọn (`border-strong`) chỉ đạt 1.74:1 | Đề xuất đổi `#B7C5DD` → `#7A8DB0` (3.35:1). Chưa đổi khi chưa có xác nhận | Chờ Mạnh |
 | 10 | Hiện % thành thạo và nhãn "Cần ôn" (dưới 40%) trên từng ga ở tab Học | Đề xuất; ảnh thiết kế chưa có, nhưng đây là mục tiêu chính của sản phẩm | Chờ Mạnh |
 
-**Trả lời các câu hỏi cuối `design/AUDIT.md`:**
+**Trả lời các câu hỏi cuối `docs/reference/design/AUDIT.md`:**
 1. Sau khi dựng bộ component, **chuyển luôn trang chủ và tab Học** để nhìn thấy kết quả thật (làm ở `ui-kit-and-shell`).
 2. **Tách** sửa lỗi ra spec riêng: lỗi logic và dữ liệu làm trước (`data-and-logic-fixes`); lỗi phản hồi dạng gõ và nhãn bộ đếm làm cùng lúc với đổi giao diện luyện tập (`practice-ui-migration`) vì cần `FeedbackSheet`.
 3. Sửa regex `parse-kanji.ts`: không rà tay toàn bộ. So sánh JSON Kanji **trước và sau** bằng script, chỉ các ô có 2 cặp ngoặc phải khác.
-4. Màu tối: giữ các giá trị đã suy ra trong `src/index.css`, không cần duyệt lại bảng.
+4. Màu tối: giữ các giá trị đã suy ra trong `src/ui/tokens.css`, không cần duyệt lại bảng.
 5. Id `mcq-jp-vi`/`mcq-vi-jp`: kiểm tra lại trên mã hiện tại (audit 29/10 ghi 6 hướng đã đăng ký). Nếu đã có thì bỏ qua; nếu chưa thì sửa ở `data-and-logic-fixes`.
 
-> **Lưu ý:** `design/AUDIT.md` là bản ngày 27/10, trước các thay đổi giai đoạn 1–2. Với mỗi lỗi trong đó, **xác minh lại trên mã hiện tại** trước khi sửa.
+> **Lưu ý:** `docs/reference/design/AUDIT.md` là bản ngày 27/10, trước các thay đổi giai đoạn 1–2. Với mỗi lỗi trong đó, **xác minh lại trên mã hiện tại** trước khi sửa.
 
 ---
 
@@ -51,7 +51,7 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 
 | Thứ tự | Spec | Trạng thái |
 |---|---|---|
-| 1 | repo-restructure | ⬜ |
+| 1 | repo-restructure | ✅ |
 | 2 | data-and-logic-fixes | ⬜ |
 | 3 | ui-kit-and-shell | ⬜ |
 | 4 | practice-ui-migration | ⬜ |
@@ -70,7 +70,10 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 
 Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ NÀO). Dán đúng sau lệnh slash.
 
-### 4.1 repo-restructure ⬜
+### 4.1 repo-restructure ✅
+
+> **Đã xong (spec `001-repo-restructure`).** Còn để lại cho feature sau: `lib/theme.ts`, `lib/use-theme.ts` và `lib/tts.ts` chưa dời (vị trí cuối chốt ở `ui-kit-and-shell`; `tts.ts` vào `platform/`); ngoại lệ Q-1 (`pipeline.test.ts` quá hạn 5 giây khi chạy mặc định) và Q-2 (test e2e `browse.spec.ts` "mở trang chủ → …" đỏ từ commit `8746c15`) chuyển cho `quality-gaps`; nợ luật phụ thuộc TD-1, TD-2, E-1 ghi ở `specs/001-repo-restructure/plan.md`.
+
 ```
 /speckit-specify Sắp xếp lại cấu trúc repo cho gọn và nhất quán để tôi và Claude Code luôn biết mỗi loại file nằm ở đâu, theo bảng phân loại trong docs/reference/audit-hien-trang.md (các nhóm "Dời" và "Xóa"). Website đang chạy trên Vercel phải hoạt động y như cũ: mọi trang mở được, không mất nội dung, không đổi giao diện. Không còn file .md lẻ ở gốc repo (trừ CLAUDE.md và README.md), không còn file bản sao hay build cũ. Link hỏng trong README.md được sửa. Ngoài phạm vi: đổi màu, đổi font, đổi giao diện, thêm layout làm bài, lazy loading.
 ```
@@ -83,7 +86,7 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 /speckit-specify Sửa các lỗi dữ liệu và logic mà người học nhìn thấy, không đổi giao diện: (1) chữ Kanji có nhiều cách đọc/nghĩa hiển thị sai Hán Việt, ví dụ 行 phải là "HÀNH (đi; tiến hành) / HÀNG (hàng, dòng)"; (2) tìm kiếm trả về quá nhiều kết quả không liên quan; (3) trang Điểm yếu đang xếp các bài chưa học lần nào là "yếu nhất" với 0%; (4) nút luyện ngay từ trang Điểm yếu và Sổ lỗi sai phải chạy đủ các dạng bài dự kiến, không âm thầm bỏ dạng; (5) ba mục không thuộc danh sách từ chính của giáo trình (DVD, おなかが すきます, のどが かわきます) nằm ở phần từ vựng mở rộng, và số liệu từ chính/mở rộng trong kiểm thử và tài liệu khớp với thực tế. Mỗi lỗi có test tái hiện lỗi trước khi sửa.
 ```
 ```
-/speckit-plan Xác minh từng lỗi trên mã hiện tại trước khi sửa (design/AUDIT.md là bản 27/10, có thể đã lỗi thời). Gợi ý nguyên nhân theo audit: (1) scripts/content/parse-kanji.ts dùng regex một cặp ngoặc cho ô có hai cặp ngoặc; viết lại bằng bộ đọc cân bằng ngoặc, rồi chạy content:build trước và sau và so sánh JSON Kanji: chỉ các ô có nhiều cặp ngoặc được khác. (2) src/data/search-index.ts: fuzzy 0.2 áp lên cả field meaning, không boost, không ngưỡng; ưu tiên kana/kanji/romaji, giới hạn fuzzy, thêm ngưỡng điểm và debounce ở SearchPage. (3) computeLessonScores/WeaknessPage: chỉ coi bài là ứng viên yếu khi có ít nhất 1 lượt làm. (4) WeaknessPage.REVIEW_MODE_IDS và MistakesPage.REVIEW_MODE_IDS: đối chiếu với id thật trong register-all.ts. (5) chuyển 3 hàng sang bảng từ vựng mở rộng của đúng bài (tạo bảng "### 2. Từ vựng mở rộng ★" theo mẫu Phụ lục B của Ke_hoach_Website nếu bài đó chưa có): DVD ở Bài 6; おなかが すきます và のどが かわきます ở Bài 13. ID từ vựng không đổi (hash kana|kanji, không chứa section) nên tiến độ đã lưu được giữ nguyên. Sau đó từ chính phải là 1.020 và từ mở rộng là 275: cập nhật scripts/content/pipeline.test.ts và mọi tài liệu ghi số từ chính/mở rộng, và thêm test kiểm số từ chính và số từ mở rộng riêng biệt. Không sửa registry, session, grading (constitution III).
+/speckit-plan Xác minh từng lỗi trên mã hiện tại trước khi sửa (docs/reference/design/AUDIT.md là bản 27/10, có thể đã lỗi thời). Gợi ý nguyên nhân theo audit: (1) scripts/content/parse-kanji.ts dùng regex một cặp ngoặc cho ô có hai cặp ngoặc; viết lại bằng bộ đọc cân bằng ngoặc, rồi chạy content:build trước và sau và so sánh JSON Kanji: chỉ các ô có nhiều cặp ngoặc được khác. (2) src/data/search-index.ts: fuzzy 0.2 áp lên cả field meaning, không boost, không ngưỡng; ưu tiên kana/kanji/romaji, giới hạn fuzzy, thêm ngưỡng điểm và debounce ở SearchPage. (3) computeLessonScores/WeaknessPage: chỉ coi bài là ứng viên yếu khi có ít nhất 1 lượt làm. (4) WeaknessPage.REVIEW_MODE_IDS và MistakesPage.REVIEW_MODE_IDS: đối chiếu với id thật trong register-all.ts. (5) chuyển 3 hàng sang bảng từ vựng mở rộng của đúng bài (tạo bảng "### 2. Từ vựng mở rộng ★" theo mẫu Phụ lục B của Ke_hoach_Website nếu bài đó chưa có): DVD ở Bài 6; おなかが すきます và のどが かわきます ở Bài 13. ID từ vựng không đổi (hash kana|kanji, không chứa section) nên tiến độ đã lưu được giữ nguyên. Sau đó từ chính phải là 1.020 và từ mở rộng là 275: cập nhật scripts/content/pipeline.test.ts và mọi tài liệu ghi số từ chính/mở rộng, và thêm test kiểm số từ chính và số từ mở rộng riêng biệt. Không sửa registry, session, grading (constitution III).
 ```
 
 ### 4.3 ui-kit-and-shell ⬜
@@ -91,7 +94,7 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 /speckit-specify Khung ứng dụng và bộ thành phần giao diện dùng chung theo bản thiết kế "Tuyến tàu" đã chọn. Người học dùng một giao diện thống nhất: cùng màu, cùng font (Be Vietnam Pro cho tiếng Việt, Zen Kaku Gothic New cho chữ Nhật), cùng kiểu nút, ô đáp án và khối phản hồi. Khi đang luyện tập thì ẩn thanh điều hướng, chỉ còn nút thoát, thanh tiến độ và bộ đếm. Trang chủ và tab Học khớp ảnh thiết kế. Giao diện đúng trên điện thoại có tai thỏ, không bị che. Chuyển trang không tải hết mã một lần. Chế độ sáng/tối vẫn đúng.
 ```
 ```
-/speckit-plan Theo docs/FRONTEND.md toàn bộ, đặc biệt §3, §4, §5, §6, §8 và các ảnh tham chiếu trong docs/reference/design/. Chuyển token từ src/index.css sang src/ui/tokens.css, thêm token mới song song và chưa xóa primary-* (còn dùng ở 31 file). Cài clsx, tailwind-merge, class-variance-authority, @fontsource/be-vietnam-pro, @fontsource/zen-kaku-gothic-new; bỏ Google Fonts khỏi index.html; sửa theme-color và viewport-fit=cover; min-h-dvh. Dựng trong src/ui: Button (primary, solid, outline, wrong, ghost), IconButton, ListRow, Skeleton, ProgressBar; quiz/PracticeShell, ProgressLine, FeedbackSheet, OptionButton, PromptBlock; signature/StationList (có % thành thạo, dựa trên thang ở FRONTEND §7 màn hình 2); jp/JpText (lang="ja"). FocusShell cho /practice/run. Router chuyển sang data router + lazy(). Tạo src/platform/ (types.ts, index.ts, web/) và chuyển lib/tts.ts vào đó. Script npm run ui:shot (Playwright, 390/768/1440, sáng/tối) và Playwright viewport 360×740. Chuyển trang chủ và tab Học sang bộ mới. Mỗi component có test. Thêm vào research.md lý do cho mỗi thư viện mới.
+/speckit-plan Theo docs/FRONTEND.md toàn bộ, đặc biệt §3, §4, §5, §6, §8 và các ảnh tham chiếu trong docs/reference/design/. Token đã nằm ở src/ui/tokens.css (repo-restructure đã dời từ src/index.css, không đổi nội dung); thêm token mới song song và chưa xóa primary-* (còn dùng ở 31 file). Cài clsx, tailwind-merge, class-variance-authority, @fontsource/be-vietnam-pro, @fontsource/zen-kaku-gothic-new; bỏ Google Fonts khỏi index.html; sửa theme-color và viewport-fit=cover; min-h-dvh. Dựng trong src/ui: Button (primary, solid, outline, wrong, ghost), IconButton, ListRow, Skeleton, ProgressBar; quiz/PracticeShell, ProgressLine, FeedbackSheet, OptionButton, PromptBlock; signature/StationList (có % thành thạo, dựa trên thang ở FRONTEND §7 màn hình 2); jp/JpText (lang="ja"). FocusShell cho /practice/run. Router chuyển sang data router + lazy(). Tạo src/platform/ (types.ts, index.ts, web/) và chuyển lib/tts.ts vào đó. Script npm run ui:shot (Playwright, 390/768/1440, sáng/tối) và Playwright viewport 360×740. Chuyển trang chủ và tab Học sang bộ mới. Mỗi component có test. Thêm vào research.md lý do cho mỗi thư viện mới.
 ```
 
 ### 4.4 practice-ui-migration ⬜

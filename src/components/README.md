@@ -1,3 +1,0 @@
-# src/components
-
-Thành phần UI dùng chung: nút, thẻ, `<Ruby>` (furigana), thanh tiến độ...

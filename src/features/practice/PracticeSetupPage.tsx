@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
 import { progressRepository } from '@/data/progress/dexie-repo'
 import {
   findBookMeta,
@@ -12,7 +12,7 @@ import {
 import { list as listQuestionTypes } from '@/domain/quiz/registry'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import { hasJapaneseVoice } from '@/lib/tts'
 import type { QuizItem } from '@/domain/quiz/registry'
 

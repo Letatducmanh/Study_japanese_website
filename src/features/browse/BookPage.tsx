@@ -1,14 +1,14 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
-import { NotFound } from '@/components/NotFound'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { NotFound } from '@/ui/primitives/NotFound'
 import { loadBookIndex, loadManifest } from '@/data/content-loader'
 import { progressRepository } from '@/data/progress/dexie-repo'
 import { computeLessonScores } from '@/domain/mastery/lesson-scores'
 import { vi } from '@/i18n/vi'
-import { heatmapClass } from '@/lib/heatmap'
-import { useAsyncData } from '@/lib/use-async-data'
+import { heatmapClass } from '@/ui/signature/heatmap'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 
 export function BookPage() {
   const { bookId } = useParams<{ bookId: string }>()

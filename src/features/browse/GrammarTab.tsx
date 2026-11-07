@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SpeakButton } from '@/components/SpeakButton'
+import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { parseExplanationMd, parseInlineBold } from '@/lib/explanation-md'
 import { vi } from '@/i18n/vi'
 import type { GrammarExample, GrammarPoint } from '@/domain/types'

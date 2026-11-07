@@ -26,6 +26,7 @@ content-report.md
 /coverage
 /playwright-report
 /test-results
+/.screens/
 /blob-report
 
 # Editor directories and files

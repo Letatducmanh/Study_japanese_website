@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDuration } from './format-duration'
+import { formatDuration } from './format'
 
 describe('formatDuration', () => {
   it('dưới 1 phút', () => {

@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
-import { Ruby } from '@/components/Ruby'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { Ruby } from '@/ui/jp/Ruby'
 import {
   loadBookIndex,
   loadManifest,
@@ -14,7 +14,7 @@ import { computeLessonScores } from '@/domain/mastery/lesson-scores'
 import { classifyItemId, parseVocabItemId } from '@/domain/quiz/item-id'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { Mastery, Skill, VocabItem } from '@/domain/types'
 
 const WEAK_LIMIT = 20

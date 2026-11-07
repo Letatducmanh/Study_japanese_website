@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Ruby } from '@/components/Ruby'
-import { SpeakButton } from '@/components/SpeakButton'
+import { Ruby } from '@/ui/jp/Ruby'
+import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { vi } from '@/i18n/vi'
 import { speakJapanese } from '@/lib/tts'
 import type { McqQuestion } from './types'

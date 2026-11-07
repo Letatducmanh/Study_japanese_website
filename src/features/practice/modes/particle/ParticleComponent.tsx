@@ -1,4 +1,4 @@
-import { BlankChoiceCard } from '@/components/BlankChoiceCard'
+import { BlankChoiceCard } from '@/ui/quiz/BlankChoiceCard'
 import type { ParticleQuestion } from './types'
 
 interface ParticleComponentProps {

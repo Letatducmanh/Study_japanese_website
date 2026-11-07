@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
 import {
   findBookMeta,
   findKanjiBookIdForLevel,
@@ -21,7 +21,7 @@ import {
 } from '@/features/practice/session-store'
 import { vi } from '@/i18n/vi'
 import { playCorrectSound, playWrongSound } from '@/lib/sfx'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { Attempt } from '@/domain/types'
 
 export function PracticeRunPage() {

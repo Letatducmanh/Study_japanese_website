@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { LoadingState } from '@/components/LoadingState'
-import { Ruby } from '@/components/Ruby'
-import { SpeakButton } from '@/components/SpeakButton'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { Ruby } from '@/ui/jp/Ruby'
+import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { searchVocab } from '@/data/search-index'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams()

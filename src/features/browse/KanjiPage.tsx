@@ -1,13 +1,13 @@
 import { useParams, Link } from 'react-router-dom'
-import { ErrorState } from '@/components/ErrorState'
-import { LoadingState } from '@/components/LoadingState'
-import { NotFound } from '@/components/NotFound'
-import { Ruby } from '@/components/Ruby'
-import { SpeakButton } from '@/components/SpeakButton'
+import { ErrorState } from '@/ui/primitives/ErrorState'
+import { LoadingState } from '@/ui/primitives/LoadingState'
+import { NotFound } from '@/ui/primitives/NotFound'
+import { Ruby } from '@/ui/jp/Ruby'
+import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { loadManifest, resolveVocabItems } from '@/data/content-loader'
 import { loadAllKanjiForBook } from '@/data/kanji-lookup'
 import { vi } from '@/i18n/vi'
-import { useAsyncData } from '@/lib/use-async-data'
+import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { KanjiExample, KanjiItem } from '@/domain/types'
 
 const KIND_LABEL: Record<KanjiExample['kind'], string> = {
@@ -16,7 +16,7 @@ const KIND_LABEL: Record<KanjiExample['kind'], string> = {
   special: vi.kanjiDetail.kindSpecial,
 }
 
-export function KanjiDetailPage() {
+export function KanjiPage() {
   const { char } = useParams<{ char: string }>()
 
   const manifestState = useAsyncData(loadManifest, [])
