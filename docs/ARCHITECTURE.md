@@ -3,7 +3,7 @@
 > **Vị trí trong repo:** `docs/ARCHITECTURE.md`
 > **Vai trò trong Spec Kit:** đây là thiết kế **cấp hệ thống**, dùng chung cho mọi feature. Mỗi `specs/NNN-*/plan.md` do `/speckit-plan` tạo ra phải **tuân theo** file này và chỉ mô tả phần riêng của feature đó.
 > **Nguồn chi tiết:** quy ước dữ liệu, thuật toán, danh sách màn hình vẫn nằm ở `docs/reference/Ke_hoach_Website.md` (mục 3, 5, 6, 7). File này không chép lại, chỉ tham chiếu theo số mục (VD: *KH §6.4*).
-> **Phiên bản:** 2.0 (29/10/2026) — thay cho mục 4 của kế hoạch v1.2.
+> **Phiên bản:** 2.1 (29/10/2026) — thay cho mục 4 của kế hoạch v1.2. v2.1 cập nhật theo audit hiện trạng (code đã làm tới khoảng spec 010): đổi bản đồ feature (§9), cho phép `ui/` dùng `platform/` (§4.2), giữ nhận diện "Tuyến tàu" + Shiba (ADR-007).
 
 ---
 
@@ -138,6 +138,7 @@ flowchart TB
   features --> platform
   data --> domain
   ui --> lib
+  ui --> platform
   features --> lib
   domain --> lib
   data --> lib
@@ -150,7 +151,7 @@ flowchart TB
 |---|---|---|
 | `domain/` | `lib/` | React, Dexie, Supabase, `data/`, `features/`, `ui/`, `platform/` |
 | `data/` | `domain/`, `lib/` | React component, `features/`, `ui/` |
-| `ui/` | `lib/`, `i18n/` | `features/`, `data/`, `domain/` (chỉ nhận dữ liệu qua props) |
+| `ui/` | `lib/`, `i18n/`, `platform/` | `features/`, `data/`, `domain/` (chỉ nhận dữ liệu qua props; chỉ được gọi `platform` cho giọng đọc, rung) |
 | `features/A` | `ui/`, `domain/`, `data/`, `platform/`, `lib/` | `features/B` (dùng chung thì đưa xuống `ui/` hoặc `domain/`) |
 | `platform/` | `lib/` | mọi lớp khác; chỉ file trong `platform/native/` được import `@capacitor/*` |
 | Ngoài `data/progress/dexie-repo.ts` | — | `dexie` |
@@ -336,7 +337,11 @@ tu-hoc-tieng-nhat-cung-manh/
 │   ├── SPECKIT_ROADMAP.md        # thứ tự feature + prompt mẫu cho /speckit-*
 │   └── reference/
 │       ├── Ke_hoach_Website.md   # kế hoạch gốc v1.2 (tham chiếu, không sửa nữa)
-│       └── Bao_cao_kiem_tra_du_lieu_N5.md
+│       ├── Bao_cao_kiem_tra_du_lieu_N5.md
+│       ├── audit-hien-trang.md   # kiểm kê 29/10/2026
+│       ├── BACKLOG.md            # việc tồn đọng (dời từ gốc repo)
+│       ├── constitution-draft.md
+│       └── design/               # SPEC.md, AUDIT.md + 11 ảnh tham chiếu giao diện (dời từ design/ ở gốc repo)
 │
 ├── content/                      # ✍️ NƠI DUY NHẤT soạn nội dung học
 │   ├── manifest.yaml
@@ -346,12 +351,13 @@ tu-hoc-tieng-nhat-cung-manh/
 │
 ├── scripts/content/              # pipeline build nội dung (Node/TS)
 │   ├── parse-vocab.ts  parse-grammar.ts  parse-kanji.ts
-│   ├── validate.ts  enrich.ts  ids.ts  build.ts
+│   ├── validate.ts  validate-rules.ts  enrich.ts  ids.ts  build.ts  pipeline.ts
+│   ├── overrides.ts  errors.ts  markdown-utils.ts  raw-types.ts  README.md   (+ *.test.ts)
 │
-├── src/                          # 💻 Mã ứng dụng — chi tiết trong docs/FRONTEND.md §4
+├── src/                          # 💻 Mã ứng dụng — chi tiết trong docs/FRONTEND.md §3
 │   ├── app/        # router, providers, layouts
 │   ├── features/   # browse, practice(+modes/), review, weakness, stats, auth, settings
-│   ├── ui/         # design system: tokens.css, primitives/, jp/, quiz/, signature/
+│   ├── ui/         # design system: tokens.css, primitives/, jp/, quiz/, signature/(+mascot/), charts/
 │   ├── domain/     # types, schemas, quiz/, mastery/, srs/, conjugation/
 │   ├── data/       # content-loader, progress/, sync/, hooks/, supabase-client.ts
 │   ├── platform/   # types.ts, web/, native/, index.ts
@@ -383,53 +389,56 @@ tu-hoc-tieng-nhat-cung-manh/
 | Tài liệu cũ, báo cáo, ghi chú một lần | `docs/reference/` | — |
 | Ghi chú nháp, thử nghiệm | **không commit**, hoặc `docs/reference/notes/` | — |
 
-**Không được có:** file `.md` lẻ ở gốc repo (ngoài `CLAUDE.md`, `README.md`), thư mục `old/`, `backup/`, `new/`, file `*-copy.tsx`, `*-v2.tsx`. Bản cũ đã có git lưu.
+**Không được có:** file `.md` lẻ ở gốc repo (ngoài `CLAUDE.md`, `README.md`), thư mục `old/`, `backup/`, `new/`, file `*-copy.tsx`, `*-v2.tsx`. Bản cũ đã có git lưu. **Ngoại lệ được phép:** `content-report.md` ở gốc repo (do `content:build` sinh, đã gitignore; chứa đường dẫn máy nên không đặt trong `public/`).
 
 ---
 
 ## 9. Bản đồ feature (specs) & thứ tự làm
 
-Mỗi ô là **một lần chạy trọn quy trình Spec Kit** (specify → plan → tasks → implement). Số thứ tự do script Spec Kit tự cấp theo thứ tự bạn tạo; giữ đúng thứ tự dưới đây thì số sẽ khớp.
+> **Cập nhật 29/10/2026 theo `docs/reference/audit-hien-trang.md`:** phần lớn chức năng đã có mã. Vì vậy **không tạo lại spec cho các feature đã xong**. Chỉ tạo spec cho phần còn thiếu. Số `specs/NNN` do Spec Kit tự cấp theo thứ tự tạo; bảng dưới dùng *tên feature* để nhận diện.
+
+### 9.1 Đã có mã (không tạo spec mới)
+
+| Feature (tên cũ) | Phase cũ | Mức hoàn thành ước lượng | Phần còn thiếu được xử lý ở |
+|---|---|---|---|
+| content-pipeline | 1 + 2 | 90% | `data-and-logic-fixes` (số từ, regex Kanji), `quality-gaps` (test số lượng, `CONTENT_GUIDE.md`) |
+| content-browsing | 4 | 85% | `pages-migration` (`lang="ja"`, `JpText`), `native-app` (TTS) |
+| local-progress | 5 | 95% | chỉ còn kiểm tra thủ công |
+| quiz-engine-flashcard | 6 | 90% | `quality-gaps` (test flashcard), `practice-ui-migration` |
+| mcq-and-results | 7 | 90% | `quality-gaps` (e2e 6 hướng) |
+| vocab-modes | 8 | 85% | `practice-ui-migration` (phản hồi dạng gõ, nhãn bộ đếm), `quality-gaps` |
+| grammar-kanji-quiz | 9 | 75% | Sắp xếp câu giữ **chạm để đặt** (ADR-008); `quality-gaps` (test trợ từ) |
+| weakness-mistakes | 10 | 80% | `data-and-logic-fixes` (bài chưa học), `ui-kit-and-shell` (`StationList`), `quality-gaps` |
+
+### 9.2 Các spec cần làm
 
 ```mermaid
 flowchart TB
-  s001["001 repo-restructure<br/>dọn cấu trúc, giữ web chạy"]
-  s002["002 content-pipeline<br/>parse + validate + enrich + chia động từ"]
-  s003["003 app-shell<br/>router, layout, design tokens, deploy, CI"]
-  s004["004 content-browsing<br/>bài học, ngữ pháp, Kanji, tìm kiếm, 🔊"]
-  s005["005 local-progress<br/>Dexie repo, mastery, xuất/nhập"]
-  s006["006 quiz-engine-flashcard<br/>registry, session, distractor, Flashcard"]
-  s007["007 mcq-and-results<br/>trắc nghiệm 6 hướng, màn kết quả"]
-  s008["008 vocab-modes<br/>gõ, nghe, chính tả, ghép cặp, đúng/sai, điền từ"]
-  s009["009 grammar-kanji-quiz<br/>trợ từ, sắp xếp câu, chia động từ, Kanji"]
-  s010["010 weakness-mistakes ✅ MVP<br/>bài tổng hợp, điểm yếu, sổ lỗi sai, bản đồ tuyến"]
-  s011["011 accounts-sync<br/>Supabase Auth + outbox sync"]
-  s012["012 srs-review<br/>ôn tập hằng ngày ts-fsrs"]
-  s013["013 stats-pwa-release ✅ 1.0<br/>thống kê, PWA offline, a11y, bản quyền"]
-  s014["014 native-app<br/>Capacitor Android/iOS, TTS native, deep link"]
-
-  s001 --> s002 --> s003 --> s004
-  s003 --> s005 --> s006 --> s007 --> s008 --> s009 --> s010
-  s004 --> s006
-  s010 --> s011 --> s012 --> s013 --> s014
+  s1["repo-restructure<br/>dọn cấu trúc, luật ESLint, sửa link"]
+  s2["data-and-logic-fixes<br/>sửa lỗi dữ liệu và logic, không đổi giao diện"]
+  s3["ui-kit-and-shell<br/>tokens, font, ui/, PracticeShell, lazy, safe-area"]
+  s4["practice-ui-migration<br/>16 dạng bài sang bộ ui mới"]
+  s5["pages-migration<br/>các trang còn lại sang token"]
+  s6["quality-gaps<br/>test, e2e 360px, CONTENT_GUIDE"]
+  s7["accounts-sync<br/>Supabase Auth + đồng bộ"]
+  s8["srs-review<br/>ôn tập hằng ngày"]
+  s9["stats-pwa-release ✅ 1.0<br/>thống kê, PWA, bản quyền"]
+  s10["native-app<br/>Capacitor Android/iOS"]
+  s1 --> s2 --> s3 --> s4 --> s5 --> s6 --> s7 --> s8 --> s9 --> s10
 ```
 
-| Spec | Ứng với Phase cũ (KH §10) | Dấu hiệu hoàn thành chính |
+| Spec | Phạm vi | Dấu hiệu hoàn thành |
 |---|---|---|
-| 001 repo-restructure | — (mới) | Cây thư mục khớp §8.1, web trên Vercel vẫn chạy y như cũ |
-| 002 content-pipeline | Phase 1 + 2 | 1.020 từ chính + 272 mở rộng, 132 mẫu ngữ pháp, 119 + 15 Kanji; test chia động từ 100% |
-| 003 app-shell | Phase 0 (phần còn thiếu) + 3 | Menu sinh từ manifest; `/b/mnn1/5` mở thẳng không 404; tokens trong `ui/tokens.css` |
-| 004 content-browsing | Phase 4 | Tìm "nuoc ngoai" ra 外国 |
-| 005 local-progress | Phase 5 | Xuất → xóa → nhập lại → dữ liệu như cũ |
-| 006 quiz-engine-flashcard | Phase 6 | Flashcard Bài 1, tải lại trang mastery > 0 |
-| 007 mcq-and-results | Phase 7 | Sai 2/10 → "Làm lại câu sai" đúng 2 câu |
-| 008 vocab-modes | Phase 8 | `gaikoku` → がいこく chấm đúng |
-| 009 grammar-kanji-quiz | Phase 9 | Mỗi bài ngữ pháp sinh ≥ 5 câu trợ từ |
-| 010 weakness-mistakes | Phase 10 | Sai nhiều Bài 3 → Bài 3 đỏ và đứng đầu điểm yếu |
-| 011 accounts-sync | Phase 11 | Hai thiết bị cùng mastery; RLS chặn tài khoản khác |
-| 012 srs-review | Phase 12 | Thẻ *Quên* quay lại sớm hơn thẻ *Dễ* |
-| 013 stats-pwa-release | Phase 13 | Cài lên màn hình chính, offline vẫn học |
-| 014 native-app | Phase 14 (một phần) | APK cài được, phát âm chạy trên Android |
+| repo-restructure | Dời và xóa file theo bảng phân loại trong audit (§2 của audit), gồm dời `src/components/**` vào `src/ui/**` và `src/app/**`, `design/` và `BACKLOG.md` vào `docs/reference/`; đổi import; thêm luật ESLint `no-restricted-imports` theo §4.2; sửa link hỏng trong `README.md`; ghi ngoại lệ `content-report.md`. **Không** đổi token, font, `FocusShell`, `lazy()` | `npm run build` thành công, `npm run check` xanh, e2e mở trang chủ và `/b/mnn1/5` đạt; web trên Vercel hoạt động như cũ |
+| data-and-logic-fixes | Sửa regex `parse-kanji.ts` (ô có 2 cặp ngoặc); giảm kết quả nhiễu của tìm kiếm; trang Điểm yếu bỏ qua bài chưa có lượt làm; sửa id `mcq-jp-vi`/`mcq-vi-jp` ở Weakness/Mistakes nếu sau khi xác minh vẫn không có trong registry; chuyển 3 hàng không thuộc từ chính (`DVD` ở Bài 6; `おなかが すきます`, `のどが かわきます` ở Bài 13) sang từ vựng mở rộng: từ chính 1.020, từ mở rộng 275. Giữ giao diện cũ | 行 hiện `HÀNH (đi; tiến hành) / HÀNG (hàng, dòng)` đúng; so sánh JSON Kanji trước/sau chỉ khác ở các ô có nhiều cặp ngoặc; test mới cho từng lỗi |
+| ui-kit-and-shell | Chuyển token sang `src/ui/tokens.css`; font tự host (Be Vietnam Pro + Zen Kaku Gothic New); `cn()`, `cva`; dựng `PracticeShell`, `ProgressLine`, `FeedbackSheet`, `OptionButton`, `StationList`; `FocusShell`; router + `lazy()`; safe-area, `min-h-dvh`; `src/platform/` (web); script `ui:shot`; Playwright 360×740 | Trang chủ và Tab Học khớp ảnh tham chiếu; khi vào `/practice/run` không còn TopBar/TabBar; Lighthouse không tụt |
+| practice-ui-migration | 16 dạng bài dùng bộ ui mới; thêm phản hồi cho 3 dạng gõ; nhãn bộ đếm theo dạng bài (Ghép cặp, Đúng/Sai tốc độ); lớp phím tắt chung; `matching` và `speed-truefalse` ghi `Attempt` cùng luồng với dạng khác; nhãn flashcard "Nhớ" | 10 màn hình ở FRONTEND §7 khớp ảnh; e2e: gõ sai thấy `FeedbackSheet` |
+| pages-migration | Browse, Kanji, Search, Settings, About, Weakness, Mistakes sang token; bỏ emoji và `slate-*`/`primary-*`/`red-*`; `theme-color`; công tắc âm thanh (mặc định tắt) | Quét repo: 0 class màu mặc định Tailwind, 0 emoji icon; xóa token `primary-*` |
+| quality-gaps | Unit test cho `flashcard`, `dictation`, `speed-truefalse`; e2e đủ 6 hướng trắc nghiệm; test "mỗi bài ngữ pháp sinh ≥ 5 câu trợ từ"; nút "Tiếp tục" đọc tiến độ ngữ pháp/Kanji; sổ lỗi sai lọc theo dạng; `docs/CONTENT_GUIDE.md`; tăng `testTimeout` cho `pipeline.test.ts`; việc tồn đọng trong `BACKLOG.md` | Mọi dạng bài có test; CI chạy e2e |
+| accounts-sync | Như Phase 11 cũ (KH §3.7, §6.8) | Hai thiết bị cùng mastery; RLS chặn tài khoản khác |
+| srs-review | Như Phase 12 cũ (KH §6.6) | Thẻ *Quên* quay lại sớm hơn thẻ *Dễ* |
+| stats-pwa-release | Như Phase 13 cũ; trang chủ đầy đủ (BACKLOG mục 3) | Cài được lên màn hình chính, offline vẫn học, Lighthouse mobile ≥ 90 |
+| native-app | Capacitor, `platform/native/`, safe-area, nút back Android | APK cài được, phát âm chạy trên Android |
 
 Prompt mẫu cho từng spec: xem `docs/SPECKIT_ROADMAP.md`.
 
@@ -473,5 +482,8 @@ flowchart LR
 | ADR-004 | **Supabase** cho Auth + Postgres + RLS | Miễn phí, có sẵn đăng ký/quên mật khẩu/Google | Gói Free tạm dừng khi lâu không dùng → app phải chạy được khi Supabase không phản hồi |
 | ADR-005 | **Design tokens một chỗ** (`src/ui/tokens.css`, Tailwind v4 `@theme`) | Tránh mã màu rải rác, giữ nhận diện riêng | Mọi component chỉ dùng class token, không dùng mã hex trực tiếp |
 | ADR-006 | **Spec Kit** cho mọi thay đổi lớn hơn sửa lỗi nhỏ | Người làm chưa có kinh nghiệm frontend → cần spec rõ trước khi code | Sửa lỗi nhỏ (< 30 dòng) được làm thẳng, nhưng vẫn phải `npm run check` |
+| ADR-007 | **Giữ nhận diện "Tuyến tàu"** (xanh dương + vàng biển báo + ga `L01` + chú chó Shiba) theo `design/SPEC.md`; `docs/FRONTEND.md` v2 là bản chuẩn | Đã dựng trang chủ, thanh điều hướng và bộ component theo nhận diện này; hợp mong muốn xanh dương, trẻ trung, không giống giáo trình | Phải chuyển 37 file đang dùng class màu mặc định sang token (FRONTEND §13); Shiba chỉ đặt ở chỗ quy định |
+| ADR-008 | **Sắp xếp câu = chạm để đặt**, không làm kéo thả | Đúng với ảnh thiết kế, dùng tốt trên cảm ứng, không cần thêm thư viện | Không thêm `@dnd-kit`; nếu sau này cần kéo thả thì làm spec riêng |
+| ADR-009 | **`ui/` được import `platform/`** (chỉ để phát âm, rung) | `SpeakButton` gọi `platform.tts` trực tiếp, đơn giản hơn truyền hàm qua props | Giữ `platform/` chỉ phụ thuộc `lib/` để không tạo vòng phụ thuộc |
 
 Khi đổi một quyết định ở đây: thêm dòng ADR mới (không xóa dòng cũ), cập nhật constitution nếu quyết định đó là luật bất biến.
