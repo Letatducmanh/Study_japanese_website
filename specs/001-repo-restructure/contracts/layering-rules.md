@@ -57,7 +57,7 @@ Quy tắc giữ nợ: thêm ngoại lệ mới cần ghi vào bảng này và v�
 
 ## Ca kiểm (đầu vào → kết quả mong đợi)
 
-Mỗi ca chạy bằng `npx eslint --stdin --stdin-filename <đường dẫn giả> < đoạn mã`. "Lỗi" = có thông báo `no-restricted-imports`.
+Mỗi ca chạy bằng `npx eslint --stdin --stdin-filename <đường dẫn giả> < đoạn mã`. "Lỗi" = có thông báo `no-restricted-imports`. Ca 8–10 (hợp lệ) có dùng biến đã import để không dính `no-unused-vars`: chạy nguyên đoạn thì thoát mã 0. Ca 1–7 có thể kèm thêm lỗi `no-unused-vars`; chỉ thông báo `no-restricted-imports` được tính.
 
 | # | `--stdin-filename` | Đoạn mã | Mong đợi |
 |---|---|---|---|
@@ -68,8 +68,8 @@ Mỗi ca chạy bằng `npx eslint --stdin --stdin-filename <đường dẫn gi�
 | 5 | `src/features/browse/x.tsx` | `import { s } from '@/features/practice/session-store'` | **Lỗi** |
 | 6 | `src/features/browse/x.tsx` | `import { C } from '@/app/layouts/Container'` | **Lỗi** |
 | 7 | `src/features/browse/x.tsx` | `import Dexie from 'dexie'` | **Lỗi** |
-| 8 | `src/data/hooks/x.ts` | `import { useState } from 'react'` | Không lỗi |
-| 9 | `src/features/browse/x.tsx` | `import { Button } from '@/ui/primitives'` | Không lỗi |
-| 10 | `src/data/progress/dexie-repo.ts` | `import Dexie from 'dexie'` | Không lỗi |
+| 8 | `src/data/hooks/x.ts` | `import { useState } from 'react'; export const a = useState` | Không lỗi, thoát mã 0 |
+| 9 | `src/features/browse/x.tsx` | `import { Button } from '@/ui/primitives'; export const a = Button` | Không lỗi, thoát mã 0 |
+| 10 | `src/data/progress/dexie-repo.ts` | `import Dexie from 'dexie'; export const a = Dexie` | Không lỗi, thoát mã 0 |
 
 Điều kiện đạt (SC-007): ca 1–7 đều báo lỗi, ca 8–10 không báo, và `npm run lint` trên toàn cây xanh với đúng ba ngoại lệ ở trên.

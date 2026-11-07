@@ -47,7 +47,7 @@ Không còn mục `NEEDS CLARIFICATION` nào. Dưới đây là các quyết đ�
   - Luật toàn cục: `dexie` chỉ trong `src/data/progress/dexie-repo.ts`; `@supabase/supabase-js` chỉ trong `src/data/supabase-client.ts`; `@capacitor/*` chỉ trong `src/platform/native/**`.
   - `react` được phép trong `src/data/hooks/**` (hook React theo `FRONTEND.md` §3); bị cấm ở phần còn lại của `src/data/**` và ở `src/domain/**`.
 - **Rationale**: `eslint-plugin-boundaries` hay `import/no-restricted-paths` mạnh hơn nhưng là phụ thuộc mới, trái FR-013 (không thêm thư viện). Luật hiện đủ cho bảng §4.2.
-- **Cách kiểm**: không viết test logic mới. `quickstart.md` chạy `npx eslint --stdin --stdin-filename <đường dẫn giả>` với 6 đoạn vi phạm mẫu, mỗi đoạn phải báo lỗi (SC-007), rồi `npm run lint` toàn cây phải xanh.
+- **Cách kiểm**: không viết test logic mới. `quickstart.md` chạy `npx eslint --stdin --stdin-filename <đường dẫn giả>` với 7 đoạn vi phạm mẫu, mỗi đoạn phải báo lỗi (SC-007), và 3 đoạn hợp lệ phải thoát mã 0, rồi `npm run lint` toàn cây phải xanh.
 - **Alternatives considered**: Test Vitest gọi API ESLint (thêm mã và có nguy cơ quá hạn 5 giây như `pipeline.test.ts`); tự viết script kiểm import (viết lại công cụ đã có).
 
 ## R5. So sánh ảnh chụp trước/sau

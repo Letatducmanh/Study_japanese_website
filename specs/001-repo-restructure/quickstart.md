@@ -70,7 +70,15 @@ echo "import { C } from '@/app/layouts/Container'" | npx eslint --stdin --stdin-
 echo "import Dexie from 'dexie'" | npx eslint --stdin --stdin-filename src/features/browse/x.tsx
 ```
 
-Mong đợi: 7 lệnh trên đều in `no-restricted-imports` và thoát mã 1. Ba ca không-lỗi (8–10 trong hợp đồng) thoát mã 0.
+Mong đợi: 7 lệnh trên đều in `no-restricted-imports` và thoát mã 1 (có thể kèm lỗi `no-unused-vars`, không tính).
+
+Ba ca hợp lệ (8–10 trong hợp đồng) có dùng biến đã import, chạy nguyên đoạn phải thoát mã 0 và không in gì:
+
+```bash
+echo "import { useState } from 'react'; export const a = useState" | npx eslint --stdin --stdin-filename src/data/hooks/x.ts
+echo "import { Button } from '@/ui/primitives'; export const a = Button" | npx eslint --stdin --stdin-filename src/features/browse/x.tsx
+echo "import Dexie from 'dexie'; export const a = Dexie" | npx eslint --stdin --stdin-filename src/data/progress/dexie-repo.ts
+```
 
 ## 5. Kiểm chứng cuối (G8 — User Story 1)
 
