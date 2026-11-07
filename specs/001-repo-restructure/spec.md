@@ -26,6 +26,18 @@ Người học mở website sau khi repo được sắp xếp lại. Mọi trang
 2. **Given** máy đã có tiến độ học lưu từ trước, **When** mở website đã sắp xếp lại, **Then** độ thành thạo, sổ lỗi sai và cài đặt cũ hiển thị đầy đủ, không phải học lại từ đầu.
 3. **Given** trang `/b/mnn1/5` được mở thẳng bằng đường dẫn (không đi từ trang chủ), **When** tải trang, **Then** bài học hiện ra bình thường, không báo lỗi 404.
 4. **Given** bản sắp xếp lại được đưa lên môi trường xem thử của Vercel, **When** mở trang chủ và một trang bài học trên điện thoại, **Then** cả hai hiển thị như bản đang chạy.
+5. **Given** mốc so sánh ghi bên dưới (đo trước khi dời bất kỳ file nào), **When** chạy cổng kiểm định nghĩa ở FR-011 sau khi dời, **Then** mọi lệnh khớp mốc (định nghĩa chi tiết, cờ và quy tắc dừng chỉ nằm ở FR-011).
+6. **Given** mọi đường dẫn hiện có của website, **When** chạy bước duyệt toàn bộ route (smoke) và bước đối chiếu tiến độ lưu trên máy (cùng một profile trình duyệt, cùng một cổng) trước và sau khi dời, **Then** không route nào trắng trang hay báo lỗi console, và số bản ghi của từng bảng tiến độ ở bản sau bằng bản trước.
+
+**Mốc so sánh (baseline)** — đo ngày 2026-11-07 trên nhánh `001-repo-restructure` tại commit `dca3700`, cây làm việc sạch, chưa dời file nào:
+
+| Lệnh | Kết quả mốc |
+|---|---|
+| `npm test` | Thoát mã 1. **219 pass / 220 test**; 43 pass / 44 file test. **1 test fail:** `scripts/content/pipeline.test.ts` › `runContentPipeline — dữ liệu N5 thật` › `không có lỗi, đếm đúng số lượng, và sinh được file JSON khi write:true` (lỗi `Test timed out in 5000ms`). Ghi chú: audit 29/10 cũng ghi 219/220 và đúng test này; chạy riêng file đó thì đạt (2/2), nên đây là lỗi quá hạn khi chạy cả bộ, không phải lỗi logic. |
+| `npm run content:validate` | Thoát mã 0. **0 lỗi, 568 cảnh báo.** Số liệu: mnn1 1.023 từ chính, 272 từ mở rộng, 132 mẫu ngữ pháp; kanji-master-n5 134 Kanji. |
+| `npm run build` | Thoát mã 0, **thành công** (2.152 module). Đầu ra: JS 608,42 kB (nén 185,23 kB), CSS 35,63 kB (nén 7,39 kB). Có sẵn 1 cảnh báo "chunk lớn hơn 500 kB" của công cụ dựng; không có cảnh báo hay lỗi nào khác. |
+
+Các dòng sau được bổ sung ở nhóm G0, trước khi dời file đầu tiên (T007, T011): `npm test` chạy kèm cờ ở FR-011, `npm run lint`, `npm run test:e2e` (gồm file `tests/e2e/repo-restructure.spec.ts` ở 360×740), kết quả duyệt toàn bộ route (smoke) và số bản ghi từng bảng tiến độ (progress).
 
 ---
 
@@ -35,12 +47,12 @@ Mạnh (hoặc Claude Code) cần tìm hoặc đặt một file: một nút bấ
 
 **Why this priority**: Đây là lý do của feature (hết cảnh "file lộn xộn"). Nó đứng sau P1 vì chỉ có ý nghĩa khi website vẫn chạy đúng.
 
-**Independent Test**: Lấy bảng phân loại trong audit (§2, các hàng "Dời"). Với mỗi hàng, kiểm tra file nằm ở vị trí mới và không còn ở vị trí cũ. Quét gốc repo: chỉ có đúng hai file `.md` được commit là `CLAUDE.md` và `README.md`.
+**Independent Test**: Lấy 43 hàng ánh xạ trong `specs/001-repo-restructure/data-model.md` (nhóm "Dời" của feature này, xem FR-004). Với mỗi hàng, kiểm tra file nằm ở vị trí mới và không còn ở vị trí cũ. Quét gốc repo: chỉ có đúng hai file `.md` được commit là `CLAUDE.md` và `README.md`.
 
 **Acceptance Scenarios**:
 
 1. **Given** repo sau khi sắp xếp lại, **When** liệt kê file `.md` được commit ở gốc repo, **Then** chỉ còn `CLAUDE.md` và `README.md`.
-2. **Given** các file thuộc nhóm "Dời" trong audit, **When** đối chiếu từng file, **Then** nó có mặt ở vị trí mới theo `docs/ARCHITECTURE.md` §8.1 / `docs/FRONTEND.md` §3 và không còn bản ở vị trí cũ.
+2. **Given** các file thuộc nhóm "Dời" (43 hàng trong `data-model.md`, xem FR-004), **When** đối chiếu từng file, **Then** nó có mặt ở vị trí mới theo `docs/ARCHITECTURE.md` §8.1 / `docs/FRONTEND.md` §3 và không còn bản ở vị trí cũ; ba file loại trừ (`lib/tts.ts`, `lib/theme.ts`, `lib/use-theme.ts`) vẫn nằm ở `src/lib/`.
 3. **Given** thư mục `design/` và file `BACKLOG.md` ở gốc, **When** sắp xếp xong, **Then** chúng nằm dưới `docs/reference/` (kèm đủ 11 ảnh tham chiếu và hai tài liệu thiết kế) và nội dung không đổi.
 4. **Given** mã giao diện dùng chung đang nằm trong `src/components/`, **When** sắp xếp xong, **Then** thư mục đó không còn; mỗi thành phần nằm ở nhóm tương ứng (nút/thẻ/khung chung, thành phần chữ Nhật, thành phần làm bài, thành phần nhận diện "Tuyến tàu" gồm chú chó Shiba) và các trang vẫn dùng chúng như cũ.
 5. **Given** một người mới chỉ đọc `docs/ARCHITECTURE.md` §8.2, **When** hỏi "file loại X đặt ở đâu", **Then** câu trả lời trong tài liệu khớp với vị trí thật trong repo.
@@ -59,7 +71,7 @@ Repo không còn file trùng hay rác: bản sao báo cáo nội dung cũ, thư 
 
 1. **Given** repo sau khi dọn, **When** tìm bản sao báo cáo nội dung ở `public/`, thư mục build cũ, báo cáo test cũ và kết quả test cũ, **Then** không còn mục nào trong nhóm "Xóa" của audit.
 2. **Given** `README.md` ở gốc, **When** bấm từng link, **Then** link tới kế hoạch trỏ đến `docs/reference/Ke_hoach_Website.md` và không link nào hỏng.
-3. **Given** bất kỳ tài liệu nào của dự án nhắc đường dẫn tới một file đã dời (README thư mục con, `docs/*`, `CLAUDE.md`), **When** đối chiếu với repo, **Then** đường dẫn đó tồn tại thật.
+3. **Given** bất kỳ tài liệu nào của dự án nhắc đường dẫn tới một file đã dời (README thư mục con, `docs/*.md`, `CLAUDE.md`; không gồm `docs/reference/**`), **When** đối chiếu với repo, **Then** đường dẫn đó tồn tại thật.
 4. **Given** file `content-report.md` do lệnh dựng nội dung sinh ra ở gốc repo, **When** sắp xếp xong, **Then** nó vẫn không được commit và ngoại lệ này được ghi trong tài liệu kiến trúc.
 
 ---
@@ -89,7 +101,7 @@ Quy tắc "lớp nào được dùng lớp nào" trong `docs/ARCHITECTURE.md` §
 - **Máy của người học**: dữ liệu tiến độ lưu trong trình duyệt không được đổi tên hay đổi định dạng; đường dẫn (route) và tên tham số trên địa chỉ (`bookId`, `lesson`) giữ nguyên để link người dùng đã lưu vẫn mở được.
 - **Trang chỉ có khi phát triển** (`/styleguide`): vẫn mở được khi chạy bản phát triển, vẫn không có trong bản đưa lên mạng.
 - **Hai thư mục nằm ngoài Git** (`Source code/Docs/`, `Source code/Ảnh mobile/`) không thuộc repo nên không bị feature này đụng tới.
-- **Mục chưa có quyết định** (`public/content/README.md`, `src/features/dev/StyleguidePage.tsx`, `src/lib/sfx.ts`, nhóm "Hỏi" trong audit) giữ nguyên chỗ cũ, không tự chọn thay Mạnh.
+- **Mục chưa có quyết định** (`public/content/README.md`, `src/features/dev/StyleguidePage.tsx`, `src/lib/sfx.ts`, nhóm "Hỏi" trong audit) và ba file chưa dời (`lib/tts.ts`, `lib/theme.ts`, `lib/use-theme.ts`) giữ nguyên chỗ cũ, không tự chọn thay Mạnh.
 
 ## Requirements *(mandatory)*
 
@@ -98,15 +110,15 @@ Quy tắc "lớp nào được dùng lớp nào" trong `docs/ARCHITECTURE.md` §
 - **FR-001**: Website sau khi sắp xếp lại PHẢI hiển thị và hoạt động giống bản trước khi dời ở mọi đường dẫn hiện có, kể cả khi mở thẳng bằng đường dẫn.
 - **FR-002**: Tiến độ học đã lưu trên máy (câu trả lời, độ thành thạo, sổ lỗi sai, cài đặt) PHẢI còn nguyên và dùng được; định dạng lưu và tên các tham số trên địa chỉ PHẢI không đổi.
 - **FR-003**: Giao diện PHẢI không đổi: không đổi màu, font, bo góc, khoảng cách, bố cục, chữ hiển thị; không thêm hay bớt màn hình; không thêm khung làm bài riêng; không đổi cách tải trang.
-- **FR-004**: Mọi file thuộc nhóm "Dời" trong `docs/reference/audit-hien-trang.md` §2 PHẢI được chuyển tới vị trí mới theo `docs/ARCHITECTURE.md` §8.1 và `docs/FRONTEND.md` §3, và không còn bản ở vị trí cũ. Tóm tắt các nhóm:
+- **FR-004**: Mọi file thuộc nhóm "Dời" PHẢI được chuyển tới vị trí mới theo `docs/ARCHITECTURE.md` §8.1 và `docs/FRONTEND.md` §3, và không còn bản ở vị trí cũ. **Nhóm "Dời" của feature này được định nghĩa là đúng 43 hàng trong bảng ánh xạ của `specs/001-repo-restructure/data-model.md`** (41 file trong `src/`, cộng `BACKLOG.md` và thư mục `design/`). Danh sách đó lấy từ `docs/reference/audit-hien-trang.md` §2 sau khi trừ **ba file loại trừ, chưa dời theo quyết định đã duyệt**: `src/lib/tts.ts` (thuộc `ui-kit-and-shell`), `src/lib/theme.ts` và `src/lib/use-theme.ts` (vị trí cuối chốt ở `ui-kit-and-shell`). Tóm tắt các nhóm:
 
   | Nhóm | Từ | Đến |
   |---|---|---|
   | Tài liệu và việc tồn đọng | `BACKLOG.md`, `design/` (2 tài liệu + 11 ảnh) ở gốc | `docs/reference/BACKLOG.md`, `docs/reference/design/` |
-  | Điểm vào ứng dụng, khung trang | `src/App.tsx` (+ test), `src/app/Layout`, `TopBar`, `BottomNav`, `src/components/ui/Container`, `ThemeToggle`, `lib/theme`, `lib/use-theme`, `NotFound`, `ComingSoon` | `src/app/` (khung trang trong `src/app/layouts/`, chủ đề sáng/tối trong `src/app/`) |
+  | Điểm vào ứng dụng, khung trang | `src/App.tsx` (+ test), `src/app/Layout`, `TopBar`, `BottomNav`, `src/components/ui/Container`, `ComingSoon` | `src/app/` (khung trang trong `src/app/layouts/`) |
   | Bảng token và kiểu nền | `src/index.css` | `src/ui/tokens.css` (nội dung giữ nguyên) |
-  | Thành phần dùng chung | `src/components/ui/*`, `ErrorState`, `LoadingState` | `src/ui/primitives/`; `StationBadge` → `src/ui/signature/` |
-  | Thành phần chữ Nhật | `Ruby`, `SpeakButton`, `KanjiCard` | `src/ui/jp/` |
+  | Thành phần dùng chung | `src/components/ui/*`, `ErrorState`, `LoadingState`, `NotFound`, `ThemeToggle` | `src/ui/primitives/`; `StationBadge` → `src/ui/signature/`. `lib/theme.ts` và `lib/use-theme.ts` là hai trong ba file loại trừ: **chưa dời**, tạm ở `src/lib/` |
+  | Thành phần chữ Nhật | `Ruby`, `SpeakButton`, `KanjiCard` | `Ruby`, `SpeakButton` → `src/ui/jp/`; `KanjiCard` → `src/features/browse/` (chỉ vùng duyệt nội dung dùng) |
   | Thành phần làm bài | `TextChoiceCard`, `BlankChoiceCard` | `src/ui/quiz/` |
   | Nhận diện "Tuyến tàu" | `src/components/mascot/*`, `lib/heatmap` | `src/ui/signature/` (linh vật trong `src/ui/signature/mascot/`) |
   | Tiện ích dữ liệu | `lib/use-async-data` | `src/data/hooks/` |
@@ -114,15 +126,23 @@ Quy tắc "lớp nào được dùng lớp nào" trong `docs/ARCHITECTURE.md` §
   | Đặt tên cho khớp | `lib/format-duration` | `lib/format` |
 
 - **FR-005**: Mọi file thuộc nhóm "Xóa" trong audit PHẢI được xóa: bản sao báo cáo nội dung cũ trong `public/`, thư mục build cũ `dist/`, báo cáo test cũ `playwright-report/` và kết quả test cũ `test-results/`. Việc xóa chỉ trên bản đang có trên máy; các file này vốn đã được bỏ qua khi commit.
-- **FR-006**: Gốc repo PHẢI chỉ còn `CLAUDE.md` và `README.md` là file `.md` được commit. `content-report.md` do lệnh dựng nội dung sinh ở gốc là ngoại lệ đã có trong `docs/ARCHITECTURE.md` §8.2, không được commit.
+- **FR-006**: Không còn file `.md` lẻ ở gốc repo, trừ `CLAUDE.md` và `README.md`. Yêu cầu này chỉ áp dụng cho file `.md`: gốc repo vẫn giữ các file cấu hình công cụ bắt buộc (`package.json`, lock file, cấu hình vite/ts/eslint/playwright, `index.html`, `.gitignore`, `.specify/`, `.claude/`, `.github/`) cùng các thư mục nguồn hiện có. `content-report.md` do lệnh dựng nội dung sinh ở gốc là ngoại lệ đã có trong `docs/ARCHITECTURE.md` §8.2, không được commit.
 - **FR-007**: Không còn thư mục hoặc file bản sao/backup (VD: `old/`, `backup/`, `new/`, `*-copy.*`, `*-v2.*`) trong repo.
-- **FR-008**: Mọi tham chiếu đường dẫn tới file đã dời PHẢI được cập nhật: import trong mã, README ở thư mục con, `README.md` gốc, `CLAUDE.md`, và các tài liệu trong `docs/`. Không đường dẫn nào trỏ tới nơi không tồn tại.
+- **FR-008**: Mọi tham chiếu đường dẫn tới file đã dời PHẢI được cập nhật: import trong mã, README ở thư mục con, `README.md` gốc, `CLAUDE.md`, và các tài liệu đang dùng trong `docs/` (không gồm `docs/reference/**`, xem SC-005). Không đường dẫn nào trong phạm vi đó trỏ tới nơi không tồn tại.
 - **FR-009**: `README.md` gốc PHẢI có link tới kế hoạch trỏ đúng `docs/reference/Ke_hoach_Website.md`, và mục "Cấu trúc" PHẢI mô tả đúng cây thư mục mới.
 - **FR-010**: File đi kèm nhau (mã nguồn và test của nó, README của thư mục) PHẢI được dời cùng nhau; lịch sử thay đổi của file đã dời PHẢI vẫn xem được.
-- **FR-011**: Lệnh kiểm tra tổng của dự án (`npm run check`: kiểm nội dung, kiểm kiểu, kiểm lỗi cú pháp/phong cách, test đơn vị), lệnh dựng bản đưa lên mạng và các test mở trang chủ, mở `/b/mnn1/5` PHẢI đạt sau khi dời.
+- **FR-011** *(định nghĩa duy nhất của "cổng kiểm"; mọi tài liệu khác chỉ dẫn chiếu tới đây)*: Sau mỗi nhóm commit và ở bước xác minh cuối, chạy bốn lệnh và so với mốc ở User Story 1:
+  1. `npm test -- --testTimeout=30000` (tức `vitest run` kèm cờ ở dòng lệnh; **không sửa repo**). Kỳ vọng **220/220 test pass, 44/44 file pass**.
+  2. `npm run build`: thoát mã 0; chỉ 1 cảnh báo chunk lớn; JS không lớn hơn mốc 608,42 kB đáng kể.
+  3. `npm run content:validate`: thoát mã 0, 0 lỗi, **đúng 568 cảnh báo**.
+  4. `npm run lint`: thoát mã 0.
+
+  **Quy tắc dừng:** bất kỳ test nào fail khi chạy kèm cờ (kể cả `pipeline.test.ts`), hoặc bất kỳ lệnh nào lệch mốc → **DỪNG và báo Mạnh**, không sang nhóm sau. Kết quả chạy mặc định (`npm test` không cờ) được ghi kèm cho biết mức chập chờn của test `pipeline.test.ts` (quá hạn 5 giây), nhưng không dùng làm điều kiện dừng.
+
+  Ngoài bốn lệnh trên: không phát sinh lỗi kiểm kiểu; `npm run test:e2e` đạt, gồm file `tests/e2e/repo-restructure.spec.ts` (chạy ở viewport 360×740, mở `/` và `/b/mnn1/5`, kiểm có nội dung chính; file này được thêm ở G0 và giữ lại); duyệt toàn bộ route (smoke) và đối chiếu số bản ghi tiến độ (progress) giống mốc trước.
 - **FR-012**: Quy tắc phụ thuộc giữa các lớp theo `docs/ARCHITECTURE.md` §4.2 PHẢI được bộ kiểm tra chung của dự án kiểm tự động. Mọi vi phạm có sẵn mà chỉ sửa được bằng cách viết lại logic PHẢI được ghi là ngoại lệ có lý do, không sửa trong feature này.
-- **FR-013**: Feature này PHẢI KHÔNG: đổi nội dung bài học (`content/**`), thuật toán sinh câu hỏi, chấm điểm, cách lưu tiến độ, cấu hình dựng và đưa lên mạng, phiên bản hay danh sách thư viện; PHẢI KHÔNG thêm tính năng hay thư viện mới.
-- **FR-014**: Các mục thuộc nhóm "Hỏi" trong audit mà Mạnh chưa quyết (`public/content/README.md`, `StyleguidePage`, `lib/sfx`, `lib/tts`, hai thư mục ngoài Git) PHẢI giữ nguyên chỗ cũ và không bị xóa.
+- **FR-013**: Feature này PHẢI KHÔNG: đổi dữ liệu bài học trong `content/**` (từ vựng, ngữ pháp, Kanji và các giá trị khai báo trong manifest, overrides); thuật toán sinh câu hỏi, chấm điểm, cách lưu tiến độ, cấu hình dựng và đưa lên mạng, phiên bản hay danh sách thư viện; PHẢI KHÔNG thêm tính năng hay thư viện mới. Chú thích (`#`) trong file cấu hình yaml của `content/**` được phép sửa để cập nhật đường dẫn tài liệu.
+- **FR-014**: Các mục thuộc nhóm "Hỏi" trong audit mà Mạnh chưa quyết (`public/content/README.md`, `StyleguidePage`, `lib/sfx`, hai thư mục ngoài Git) và ba file loại trừ khỏi nhóm "Dời" (`lib/tts.ts`, `lib/theme.ts`, `lib/use-theme.ts`) PHẢI giữ nguyên chỗ cũ và không bị xóa.
 
 ### Key Entities
 
@@ -135,12 +155,12 @@ Quy tắc "lớp nào được dùng lớp nào" trong `docs/ARCHITECTURE.md` §
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% đường dẫn hiện có của website (kể cả mở thẳng `/b/mnn1/5`) hiển thị đúng sau khi dời, không trang nào lỗi hay trắng.
-- **SC-002**: So ảnh chụp các trang chính trước và sau khi dời ở ba cỡ màn hình (điện thoại, máy tính bảng, máy tính), cả sáng và tối: không có khác biệt nhìn thấy về bố cục, màu, chữ; Mạnh xem và xác nhận.
-- **SC-003**: Không có test tự động nào đạt trước khi dời mà thất bại sau khi dời; lệnh kiểm tra tổng, lệnh dựng bản đưa lên mạng và test mở trang chủ, mở một trang bài học đều đạt.
-- **SC-004**: Số file `.md` được commit ở gốc repo là đúng 2 (`CLAUDE.md`, `README.md`); số file nhóm "Dời" còn ở vị trí cũ là 0; số file nhóm "Xóa" còn tồn tại là 0.
-- **SC-005**: 0 link hỏng trong `README.md` gốc, README các thư mục con và các tài liệu trong `docs/` trỏ tới file đã dời.
-- **SC-006**: Tiến độ học đã lưu từ trước khi dời mở lại được 100% (cùng số bản ghi độ thành thạo và sổ lỗi sai) sau khi dời.
+- **SC-001**: 100% đường dẫn hiện có của website (mọi route trong bảng route của ứng dụng, kể cả mở thẳng `/b/mnn1/5`; riêng `/styleguide` kiểm ở bản phát triển) hiển thị đúng sau khi dời, không trang nào lỗi console hay trắng; số route duyệt được sau bằng số route duyệt được trước.
+- **SC-002**: So ảnh chụp các trang chính trước và sau khi dời ở ba cỡ màn hình (điện thoại 360×740, máy tính bảng 768×1024, máy tính 1280×800), cả sáng và tối (36 ảnh: 6 trang × 3 cỡ × 2 chế độ): không có khác biệt nhìn thấy về bố cục, màu, chữ; Mạnh xem ảnh trước/sau của trang chủ và `/b/mnn1/5` ở 360px (sáng và tối) và xác nhận.
+- **SC-003**: Cổng kiểm ở FR-011 đạt sau mỗi nhóm commit và ở bước cuối; không có test nào pass trước mà fail sau; các test e2e mở trang chủ, mở `/b/mnn1/5` và test 360×740 của feature đạt.
+- **SC-004**: Không còn file `.md` lẻ ở gốc repo trừ `CLAUDE.md` và `README.md` (đúng 2 file `.md` được commit ở gốc; các file cấu hình công cụ không tính); số file thuộc 43 hàng nhóm "Dời" (`data-model.md`) còn ở vị trí cũ là 0 và ba file loại trừ (`lib/tts.ts`, `lib/theme.ts`, `lib/use-theme.ts`) vẫn ở `src/lib/`; số file nhóm "Xóa" còn tồn tại là 0.
+- **SC-005**: 0 link hỏng trong `README.md` gốc, `CLAUDE.md`, README các thư mục con và các tài liệu đang dùng trong `docs/` (`docs/*.md`) trỏ tới file đã dời. Không áp dụng cho `docs/reference/**`: đó là bản chụp lịch sử theo ngày, giữ nguyên nội dung khi dời.
+- **SC-006**: Tiến độ học đã lưu từ trước khi dời mở lại được 100% sau khi dời: trên cùng một profile trình duyệt và cùng một cổng, số bản ghi của từng bảng (câu trả lời, độ thành thạo, sổ lỗi sai và các bảng còn lại) ở bản sau bằng bản trước.
 - **SC-007**: Bộ kiểm tra chung phát hiện được 100% vi phạm luật phụ thuộc trong một thay đổi thử nghiệm cố ý vi phạm; mã sau khi sắp xếp lại có 0 vi phạm chưa được ghi ngoại lệ.
 - **SC-008**: Lịch sử thay đổi vẫn truy vết được cho ít nhất 95% file đã dời (Git nhận ra là đổi tên, không phải xóa rồi thêm mới).
 - **SC-009**: Mạnh trả lời đúng "file loại X đặt ở đâu" cho 10 loại file bất kỳ lấy từ `docs/ARCHITECTURE.md` §8.2 mà chỉ cần nhìn cây thư mục repo, không cần hỏi thêm.
@@ -154,5 +174,7 @@ Quy tắc "lớp nào được dùng lớp nào" trong `docs/ARCHITECTURE.md` §
 - Tên file/hàm/component đổi chỉ khi bảng phân loại ghi rõ (VD `Layout` → `AppShell`); không đổi tên chỉ cho đẹp.
 - Hai thư mục `Source code/Docs/` và `Source code/Ảnh mobile/` nằm ngoài Git, xóa là không hoàn tác được qua Git, nên feature này không đụng tới; Mạnh tự quyết sau.
 - Các đường dẫn website, tên tham số trên địa chỉ và cách lưu tiến độ trên máy đã được ràng buộc "không đổi" trong `CLAUDE.md` và constitution (nguyên tắc II, III).
-- Có thể kiểm bằng bộ kiểm tra hiện có (`npm run check`, `npm run test:e2e`) cộng thao tác mở trang và xem ảnh chụp; không cần công cụ mới. Các test đã biết có độ ổn định thấp (một test của pipeline quá hạn 5 giây khi chạy song song) không bị coi là hồi quy của feature này nếu chạy riêng thì đạt.
+- Kiểm bằng bộ lệnh sẵn có ở cổng FR-011, cộng ba công cụ tạm đặt trong `specs/001-repo-restructure/` (`verify-baseline.mjs`, `shoot.mjs` gồm các chế độ ảnh chụp, smoke, progress) và một file e2e giữ lại `tests/e2e/repo-restructure.spec.ts` (đáp ứng nguyên tắc IV: mỗi feature có e2e ở 360×740). Không đổi `playwright.config.ts`, không thêm thư viện.
+- Test `pipeline.test.ts` quá hạn 5 giây khi chạy mặc định là lỗi chập chờn có sẵn. Cờ `--testTimeout=30000` ở FR-011 chỉ là cách chạy, không sửa repo và không sửa test. `npm run check` và CI trên Pull Request có thể đỏ ngẫu nhiên vì lỗi này; khi đó chạy lại. Sửa gốc thuộc spec `quality-gaps` (xem `plan.md`, Complexity Tracking, mục Q-1).
+- Tiến độ học lưu trong IndexedDB theo từng origin, nên chỉ đối chiếu được trên cùng một profile trình duyệt và cùng một cổng (bản `vite preview` cục bộ); không đối chiếu trên Vercel Preview vì khác origin.
 - Mục tiêu đưa lên Vercel xem thử (Preview) được dùng để Mạnh mở trên điện thoại trước khi gộp, theo quy trình trong constitution.
