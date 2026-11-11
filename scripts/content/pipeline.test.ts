@@ -1,8 +1,12 @@
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { runContentPipeline } from './pipeline.ts'
+
+// Q-1: pipeline đọc cả 25 bài + Kanji nên có thể quá hạn 5 giây mặc định.
+// Chỉ tăng timeout cho file này, không đổi cấu hình kiểm thử chung.
+vi.setConfig({ testTimeout: 30000, hookTimeout: 30000 })
 
 const CONTENT_DIR = join(process.cwd(), 'content')
 
