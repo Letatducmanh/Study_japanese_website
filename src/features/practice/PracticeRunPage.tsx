@@ -12,6 +12,7 @@ import {
 } from '@/data/content-loader'
 import { loadAllKanjiForBook } from '@/data/kanji-lookup'
 import { progressRepository } from '@/data/progress/dexie-repo'
+import { parseVocabItemId } from '@/domain/quiz/item-id'
 import { get as getQuestionType, type QuizItem } from '@/domain/quiz/registry'
 import { buildComprehensiveSession, buildSession } from '@/domain/quiz/session'
 import {
@@ -19,6 +20,7 @@ import {
   type AnsweredQuestion,
   type PendingSessionConfig,
 } from '@/features/practice/session-store'
+import { buildReviewPools } from '@/features/practice/review-pools'
 import { vi } from '@/i18n/vi'
 import { playCorrectSound, playWrongSound } from '@/lib/sfx'
 import { useAsyncData } from '@/data/hooks/use-async-data'
@@ -55,17 +57,35 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
     ? findBookMeta(manifest, config.bookId)?.type === 'kanji'
     : undefined
 
+  // Bài cần tải: bài của cấu hình luôn có mặt (mã ngữ pháp/Kanji không suy ra được bài), cộng
+  // các bài của những từ cần luyện — để "Luyện ngay" qua nhiều bài có đủ bối cảnh đáp án nhiễu.
+  const lessonKeys = useMemo(() => {
+    const keys = new Map([
+      [`${config.bookId}:${config.lesson}`, { bookId: config.bookId, lesson: config.lesson }],
+    ])
+    for (const id of config.onlyItemIds ?? []) {
+      const parsed = parseVocabItemId(id)
+      if (parsed) keys.set(`${parsed.bookId}:${parsed.lesson}`, parsed)
+    }
+    return [...keys.values()]
+  }, [config.bookId, config.lesson, config.onlyItemIds])
+  const lessonKeysId = lessonKeys.map((k) => `${k.bookId}:${k.lesson}`).join('|')
+
   const {
-    data: lessonFile,
+    data: lessonFiles,
     loading: lessonLoading,
     error: lessonError,
-  } = useAsyncData(
-    () =>
-      isKanjiBook === false
-        ? loadLesson(config.bookId, config.lesson)
-        : Promise.resolve(null),
-    [config.bookId, config.lesson, isKanjiBook],
-  )
+  } = useAsyncData(async () => {
+    if (isKanjiBook !== false) return null
+    const [main, ...others] = lessonKeys
+    // Bài của cấu hình lỗi thì báo lỗi như trước; bài phụ không tải được thì bỏ qua bài đó.
+    const mainFile = await loadLesson(main.bookId, main.lesson)
+    const otherFiles = await Promise.all(
+      others.map((k) => loadLesson(k.bookId, k.lesson).catch(() => null)),
+    )
+    return [mainFile, ...otherFiles.filter((f) => f !== null)]
+  }, [lessonKeysId, isKanjiBook])
+  const lessonFile = lessonFiles?.[0] ?? null
   const {
     data: kanjiChapter,
     loading: kanjiLoading,
@@ -111,27 +131,24 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
     [config.questionTypeIds],
   )
 
-  const pool: QuizItem[] = useMemo(() => {
+  const pools: { targets: QuizItem[]; ctxPool: QuizItem[] } = useMemo(() => {
     if (isKanjiBook) {
       const kanji = kanjiChapter?.kanji ?? []
-      return config.onlyItemIds
+      const items = config.onlyItemIds
         ? kanji.filter((k) => config.onlyItemIds!.includes(k.id))
         : kanji
+      return { targets: items, ctxPool: items }
     }
-    if (!lessonFile) return []
-    const bySection = lessonFile.vocab.filter(
-      (v) => v.section === 'main' || config.includeExtended,
-    )
-    const vocab = config.onlyItemIds
-      ? bySection.filter((v) => config.onlyItemIds!.includes(v.id))
-      : bySection
-    // Ngữ pháp luôn có mặt trong pool (không lọc theo onlyItemIds) để các dạng như
-    // "Điền từ vào câu" tìm được câu ví dụ chứa từ, dù dạng đó không tự sinh câu hỏi từ nó.
-    return [...vocab, ...lessonFile.grammar]
+    if (!lessonFiles) return { targets: [], ctxPool: [] }
+    return buildReviewPools({
+      lessonFiles,
+      onlyItemIds: config.onlyItemIds,
+      includeExtended: config.includeExtended,
+    })
   }, [
     isKanjiBook,
     kanjiChapter,
-    lessonFile,
+    lessonFiles,
     config.includeExtended,
     config.onlyItemIds,
   ])
@@ -155,9 +172,10 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
         seed,
       })
     }
-    if (questionTypes.length === 0 || pool.length === 0) return null
+    if (questionTypes.length === 0 || pools.targets.length === 0) return null
     return buildSession({
-      items: pool,
+      items: pools.targets,
+      ctxPool: pools.ctxPool,
       questionTypes,
       questionCount: config.questionCount,
       seed,
@@ -167,7 +185,7 @@ function SessionRunner({ config }: { config: PendingSessionConfig }) {
     lessonFile,
     allKanjiForLevel,
     config.includeExtended,
-    pool,
+    pools,
     questionTypes,
     config.questionCount,
     seed,

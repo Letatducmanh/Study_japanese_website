@@ -23,6 +23,80 @@ const EXAMPLE_LABELS: { pattern: RegExp; kind: RawKanjiExample['kind'] }[] = [
   { pattern: /^•\s*Đọc\s*đặc\s*biệt\s*:\s*/u, kind: 'special' },
 ]
 
+/**
+ * Tách ô nguồn của cột Hán Việt thành các đoạn bằng dấu `/` ở độ sâu ngoặc 0.
+ * `null` khi ngoặc không cân (thiếu `)` hoặc thừa `)`).
+ */
+function splitTopLevelSegments(cell: string): string[] | null {
+  const segments: string[] = []
+  let depth = 0
+  let start = 0
+  for (let i = 0; i < cell.length; i++) {
+    const ch = cell[i]
+    if (ch === '(') depth++
+    else if (ch === ')') {
+      depth--
+      if (depth < 0) return null
+    } else if (ch === '/' && depth === 0) {
+      segments.push(cell.slice(start, i))
+      start = i + 1
+    }
+  }
+  if (depth !== 0) return null
+  segments.push(cell.slice(start))
+  return segments
+}
+
+/**
+ * Tách một đoạn "HÁN VIỆT (nghĩa)": phần trước `(` đầu tiên là Hán Việt, phần
+ * trong cặp ngoặc đó (cân, có thể lồng) là nghĩa, và cặp ngoặc phải kết thúc đoạn.
+ */
+function splitSegment(
+  segment: string,
+): { hanViet: string; meaning: string } | null {
+  const text = segment.trim()
+  const open = text.indexOf('(')
+  if (open <= 0 || !text.endsWith(')')) return null
+  let depth = 0
+  for (let i = open; i < text.length; i++) {
+    if (text[i] === '(') depth++
+    else if (text[i] === ')') {
+      depth--
+      // cặp ngoặc đầu đóng trước cuối đoạn → còn chữ thừa sau `)`
+      if (depth === 0 && i !== text.length - 1) return null
+    }
+  }
+  const hanViet = text.slice(0, open).trim()
+  const meaning = text.slice(open + 1, -1).trim()
+  if (hanViet === '' || meaning === '') return null
+  return { hanViet, meaning }
+}
+
+/**
+ * Tách ô "HÁN VIỆT (nghĩa)" (một hoặc nhiều đoạn ngăn bằng `/`) thành
+ * `hanViet` và `meaning`, mỗi trường nối các đoạn bằng " / " cùng thứ tự.
+ * `null` khi sai quy cách: không đoán, không trả giá trị cắt sai.
+ * Hợp đồng: specs/002-data-and-logic-fixes/contracts/hanviet-cell.md
+ */
+export function splitHanVietMeaning(
+  cell: string,
+): { hanViet: string; meaning: string } | null {
+  const trimmed = cell.trim()
+  if (trimmed === '') return null
+  const segments = splitTopLevelSegments(trimmed)
+  if (!segments) return null
+
+  const hanViets: string[] = []
+  const meanings: string[] = []
+  for (const segment of segments) {
+    const part = splitSegment(segment)
+    if (!part) return null
+    hanViets.push(part.hanViet)
+    meanings.push(part.meaning)
+  }
+  return { hanViet: hanViets.join(' / '), meaning: meanings.join(' / ') }
+}
+
 function splitReadings(value: string): string[] {
   const trimmed = value.trim()
   if (trimmed === '' || trimmed === '-') return []
@@ -157,18 +231,16 @@ export function parseKanjiFile(
         )
       }
 
-      const meaningMatch = /^(.+?)\s*\((.+)\)$/u.exec(meaningCell.trim())
-      if (!meaningMatch) {
+      const split = splitHanVietMeaning(meaningCell)
+      if (!split) {
         issues.error(
           filePath,
           `Kanji "${char}" thiếu "NGHĨA HÁN VIỆT (nghĩa)".`,
           line,
         )
       }
-      const hanViet = meaningMatch
-        ? meaningMatch[1]!.trim()
-        : meaningCell.trim()
-      const meaning = meaningMatch ? meaningMatch[2]!.trim() : ''
+      const hanViet = split ? split.hanViet : meaningCell.trim()
+      const meaning = split ? split.meaning : ''
 
       const examples = parseExamples(exampleCell, filePath, line, issues)
 

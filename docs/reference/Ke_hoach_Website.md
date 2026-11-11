@@ -319,7 +319,7 @@ levels:
 | Quy tắc | Chi tiết |
 |---|---|
 | Tiêu đề bài | `## 📖 BÀI <số> — <tên bài>` (emoji tùy ý, bắt buộc có `BÀI <số>`) |
-| Nhóm từ | `### 1. Từ vựng chính` → `section = main` · `### 2. Từ vựng mở rộng ★ — <chủ đề>` → `section = extended` (chữ "mở rộng" là dấu hiệu) |
+| Nhóm từ | `### 1. Từ vựng chính` → `section = main` · `### 2. Từ vựng mở rộng ★ — <chủ đề>` → `section = extended` (chữ "mở rộng" là dấu hiệu). Một bài có thể có nhiều bảng "Từ vựng mở rộng" (`### 2.`, `### 3.`, …), mỗi bảng một chủ đề |
 | Bảng | Đúng 5 cột: `Kana | Kanji | Romaji | Nghĩa | Ghi chú`. Hàng tiêu đề + hàng `---` bắt buộc |
 | Không có Kanji | Ghi `-` |
 | Nhiều cách nói | `A / B` → đáp án chấp nhận cả A và B; hiển thị đầy đủ |
@@ -688,7 +688,7 @@ Nhờ deploy từ Phase 3, sau mỗi phase bạn có thể dùng ngay dạng bà
 7. `scripts/content/build.ts`: chạy toàn bộ, ghi `public/content/**` và `content-report.md`.
 8. Unit test dùng **chính 3 file N5**: đếm đúng 25 bài từ vựng, 25 bài ngữ pháp, 119 + 15 Kanji; test một số mục cụ thể (VD: Bài 3 có `じどうはんばいき`, Kanji `四` có 5 nét, `今` có ví dụ đọc đặc biệt `今日 (きょう)`).
 
-**Tiêu chí hoàn thành:** build ra JSON cho N5 không có error; số lượng khớp: **1.020 từ chính + 272 từ mở rộng**, **132 mẫu ngữ pháp**, **119 Kanji + 15 phụ lục**; cố tình xóa 1 cột trong md → build báo lỗi đúng dòng.
+**Tiêu chí hoàn thành:** build ra JSON cho N5 không có error; số lượng khớp: **1.020 từ chính + 275 từ mở rộng**, **132 mẫu ngữ pháp**, **119 Kanji + 15 phụ lục**; cố tình xóa 1 cột trong md → build báo lỗi đúng dòng.
 
 **Prompt gợi ý:**
 > Làm Phase 1 theo `docs/Ke_hoach_Website.md` (mục 5, 6.1-6.3). Dùng unified + remark-parse + remark-gfm để đọc bảng, không dùng regex cho bảng. Viết test trước cho parser với chính các file trong `content/n5`. Số lượng mục phải khớp tiêu chí hoàn thành của Phase 1.

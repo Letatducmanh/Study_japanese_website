@@ -52,7 +52,7 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 | Thứ tự | Spec | Trạng thái |
 |---|---|---|
 | 1 | repo-restructure | ✅ |
-| 2 | data-and-logic-fixes | ⬜ |
+| 2 | data-and-logic-fixes | ✅ |
 | 3 | ui-kit-and-shell | ⬜ |
 | 4 | practice-ui-migration | ⬜ |
 | 5 | pages-migration | ⬜ |
@@ -72,7 +72,7 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 
 ### 4.1 repo-restructure ✅
 
-> **Đã xong (spec `001-repo-restructure`).** Còn để lại cho feature sau: `lib/theme.ts`, `lib/use-theme.ts` và `lib/tts.ts` chưa dời (vị trí cuối chốt ở `ui-kit-and-shell`; `tts.ts` vào `platform/`); ngoại lệ Q-1 (`pipeline.test.ts` quá hạn 5 giây khi chạy mặc định) và Q-2 (test e2e `browse.spec.ts` "mở trang chủ → …" đỏ từ commit `8746c15`) chuyển cho `quality-gaps`; nợ luật phụ thuộc TD-1, TD-2, E-1 ghi ở `specs/001-repo-restructure/plan.md`.
+> **Đã xong (spec `001-repo-restructure`).** Còn để lại cho feature sau: `lib/theme.ts`, `lib/use-theme.ts` và `lib/tts.ts` chưa dời (vị trí cuối chốt ở `ui-kit-and-shell`; `tts.ts` vào `platform/`); ngoại lệ Q-1 (`pipeline.test.ts` quá hạn 5 giây khi chạy mặc định) đã sửa ở spec 002, còn Q-2 (test e2e `browse.spec.ts` "mở trang chủ → …" đỏ từ commit `8746c15`) chuyển cho `quality-gaps`; nợ luật phụ thuộc TD-1, TD-2, E-1 ghi ở `specs/001-repo-restructure/plan.md`.
 
 ```
 /speckit-specify Sắp xếp lại cấu trúc repo cho gọn và nhất quán để tôi và Claude Code luôn biết mỗi loại file nằm ở đâu, theo bảng phân loại trong docs/reference/audit-hien-trang.md (các nhóm "Dời" và "Xóa"). Website đang chạy trên Vercel phải hoạt động y như cũ: mọi trang mở được, không mất nội dung, không đổi giao diện. Không còn file .md lẻ ở gốc repo (trừ CLAUDE.md và README.md), không còn file bản sao hay build cũ. Link hỏng trong README.md được sửa. Ngoài phạm vi: đổi màu, đổi font, đổi giao diện, thêm layout làm bài, lazy loading.
@@ -81,7 +81,10 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 /speckit-plan Theo docs/ARCHITECTURE.md §8.1 và luật phụ thuộc §4.2. Chỉ dời/đổi tên file và sửa import, không viết lại logic; dùng git mv để giữ lịch sử. Dời src/components/** vào src/ui/** và src/app/** theo bảng audit §2.2 (primitives, jp, quiz, signature, mascot vào src/ui/signature/mascot); dời design/ và BACKLOG.md vào docs/reference/; src/lib/use-async-data.ts vào src/data/hooks/. Thêm luật ESLint no-restricted-imports theo §4.2; nếu luật mới làm lint đỏ ở file hiện có thì sửa khi nhỏ, còn lớn thì ghi vào tasks như nợ kỹ thuật có số file cụ thể. Chưa dời lib/tts.ts (thuộc ui-kit-and-shell). Kiểm chứng: npm run build, npm run check, e2e mở trang chủ và /b/mnn1/5, và so sánh ảnh chụp trang chủ trước/sau (không đổi).
 ```
 
-### 4.2 data-and-logic-fixes ⬜
+### 4.2 data-and-logic-fixes ✅
+
+> **Đã xong (spec `002-data-and-logic-fixes`).** Sửa đủ 5 lỗi: Kanji 行/長, tìm kiếm, bài chưa làm ở Điểm yếu, Luyện ngay/Ôn lại, số từ vựng chính 1.020 và mở rộng 275. Q-1 (`pipeline.test.ts` quá hạn) đã sửa bằng timeout riêng cho file. Còn để lại cho feature sau: (1) `buildSession` không bảo đảm mỗi từ ra đúng một lần, nên "20 câu" không bằng 20 từ (một phiên 20 câu chỉ có khoảng 14–16 từ khác nhau); cần spec riêng vì liên quan constitution III (`session.ts`); (2) tìm kiếm: debounce 250 ms khi xóa ô rồi gõ lại trong khoảng đó, và cái chớp "Không tìm thấy kết quả." sau khi debounce xong (xử lý ở `pages-migration`); (3) Kanji: cặp đọc–nghĩa ghép theo vị trí, và ô Âm Kun ngắt giữa từ おこな・う (xử lý ở `pages-migration`).
+
 ```
 /speckit-specify Sửa các lỗi dữ liệu và logic mà người học nhìn thấy, không đổi giao diện: (1) chữ Kanji có nhiều cách đọc/nghĩa hiển thị sai Hán Việt, ví dụ 行 phải là "HÀNH (đi; tiến hành) / HÀNG (hàng, dòng)"; (2) tìm kiếm trả về quá nhiều kết quả không liên quan; (3) trang Điểm yếu đang xếp các bài chưa học lần nào là "yếu nhất" với 0%; (4) nút luyện ngay từ trang Điểm yếu và Sổ lỗi sai phải chạy đủ các dạng bài dự kiến, không âm thầm bỏ dạng; (5) ba mục không thuộc danh sách từ chính của giáo trình (DVD, おなかが すきます, のどが かわきます) nằm ở phần từ vựng mở rộng, và số liệu từ chính/mở rộng trong kiểm thử và tài liệu khớp với thực tế. Mỗi lỗi có test tái hiện lỗi trước khi sửa.
 ```
@@ -118,7 +121,7 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 /speckit-specify Hoàn thiện chất lượng trước khi làm tài khoản: mọi dạng luyện tập có kiểm thử; mỗi bài ngữ pháp sinh được ít nhất 5 câu chọn trợ từ; nút "Tiếp tục học" biết tiến độ từ vựng, ngữ pháp và Kanji; sổ lỗi sai lọc được theo dạng bài; có tài liệu hướng dẫn soạn file nội dung; kiểm thử chạy ổn định trên điện thoại cỡ 360px.
 ```
 ```
-/speckit-plan Gồm: unit test cho flashcard, dictation, speed-truefalse; e2e đủ 6 hướng trắc nghiệm; test số lượng nội dung (từ chính, từ mở rộng, ngữ pháp, Kanji, Kanji phụ lục) theo con số đã chốt ở data-and-logic-fixes; test ≥ 5 câu trợ từ mỗi bài (xem danh sách trợ từ viết cứng ở modes/particle, chuyển vào dữ liệu nếu vi phạm constitution I); nút Tiếp tục đọc tiến độ ngữ pháp và Kanji; bộ lọc dạng bài ở Sổ lỗi sai; docs/CONTENT_GUIDE.md (= Ke_hoach_Website §5 + Phụ lục B); tăng testTimeout cho scripts/content/pipeline.test.ts; thêm bước e2e vào .github/workflows/ci.yml; xử lý các mục còn hiệu lực trong docs/reference/BACKLOG.md.
+/speckit-plan Gồm: unit test cho flashcard, dictation, speed-truefalse; e2e đủ 6 hướng trắc nghiệm; test số lượng nội dung (từ chính, từ mở rộng, ngữ pháp, Kanji, Kanji phụ lục) theo con số đã chốt ở data-and-logic-fixes; test ≥ 5 câu trợ từ mỗi bài (xem danh sách trợ từ viết cứng ở modes/particle, chuyển vào dữ liệu nếu vi phạm constitution I); nút Tiếp tục đọc tiến độ ngữ pháp và Kanji; bộ lọc dạng bài ở Sổ lỗi sai; docs/CONTENT_GUIDE.md (= Ke_hoach_Website §5 + Phụ lục B); thêm bước e2e vào .github/workflows/ci.yml; xử lý các mục còn hiệu lực trong docs/reference/BACKLOG.md.
 ```
 
 ### 4.7 accounts-sync ⬜
