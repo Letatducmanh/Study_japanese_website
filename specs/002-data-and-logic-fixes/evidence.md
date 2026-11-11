@@ -48,6 +48,44 @@ Thời gian riêng của `scripts/content/pipeline.test.ts` (`npx vitest run scr
 
 ## US3
 
+### Đỏ trước khi sửa (T036)
+
+Lệnh: `npx vitest run scripts/content/parse-kanji.test.ts`, ngày 10/11/2026 20:23, với `splitHanVietMeaning` còn là **bản giữ hành vi cũ** (T034, regex một cặp ngoặc `/^(.+?)\s*\((.+)\)$/u`). Kết quả: **8 đỏ, 17 xanh** (25 test). Mọi test đỏ đều đỏ do `AssertionError` đúng lý do (regex cũ cắt sai ô nhiều cặp ngoặc hoặc không phát hiện ngoặc lệch), không phải lỗi import hay cú pháp.
+
+| # | Test đỏ | Thông báo lỗi chính | Lý do |
+|---|---|---|---|
+| 1 | `splitHanVietMeaning — bảng ví dụ › hai cặp ngoặc: HÀNH (đi; tiến hành) / HÀNG (hàng, dòng)` | `expected { hanViet: 'HÀNH', …(1) } to deeply equal { hanViet: 'HÀNH / HÀNG', …(1) }` | Regex cũ: `(.+?)` lấy đoạn đầu, `(.+)` tham lam nuốt đến `)` cuối nên nghĩa thành `đi; tiến hành) / HÀNG (hàng, dòng` |
+| 2 | `… hai cặp ngoặc: TRƯỜNG (dài) / TRƯỞNG (người đứng đầu)` | `expected { hanViet: 'TRƯỜNG', …(1) } to deeply equal { hanViet: 'TRƯỜNG / TRƯỞNG', …(1) }` | Như trên |
+| 3 | `splitHanVietMeaning — lỗi trả null › ngoặc không cân (thừa ")")` | `expected { hanViet: 'A', meaning: 'x)' } to be null` | Regex cũ không phát hiện `)` thừa, trả giá trị cắt sai |
+| 4 | `… › một đoạn không có ngoặc` (`HÀNH / HÀNG (y)`) | `expected { Object (hanViet, meaning) } to be null` | Regex cũ gộp `HÀNH / HÀNG` thành Hán Việt, không phát hiện đoạn thiếu ngoặc |
+| 5 | `parseKanjiFile — 行 và 長 trên kanji.md thật › 行: hanViet "HÀNH / HÀNG", …` | `expected 'HÀNH' to be 'HÀNH / HÀNG'` | Dữ liệu thật của 行 bị cắt sai |
+| 6 | `… › 長: hanViet "TRƯỜNG / TRƯỞNG", …` | `expected 'TRƯỜNG' to be 'TRƯỜNG / TRƯỞNG'` | Dữ liệu thật của 長 bị cắt sai |
+| 7 | `… › khứ hồi: ghép lại từ hanViet và meaning ra đúng ô nguồn của mọi chữ` | `số cụm của 行: expected 1 to be 2` | Số cụm Hán Việt và nghĩa không đủ để ghép lại ô nguồn của 行 |
+| 8 | `parseKanjiFile — ô nghĩa sai quy cách báo lỗi kèm số dòng › ngoặc không cân (thừa ")")` (`TỨ (bốn))`) | `expected false to be true` (`issues.hasErrors`) | Bản cũ không báo lỗi cho ngoặc thừa |
+
+Xanh ngay (đúng dự kiến, chốt chặn hoặc đặc tả): `NGOẠI (ngoài)`, ngoặc lồng cân `A (x (y))`, dấu `/` trong ngoặc, các ca lỗi `A (x`, `A (x) / `, `A (x) y`, ô rỗng (bản cũ cũng không khớp regex nên đã báo lỗi), năm ca lỗi mức file còn lại, ô hợp lệ, **FR-011** (132 chữ khác 行/長 giống hệt regex cũ), 3 test sẵn có. Không có test dự kiến đỏ nào xanh ngay.
+
+`scripts/content/compare-kanji-json.test.ts` (7 test) xanh ngay: đây là công cụ kiểm dữ liệu, không phải bản sửa lỗi.
+
+### Sau khi sửa (T038–T041)
+
+- `splitHanVietMeaning` viết lại bằng bộ đọc cân bằng ngoặc (tách đoạn bằng `/` ở độ sâu 0, nối bằng " / "). `npx vitest run scripts/content/parse-kanji.test.ts scripts/content/compare-kanji-json.test.ts`: **32/32 xanh**.
+- **So sánh JSON Kanji (T039)**: `npm run content:build` rồi `npx tsx scripts/content/compare-kanji-json.ts <trước> <sau>` in `OK: chỉ kanji-行, kanji-長 khác` (mã thoát 0). 17 file JSON: **15 file giống từng byte**, 2 file khác (`ch09.json`, `ch15.json`, hai chương chứa 行 và 長). Trong hai file đó chỉ hai mục `kanji-行`, `kanji-長`, chỉ hai trường `hanViet` và `meaning` đổi:
+  - `kanji-行`: `HÀNH / HÀNG` | `đi; tiến hành / hàng, dòng`
+  - `kanji-長`: `TRƯỜNG / TRƯỞNG` | `dài / người đứng đầu`
+  - 132 chữ còn lại giống từng byte.
+- e2e `tests/e2e/kanji.spec.ts` (360×740, `npm run build` rồi `npx playwright test tests/e2e/kanji.spec.ts`): **2/2 xanh** (行 và 長 hiện đúng hai dòng, không còn dấu ngoặc lẻ ở dòng nghĩa, không cuộn ngang).
+
+Cổng G của story (10/11/2026, trước commit):
+
+| Lệnh | Kết quả |
+|---|---|
+| `npm test -- --testTimeout=30000` | 45 file, **249/249 đạt** (220 + 29 mới: 7 của `compare-kanji-json`, 22 của `parse-kanji`) |
+| `npm run build` | thành công, JS gzip **185,24 KB** (không đổi) |
+| `npm run content:validate` | OK, **568 cảnh báo** (không tăng), 134 Kanji |
+| `npm run lint` | 0 lỗi |
+| `npm run check` | **xanh** (exit 0), 249/249, 35,77 giây |
+
 ## US4
 
 ## US5
