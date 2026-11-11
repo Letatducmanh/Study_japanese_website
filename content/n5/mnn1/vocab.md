@@ -445,7 +445,6 @@
 | ビール | - | bīru | bia | |
 | [お]さけ | [お]酒 | [o]sake | rượu; rượu sake | |
 | ビデオ | - | bideo | video, băng hình | |
-| DVD | - | dībuidī | đĩa DVD | |
 | えいが | 映画 | eiga | phim (điện ảnh) | Bản mới học ở Bài 4 |
 | てがみ | 手紙 | tegami | thư | |
 | レポート | - | repōto | báo cáo | |
@@ -484,6 +483,12 @@
 | おにぎり | - | onigiri | cơm nắm | |
 | みそしる | 味噌汁 | misoshiru | canh miso | |
 | なっとう | 納豆 | nattō | đậu tương lên men | |
+
+### 3. Từ vựng mở rộng ★ — Thiết bị giải trí (娯楽)
+
+| Tiếng Nhật (Kana) | Hán tự (Kanji) | Cách đọc (Romaji) | Nghĩa tiếng Việt | Ghi chú |
+|---|---|---|---|---|
+| DVD | - | dībuidī | đĩa DVD | |
 
 ---
 
@@ -981,8 +986,6 @@
 | どこか | - | dokoka | đâu đó | |
 | おなかが すきました。 | - | onaka ga sukimashita. | tôi đói rồi | |
 | おなかが いっぱいです。 | - | onaka ga ippai desu. | tôi no rồi | |
-| おなかが すきます | - | onaka ga sukimasu | đói bụng | Dạng động từ của おなかが すきました |
-| のどが かわきます | のどが 渇きます | nodo ga kawakimasu | khát nước | Dạng động từ của のどが かわきました |
 | のどが かわきました。 | - | nodo ga kawakimashita. | tôi khát rồi | |
 | そう しましょう。 | - | sō shimashō. | làm như thế đi | |
 | ごちゅうもんは？ | ご注文は？ | gochūmon wa? | anh/chị gọi món gì ạ? | |
@@ -1004,6 +1007,13 @@
 | おもちかえり / テイクアウト | お持ち帰り | omochikaeri / teikuauto | mua mang về | |
 | いらっしゃいませ。 | - | irasshaimase. | xin mời quý khách (nhân viên chào khách) | |
 | なんめいさまですか。 | 何名様ですか。 | nanmei-sama desu ka. | quý khách đi mấy người ạ? | |
+
+### 3. Từ vựng mở rộng ★ — Cảm giác đói và khát (空腹・のどの渇き)
+
+| Tiếng Nhật (Kana) | Hán tự (Kanji) | Cách đọc (Romaji) | Nghĩa tiếng Việt | Ghi chú |
+|---|---|---|---|---|
+| おなかが すきます | - | onaka ga sukimasu | đói bụng | Dạng động từ của おなかが すきました |
+| のどが かわきます | のどが 渇きます | nodo ga kawakimasu | khát nước | Dạng động từ của のどが かわきました |
 
 ---
 

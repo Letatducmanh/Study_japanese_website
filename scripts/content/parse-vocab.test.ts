@@ -8,7 +8,7 @@ import { parseVocabFile } from './parse-vocab.ts'
 const VOCAB_PATH = join(process.cwd(), 'content/n5/mnn1/vocab.md')
 
 describe('parseVocabFile — content/n5/mnn1/vocab.md', () => {
-  it('đọc đúng 25 bài, 1.020±vài từ chính và 272 từ mở rộng, không lỗi', () => {
+  it('đọc đúng 25 bài, 1.020 từ chính và 275 từ mở rộng, không lỗi', () => {
     const issues = new ContentIssueCollector()
     const result = parseVocabFile(VOCAB_PATH, 'mnn1', issues)
 
@@ -17,8 +17,8 @@ describe('parseVocabFile — content/n5/mnn1/vocab.md', () => {
 
     const main = result.rows.filter((r) => r.section === 'main')
     const extended = result.rows.filter((r) => r.section === 'extended')
-    expect(main.length).toBeGreaterThan(1000)
-    expect(extended).toHaveLength(272)
+    expect(main).toHaveLength(1020)
+    expect(extended).toHaveLength(275)
   })
 
   it('Bài 3 có じどうはんばいき (máy bán hàng tự động)', () => {
