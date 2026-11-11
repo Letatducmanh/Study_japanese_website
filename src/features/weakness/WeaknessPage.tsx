@@ -11,15 +11,16 @@ import {
 import { progressRepository } from '@/data/progress/dexie-repo'
 import { averageMastery } from '@/domain/mastery/formula'
 import { computeLessonScores } from '@/domain/mastery/lesson-scores'
-import { classifyItemId, parseVocabItemId } from '@/domain/quiz/item-id'
+import { classifyItemId } from '@/domain/quiz/item-id'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
+import { planWeakReview } from '@/features/weakness/review-plan'
 import { vi } from '@/i18n/vi'
 import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { Mastery, Skill, VocabItem } from '@/domain/types'
 
 const WEAK_LIMIT = 20
-/** Dạng bài dùng cho "Luyện ngay" — bộ cố định, đủ để ôn nhanh nhận biết + nhớ lại. */
-const REVIEW_MODE_IDS = ['flashcard', 'mcq-jp-vi', 'mcq-vi-jp']
+/** Số bản ghi mastery lấy khi bấm "Luyện ngay": đủ để chọn 20 từ phân biệt dù mỗi từ yếu ở nhiều kỹ năng. */
+const PRACTICE_FETCH_LIMIT = 200
 
 export function WeaknessPage() {
   const navigate = useNavigate()
@@ -133,22 +134,17 @@ export function WeaknessPage() {
       (r): r is { mastery: Mastery; item: VocabItem } => r.item !== undefined,
     )
 
-  function handlePracticeNow() {
-    if (topWords.length === 0) return
-    const parsed = parseVocabItemId(topWords[0].item.id)
-    if (!parsed) return
-    const sameLesson = topWords.filter((r) => {
-      const p = parseVocabItemId(r.item.id)
-      return p && p.bookId === parsed.bookId && p.lesson === parsed.lesson
-    })
-    setPendingConfig({
-      bookId: parsed.bookId,
-      lesson: parsed.lesson,
-      questionTypeIds: REVIEW_MODE_IDS,
-      questionCount: sameLesson.length,
-      includeExtended: true,
-      onlyItemIds: sameLesson.map((r) => r.item.id),
-    })
+  async function handlePracticeNow() {
+    // Danh sách hiển thị chỉ có 20 bản ghi (cặp từ × kỹ năng); lấy rộng hơn rồi chọn 20 từ phân biệt.
+    const rows = await progressRepository.listWeak(PRACTICE_FETCH_LIMIT)
+    const ids = [
+      ...new Set(
+        rows.filter((m) => classifyItemId(m.itemId) === 'vocab').map((m) => m.itemId),
+      ),
+    ]
+    const plan = planWeakReview(rows, await resolveVocabItems(ids))
+    if (!plan) return
+    setPendingConfig(plan)
     navigate('/practice/run')
   }
 

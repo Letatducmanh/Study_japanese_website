@@ -77,6 +77,69 @@ Cổng G của story (10/11/2026, trước commit):
 
 ## US2
 
+### Chuẩn bị giữ nguyên hành vi (T012–T014)
+
+Tạo `src/features/weakness/review-modes.ts` (`REVIEW_MODE_IDS`, dùng chung cho `WeaknessPage` và `MistakesPage`, xóa hai bản sao), `src/features/practice/review-pools.ts` (bản giữ hành vi cũ: `ctxPool = targets`, chưa nối vào `PracticeRunPage`) và `src/features/weakness/review-plan.ts` (`planWeakReview` trả kiểu `WeakReviewPlan` **khai báo cục bộ**, bản **chép nguyên logic cũ** của `handlePracticeNow`; `WeaknessPage.handlePracticeNow` gọi hàm này). Chạy ngay `npm run lint`, `npx tsc -b` và toàn bộ `vitest` (288/288): sạch, hành vi không đổi, không phải thêm ngoại lệ ESLint (`review-plan.ts` không import `features/practice`).
+
+### Chốt chặn T015: kiểm test bắt được lỗi id
+
+Tạm đổi `'mcq-jp-vi'` thành `'mcq-jp-vi-x'` trong `review-modes.ts`, chạy `npx vitest run src/test/review-mode-ids.test.ts`: **ĐỎ** (2 test; `dạng bài "mcq-jp-vi-x" chưa đăng ký: expected false to be true`). **Đã hoàn nguyên** và kiểm bằng `cmp` với bản sao lưu: file giống hệt bản gốc; test xanh lại (2/2).
+
+### Đỏ trước khi sửa (T022)
+
+Lệnh: `npx vitest run src/test src/features/practice src/features/weakness`, ngày 10/11/2026 21:24, khi `buildReviewPools` còn `ctxPool = targets`, `PracticeRunPage` chưa dùng `buildReviewPools` và chỉ tải một bài, `planWeakReview` còn chép logic cũ. Kết quả: **11 đỏ, 73 xanh** (84 test). Cả 11 đỏ là `AssertionError`/`TestingLibraryElementError` đúng lý do (thiếu đáp án nhiễu, chỉ lấy một bài, không bỏ trùng, chỉ 20 bản ghi), không phải lỗi import hay cú pháp.
+
+| # | Test đỏ | Thông báo lỗi chính | Lý do |
+|---|---|---|---|
+| 1 | `review-pools.test.ts › (b) Ôn lại một từ: ctxPool đủ từ của bài, qua nhiều seed ra đủ 3 dạng` | `expected [ 'mnn1-l03-w1' ] to deeply equal ArrayContaining{…}` | `ctxPool` chỉ gồm chính từ cần ôn |
+| 2 | `review-pools.test.ts › (c) từ yếu ở 3 bài: ctxPool chứa từ vựng của cả 3 bài` | `mnn1-l03-w2: expected false to be true` | như trên |
+| 3 | `PracticeRunPage.test.tsx › (a) Ôn lại một từ: vẫn ra trắc nghiệm 4 lựa chọn …` | `Unable to find an element with the text: Câu 1/1` | không có đáp án nhiễu nên trắc nghiệm không đủ điều kiện, trang báo lỗi |
+| 4 | `PracticeRunPage.test.tsx › (b) từ yếu ở Bài 3 và Bài 5: tải cả hai bài` | `Unable to find an element with the text: Câu 1/2` | chỉ tải bài của cấu hình, từ ở Bài 5 bị bỏ |
+| 5 | `PracticeResultPage.test.tsx › (a) … bấm "Làm lại câu sai" vẫn ra câu trắc nghiệm` | `Unable to find an element with the text: Câu 1/1` | như #3 |
+| 6 | `review-plan.test.ts › (a) 12 từ yếu ở 3 bài → đủ 12 mã …` | `expected 4 to be 12` | bản cũ chỉ lấy từ cùng bài với từ đầu |
+| 7 | `review-plan.test.ts › (c) 25 từ yếu ở nhiều bài → tối đa 20 từ …` | `expected [ … ] to have a length of 20 but got 9` | như trên |
+| 8 | `review-plan.test.ts › (e) một từ yếu ở nhiều kỹ năng chỉ tính một lần` | `expected [ 'mnn1-l03-w1', 'mnn1-l03-w1', …(2) ] to deeply equal [ … ]` | bản cũ trùng mã và đếm trùng |
+| 9 | `src/test/WeaknessPage.practice.test.tsx › (b) 12 từ yếu ở 3 bài → …` | `expected [ 'mnn1-l03-w1', … ] to have a length of 12 but got 4` | bấm "Luyện ngay" chỉ tạo phiên một bài |
+| 10 | `… › (c) 25 từ yếu ở nhiều bài → đúng 20 từ theo thứ hạng` | `expected [ … ] to deeply equal [ 'mnn1-l03-w1', 'mnn1-l05-w1', …(18) ]` | như trên |
+| 11 | `… › (g) 30 từ, mỗi từ 2 kỹ năng, xen 10 mastery ngữ pháp → đúng 20 từ phân biệt …` | `expected [ 'mnn1-l03-w1', 'mnn1-l03-w1', …(4) ] to have a length of 20 but got 6` | `listWeak(20)` chỉ nhận 20 bản ghi (lẫn ngữ pháp) rồi lọc một bài, và trùng mã |
+
+**Xanh ngay (đúng dự kiến, chốt chặn hoặc đặc tả):** `review-mode-ids.test.ts` (2); `review-pools.test.ts` (a) đặc tả nguyên nhân (một từ + `ctxPool` của chính nó chỉ ra thẻ ghi nhớ), (d) không có `onlyItemIds` giữ hành vi cũ, (e) `includeExtended: false`; `PracticeRunPage.test.tsx` (c) không có `onlyItemIds` vẫn ra trắc nghiệm và (d) chốt chặn ghi tiến độ cho đường chạy cũ; `PracticeResultPage.test.tsx` (b) chốt chặn hồi quy "Làm lại câu sai" sau câu ngữ pháp sai; `review-plan.test.ts` (b), (d), (f), (g), (h); `WeaknessPage.practice.test.tsx` (h) từ không còn trong nội dung bị bỏ qua và (i) không có từ yếu; `MistakesPage.test.tsx`. Không có test dự kiến đỏ nào xanh ngay.
+
+*Ghi chú trung thực:* lần chạy đầu có 13 đỏ vì hai ca `review-plan.test.ts` (d) và (h) tôi viết bằng từ trải ra nhiều bài, nên đỏ với bản cũ dù ý định là chốt chặn. Đó là lỗi thiết kế test của tôi, không phải giả thuyết sai về mã; đã sửa cho dùng từ cùng một bài (giống tên ca "chốt chặn") rồi chạy lại ra 11 đỏ ở trên.
+
+### Đỏ e2e (T023)
+
+`npm run content:build; npm run build; npx playwright test tests/e2e/weakness-practice.spec.ts` (360×740) trên mã hiện tại: **1 đỏ, 1 xanh**.
+- ĐỎ: `Điểm yếu → Luyện ngay: 9 từ yếu ở 3 bài thành phiên 9 câu` → `expect(locator).toBeVisible() failed … element(s) not found` cho `Câu 1/9` (phiên chỉ gồm từ của một bài: `Câu 1/3`).
+- Xanh: `Sổ lỗi sai → Ôn lại một từ: phiên 1 câu chạy được` (đặc tả: phiên 1 câu vẫn dựng được, kể cả khi chỉ ra thẻ ghi nhớ).
+
+### Sau khi sửa (T025–T030)
+
+- `src/features/practice/review-pools.ts`: `buildReviewPools` theo R1–R3. Có `onlyItemIds` thì `targets` = từ cần ôn (+ ngữ pháp như cũ), `ctxPool` = toàn bộ từ vựng của các bài đã tải + ngữ pháp; không có `onlyItemIds` thì `targets` = `ctxPool` như cũ.
+- `src/features/practice/PracticeRunPage.tsx` (sửa tối thiểu): tập bài cần tải = `(config.bookId, config.lesson)` **luôn có mặt** + các bài suy ra từ `onlyItemIds` qua `parseVocabItemId` (bài của cấu hình lỗi thì `ErrorState` như cũ; bài phụ không tải được thì bỏ qua); dựng `pools` bằng `buildReviewPools` và gọi `buildSession({ items: targets, ctxPool, … })` với tham số `ctxPool` **có sẵn** của `buildSession`. Luồng Bài kiểm tra tổng hợp, sách Kanji, `handleAnswer`, `setLastResult` giữ nguyên.
+- `src/features/weakness/review-plan.ts`: `planWeakReview` theo P1–P7 (chỉ từ vựng, mỗi từ một lần, tối đa 20 từ phân biệt yếu nhất trước bất kể bài, mã không còn trong nội dung bị bỏ qua, bài/`lesson` của từ đầu, rỗng → `null`; kiểu trả về vẫn là `WeakReviewPlan` cục bộ). `WeaknessPage.handlePracticeNow` thành hàm bất đồng bộ: khi bấm lấy `listWeak(200)`, lọc mã từ vựng, bỏ trùng, `resolveVocabItems`, rồi `planWeakReview`; danh sách "Top từ yếu nhất" vẫn dùng `listWeak(20)`. `MistakesPage.handleReview` giữ cấu hình cũ.
+- Chạy lại: `npx vitest run src/test src/features/practice src/features/weakness` **84/84 xanh** (T022 trước đó 11 đỏ); e2e `weakness-practice.spec.ts` (360×740): **2/2 xanh** (`Câu 1/9`); `npm run lint` và `npx tsc -b` sạch, **không thêm ngoại lệ ESLint**.
+- **T028 (vùng cấm và giao diện)**: `git diff --stat a593f51 -- src/domain/quiz/registry.ts src/domain/quiz/session.ts src/domain/quiz/grading.ts src/ui src/i18n` → **rỗng** (kiểm trên cây làm việc, gồm cả các commit đã có). `git diff -U0 a593f51` lọc `className=|(^|[\s(>{])<[A-Za-z]` cho `PracticeRunPage.tsx`, `WeaknessPage.tsx`, `MistakesPage.tsx`, `SearchPage.tsx`, `BookPage.tsx`, `PracticeResultPage.tsx` → **0 dòng khớp ở cả sáu file**. Không phải sửa `registry.ts`, `session.ts`, `grading.ts` (constitution III).
+
+**Thành phần thực tế của phiên "Luyện ngay"** (đo trên dữ liệu thật: 30 từ yếu xen kẽ Bài 3, 5, 8, mỗi từ yếu ở 2 kỹ năng = 60 bản ghi mastery, qua `planWeakReview` → `buildReviewPools` → `buildSession`):
+- `planWeakReview`: **20 từ phân biệt**, `questionCount` 20, từ của cả 3 bài (l03, l05, l08); `targets` 20 từ, `ctxPool` 221 mục (toàn bộ từ vựng 3 bài).
+- 8 seed (1–8): mỗi phiên **20 câu**, nhưng chỉ **14–16 từ phân biệt** (14, 14, 15, 14, 15, 15, 15, 16) vì `buildSession` chọn ngẫu nhiên cặp (từ, dạng bài) nên không bảo đảm mỗi từ ra đúng một lần (giới hạn đã chốt ở Q2/SC-003: "tập từ của phiên gồm đủ các từ"); phiên lấy từ cả 3 bài.
+- Dạng bài mỗi phiên (flashcard / mcq-jp-vi / mcq-vi-jp): 6/8/6, 8/6/6, 5/7/8, 5/9/6, 4/10/6, 5/8/7, 6/5/9, 5/6/9. Qua 8 seed cả **3 dạng đều xuất hiện** trong mọi phiên.
+
+Kịch bản thật ở 360×740 (bản dựng `npm run build`, trình duyệt): 9 từ yếu ở Bài 3/5/8 → nút "Luyện ngay 20 câu yếu nhất" → `Câu 1/9` (dạng 9 câu: mcq, mcq, flashcard, mcq, mcq, mcq, mcq, mcq, flashcard); trả lời sai thì màn kết quả có nút "Làm lại câu sai" và bấm vào vẫn chạy được (`Câu 1/8`). "Ôn lại" một từ ở Sổ lỗi sai: lần đầu đã ra **câu trắc nghiệm 4 lựa chọn** (không chỉ còn thẻ ghi nhớ).
+
+Ảnh chụp (ngoài git, `.screens/` đã gitignore): `us2-weak-practice-now-360x740.png`, `us2-review-one-word-mcq-360x740.png`, `us2-result-retry-wrong-360x740.png`.
+
+Cổng G của story (10/11/2026, trước commit):
+
+| Lệnh | Kết quả |
+|---|---|
+| `npm test -- --testTimeout=30000` | 57 file, **315/315 đạt** (288 + 27 mới) |
+| `npm run build` | thành công, JS gzip **185,77 KB** (≤ 200 KB) |
+| `npm run content:validate` | OK, **568 cảnh báo** (không tăng) |
+| `npm run lint` | 0 lỗi |
+| `npm run check` | **xanh** (exit 0), 315/315, 44,21 giây |
+
 ## US3
 
 ### Đỏ trước khi sửa (T036)

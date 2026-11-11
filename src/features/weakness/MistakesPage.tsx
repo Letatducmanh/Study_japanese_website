@@ -7,12 +7,10 @@ import { resolveVocabItems } from '@/data/content-loader'
 import { progressRepository } from '@/data/progress/dexie-repo'
 import { classifyItemId, parseVocabItemId } from '@/domain/quiz/item-id'
 import { usePracticeSessionStore } from '@/features/practice/session-store'
+import { REVIEW_MODE_IDS } from '@/features/weakness/review-modes'
 import { vi } from '@/i18n/vi'
 import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { MistakeRecord, VocabItem } from '@/domain/types'
-
-/** Dạng bài dùng cho "Ôn lại" — bộ cố định, đủ để ôn nhanh nhận biết + nhớ lại. */
-const REVIEW_MODE_IDS = ['flashcard', 'mcq-jp-vi', 'mcq-vi-jp']
 
 export function MistakesPage() {
   const navigate = useNavigate()
