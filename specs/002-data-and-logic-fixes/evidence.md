@@ -44,6 +44,37 @@ Thời gian riêng của `scripts/content/pipeline.test.ts` (`npx vitest run scr
 
 ## US1
 
+### Đỏ trước khi sửa (T007)
+
+Lệnh: `npx vitest run src/domain/mastery/lesson-scores.test.ts src/features/browse/BookPage.test.tsx src/features/weakness/WeaknessPage.lessons.test.tsx`, ngày 10/11/2026 20:55, khi `computeLessonScores` còn đặt khóa 0 cho bài chưa làm. Kết quả: **8 đỏ, 5 xanh** (13 test). Cả 8 đỏ là `AssertionError` đúng lý do (mọi bài đều có điểm, kể cả bài chưa làm), không phải lỗi import hay cú pháp. (Lần chạy đầu của hai file component đỏ vì `MissingAPIError: IndexedDB API missing`: mock `dexie-repo` chưa được áp do import `vi` bị đặt bí danh nên `vi.mock` không được đưa lên đầu file. Đó là lỗi test, đã sửa trước khi ghi nhận; bảng dưới là lần chạy sau khi sửa.)
+
+| # | Test đỏ | Thông báo lỗi chính | Lý do |
+|---|---|---|---|
+| 1 | `lesson-scores.test.ts › chưa có dữ liệu nào: không bài nào có khóa (không phải 0)` | `expected 2 to be +0` (`result.size`) | Map có khóa 0 cho cả 2 bài chưa làm |
+| 2 | `… › chỉ bài có mastery mới có khóa` | `expected true to be false` (`result.has(2)`) | Bài 2 chưa làm vẫn có khóa |
+| 3 | `… › mastery của bookId khác không tạo khóa cho bài trùng số` | `expected 2 to be +0` | Mastery sách khác không làm Bài 1 có điểm, nhưng cả 2 bài vẫn có khóa 0 |
+| 4 | `BookPage.test.tsx › bài chưa làm hiện màu trung tính; bài đã làm yếu hiện màu đỏ` | `expected 'flex aspect-square min-h-11 items-cen…' to contain 'border-slate-200'` | Bài 1 chưa làm hiện lớp đỏ của 0% thay vì lớp trung tính `heatmapClass(null)` |
+| 5 | `BookPage.test.tsx › chưa có mastery nào: mọi ô trung tính, không ô nào đỏ` | `expected 'flex aspect-square min-h-11 items-cen…' not to contain 'border-danger'` | Khi chưa có mastery, mọi ô vẫn đỏ |
+| 6 | `WeaknessPage.lessons.test.tsx › A: chỉ làm Bài 3 và Bài 5 → …` | `expected [ 'Minna — 1', 'Minna — 2', …(3) ] to deeply equal [ 'Minna — 3', 'Minna — 5' ]` | Bài chưa làm (0%) chiếm đầu danh sách "bài thấp nhất" |
+| 7 | `… › B: chưa làm câu nào → …` | `expected <h2 …(1)></h2> to be null` | Vẫn hiện mục "Bài có độ thành thạo thấp nhất" với các bài 0% dù chưa làm câu nào |
+| 8 | `… › C: Bài 3 làm toàn sai (0%) vẫn được liệt kê, chỉ mình Bài 3` | `expected [ 'Minna — 1', 'Minna — 2', …(3) ] to deeply equal [ 'Minna — 3' ]` | Danh sách lẫn các bài chưa làm |
+
+Xanh ngay (đúng dự kiến, chốt chặn): bài đã làm toàn sai (score 0) vẫn có khóa giá trị 0; mastery của từ vựng mở rộng làm bài có khóa; test tính điểm sẵn có; **D** (chỉ mastery ngữ pháp/Kanji → trang không lỗi); **E** (từ yếu không còn trong nội dung → bỏ qua, không lỗi). Không có test dự kiến đỏ nào xanh ngay.
+
+### Sau khi sửa (T009–T010)
+
+- `src/domain/mastery/lesson-scores.ts`: `computeLessonScores` chỉ `result.set(...)` cho bài có mastery từ vựng; bài chưa làm không có khóa. Không sửa `formula.ts`, `BookPage.tsx`, `WeaknessPage.tsx`, `heatmap.ts` (hai trang tự đúng nhờ dữ liệu: `BookPage` đã dùng `?? null`, `WeaknessPage` chỉ liệt kê các khóa có trong Map). Chạy lại T007: **13/13 xanh**.
+
+Cổng G của story (10/11/2026, trước commit):
+
+| Lệnh | Kết quả |
+|---|---|
+| `npm test -- --testTimeout=30000` | 47 file, **266/266 đạt** (255 + 11 mới) |
+| `npm run build` | thành công, JS gzip **185,25 KB** |
+| `npm run content:validate` | OK, **568 cảnh báo** (không tăng) |
+| `npm run lint` | 0 lỗi |
+| `npm run check` | **xanh** (exit 0), 266/266, 34,98 giây |
+
 ## US2
 
 ## US3
