@@ -69,6 +69,13 @@ describe('searchVocab trên 1.295 từ thật (SC-005)', () => {
     expect(kanjiOf(results).slice(0, 3)).toContain('外国')
   })
 
+  it('một ký tự CJK (kanji, kana) vẫn tìm được, khác với một ký tự ASCII', async () => {
+    for (const q of ['日', '学', 'あ']) {
+      const results = await searchVocab(q)
+      expect(results.length, q).toBeGreaterThan(0)
+    }
+  })
+
   it('truy vấn vô nghĩa hoặc một ký tự ASCII → rỗng', async () => {
     expect(await searchVocab('zzzz')).toEqual([])
     expect(await searchVocab('a')).toEqual([])

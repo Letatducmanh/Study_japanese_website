@@ -20,7 +20,7 @@ Mong đợi sau khi xong cả 5 story (5 commit): test > 220 và không đỏ; `
 
 1. Trước khi sửa parser: `npm run content:build`, chép `public/content/kanji-master-n5/` sang thư mục tạm A.
 2. Sửa parser, `npm run content:build` lại, chép sang thư mục tạm B.
-3. So sánh từng file: chỉ `ch04.json`… chứa 行 và 長 khác; trong đó chỉ hai mục `kanji-行`, `kanji-長`, chỉ các trường `hanViet` và `meaning`.
+3. So sánh: `npx tsx scripts/content/compare-kanji-json.ts <thư mục A> <thư mục B>` phải in `OK: chỉ kanji-行, kanji-長 khác`. Trong 17 file, đúng hai file khác là `ch09.json` và `ch15.json` (hai chương chứa 行 và 長); trong đó chỉ hai mục `kanji-行`, `kanji-長`, chỉ các trường `hanViet` và `meaning`. 15 file còn lại giống từng byte.
 4. Mở `npm run dev` → `/kanji/行`: dòng Hán Việt "HÀNH / HÀNG", dòng nghĩa "đi; tiến hành / hàng, dòng", không còn dấu ngoặc lẻ.
 
 Mong đợi: 132 chữ khác giống từng byte.

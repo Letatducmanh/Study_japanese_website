@@ -280,3 +280,27 @@ Cổng G của story (10/11/2026, trước commit):
 | `npm run content:validate` | OK, **568 cảnh báo** (không tăng); **1020 từ chính, 275 từ mở rộng**, 132 mẫu ngữ pháp, 134 Kanji |
 | `npm run lint` | 0 lỗi |
 | `npm run check` | **xanh** (exit 0), 255/255, 35,42 giây |
+
+## Phase 8 — kiểm tra cuối (T067–T070)
+
+Ngày 11/11/2026, sau commit `078d59f`.
+
+**Truy vấn một ký tự (kiểm trước Phase 8):** thêm test `một ký tự CJK (kanji, kana) vẫn tìm được` vào `src/data/search-index.real.test.ts` (xanh ngay). Trên 1.295 từ thật: `日` = 6 kết quả (日, 母の 日, 日記…), `学` = 2 (学校, 学生), `あ` = 41 (あ, あの方, あの人…); một ký tự ASCII `a` = 0 (đúng hợp đồng S2).
+
+**T067** `npm run check` (thẳng, không ngoại lệ): **xanh**, 57 file, **316/316**, `content:validate` OK 568 cảnh báo, `mnn1: 1020 từ chính, 275 từ mở rộng, 132 mẫu ngữ pháp`.
+
+**T068** toàn bộ e2e (`npm run content:build; npm run build; npx playwright test`, 360×740): **18/19 đạt, 1 đỏ** — đúng ngoại lệ đã biết Q-2: `browse.spec.ts › mở trang chủ → vào N5 → Minna no Nihongo 1 → Bài 1` (không tìm thấy heading `Tự học tiếng Nhật cùng Mạnh`, đỏ từ commit `8746c15`, không sửa ở spec này). Không e2e nào khác đỏ; ba spec mới `weakness-practice`, `kanji`, `search` đều xanh.
+
+**T069** ràng buộc toàn nhánh (`git diff a593f51..HEAD`, trước commit docs cuối): 46 file đổi — `src/features` 14, `specs/002-data-and-logic-fixes` 11, `scripts/content` 6, `src/test` 3, `tests/e2e` 3, `src/data` 3, `src/lib` 2, `src/domain` 2, `content/n5` 1, `docs/reference` 1.
+- `registry.ts`, `session.ts`, `grading.ts`, `src/ui`, `src/i18n`: **không có thay đổi**.
+- `docs/reference/**`: chỉ `Ke_hoach_Website.md`, 2 dòng thêm/2 dòng bớt (dòng 322 và dòng 691 theo ngoại lệ tài liệu).
+- File trang (`PracticeRunPage`, `PracticeResultPage`, `PracticeSetupPage`, `WeaknessPage`, `MistakesPage`, `SearchPage`, `BookPage`): **0 dòng** `className=`/JSX mới. `BookPage.tsx` không đổi dòng nào (trạng thái trung tính đến từ dữ liệu của `computeLessonScores`). Chỉ bốn file `.tsx` không phải test đổi trong `src/features`: `SearchPage`, `PracticeRunPage`, `MistakesPage`, `WeaknessPage`, đều chỉ đổi logic.
+- Không có file nào trong `.claude`, `.specify`; không có `public/content` hay `content-report.md` được thêm.
+
+**T070** chạy tay quickstart A–F (bản dựng thật, trình duyệt 360×740):
+- **A**: `compare-kanji-json.ts` (snapshot gốc so với bản dựng hiện tại) → `OK: chỉ kanji-行, kanji-長 khác`; đúng hai file khác là **`ch09.json` và `ch15.json`** (không phải `ch04.json` như quickstart cũ ghi; đã sửa §A), 15/17 file giống từng byte. `/kanji/行` hiện `HÀNH / HÀNG` và `đi; tiến hành / hàng, dòng` (e2e `kanji.spec.ts` xanh).
+- **B**: `content:validate` 1020/275; test pipeline xanh; tab Từ vựng Bài 6 và Bài 13 hiện hai nhóm mở rộng riêng (đã chụp ở US5). **B4**: seed mastery cho DVD, おなかが すきます, のどが かわきます rồi mở `/weak` → cả ba vẫn có mặt ở "Top từ yếu nhất" (tiến độ gắn đúng từ nhờ mã không đổi).
+- **C**: `sinh vien` → 1 kết quả (学生), `nhat ban` → 3 (日本 hạng 1), `a` → không ra danh sách, `gakusei` → 学生 đầu tiên. *Quan sát:* khi gõ nhanh `sinh vien` từ ô rỗng, danh sách không nháy theo từng phím, nhưng có **một lần chớp rất ngắn** dòng "Không tìm thấy kết quả." ngay khi debounce xong, trước khi kết quả về (chuỗi trạng thái ghi được: `0 → 0/trống → 0 → 1`). Lý do: `useAsyncData` chỉ bật `loading` ở effect sau lần render có giá trị đã debounce nên một frame còn `results = []`. Hiện tượng này đã có từ trước spec (xảy ra ở mỗi lần gõ phím đầu tiên); debounce làm nó chỉ còn một lần. Chưa sửa (ngoài phạm vi T067–T070), ghi để Mạnh quyết định.
+- **D1**: trình duyệt mới → `/weak` hiện thông báo chưa đủ dữ liệu, không có mục bài thấp nhất; `/b/mnn1` → 0 ô đỏ, 25/25 ô trung tính. **D2**: làm thật một phiên 10 câu ở Bài 3, trả lời sai hết (0/10) → `/weak` mục "bài thấp nhất" chỉ có `Minna no Nihongo 1 — 3`; `/b/mnn1` Bài 3 màu đỏ, 24 ô còn lại trung tính.
+- **E**: Luyện ngay (9 từ yếu ở Bài 3/5/8 → `Câu 1/9`, đã chụp ở US2); `/mistakes` có 10 nút "Ôn lại" sau phiên sai, bấm một nút → `Câu 1/1` là **trắc nghiệm 4 lựa chọn**; "Làm lại câu sai" chạy được (US2).
+- **F**: bằng chứng đỏ của từng story nằm ở các mục `## US1`–`## US5` ở trên và dòng `Đỏ trước khi sửa:` ở thân commit.
