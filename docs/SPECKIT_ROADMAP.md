@@ -53,14 +53,20 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 |---|---|---|
 | 1 | repo-restructure | ✅ |
 | 2 | data-and-logic-fixes | ✅ |
-| 3 | ui-kit-and-shell | ⬜ |
-| 4 | practice-ui-migration | ⬜ |
-| 5 | pages-migration | ⬜ |
-| 6 | quality-gaps | ⬜ |
-| 7 | accounts-sync | ⬜ |
-| 8 | srs-review | ⬜ |
-| 9 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
-| 10 | native-app | ⬜ |
+| 3 | speakable-text | 🟨 |
+| 4 | ui-kit-and-shell | ⬜ |
+| 5 | practice-ui-migration | ⬜ |
+| 6 | pages-migration | ⬜ |
+| 7 | quality-gaps | ⬜ |
+| 8 | accounts-sync | ⬜ |
+| 9 | srs-review | ⬜ |
+| 10 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
+| 11 | native-app | ⬜ |
+
+> **Nợ từ speakable-text (spec 003):**
+> - Trường `speak` ở nội dung để ghi đè cách đọc từng từ và đọc theo kana thay kanji.
+> - Trang nghe liên tục để chủ dự án đánh dấu từ đọc sai.
+> - Hai câu ngữ pháp có tiếng Anh/Việt trong câu Nhật ("Thank you" ở `mnn1-l07-g-2469a6f0#0`, "Cảm ơn" ở `mnn1-l07-g-2469a6f0#1`): sửa nội dung ở `quality-gaps`.
 
 Đã có mã, không tạo spec mới: content-pipeline (90%), content-browsing (85%), local-progress (95%), quiz-engine-flashcard (90%), mcq-and-results (90%), vocab-modes (85%), grammar-kanji-quiz (75%), weakness-mistakes (80%). Phần còn thiếu của chúng nằm trong các spec trên (`ARCHITECTURE.md` §9.1).
 

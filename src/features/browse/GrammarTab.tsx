@@ -89,7 +89,7 @@ function GrammarExampleCard({ example }: { example: GrammarExample }) {
   return (
     <div className="rounded-md bg-slate-50 p-2.5 dark:bg-slate-900">
       <div className="flex items-center gap-2">
-        <SpeakButton text={example.jp} />
+        <SpeakButton text={example.jp} kind="sentence" />
         <p className="text-base text-slate-900 dark:text-slate-100">
           {example.jp}
         </p>
