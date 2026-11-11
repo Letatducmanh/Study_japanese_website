@@ -15,7 +15,7 @@ Hai chỗ này đã sửa trong cây làm việc khi cập nhật tài liệu sp
 
 (T002 ghi kết quả bốn lệnh 1–4 của cổng G và ghi chú các file chưa commit ngoài phạm vi spec.)
 
-Ngày 10/11/2026, nhánh `002-data-and-logic-fixes`, sau commit `b23576a` (T001). Bốn lệnh 1–4 của cổng G:
+Ngày 10/11/2026, nhánh `002-data-and-logic-fixes`, sau commit `5051516` (T001). Bốn lệnh 1–4 của cổng G:
 
 | Lệnh | Kết quả |
 |---|---|
@@ -283,7 +283,7 @@ Cổng G của story (10/11/2026, trước commit):
 
 ## Phase 8 — kiểm tra cuối (T067–T070)
 
-Ngày 11/11/2026, sau commit `078d59f`.
+Ngày 11/11/2026, sau commit `58f3083`.
 
 **Truy vấn một ký tự (kiểm trước Phase 8):** thêm test `một ký tự CJK (kanji, kana) vẫn tìm được` vào `src/data/search-index.real.test.ts` (xanh ngay). Trên 1.295 từ thật: `日` = 6 kết quả (日, 母の 日, 日記…), `学` = 2 (学校, 学生), `あ` = 41 (あ, あの方, あの人…); một ký tự ASCII `a` = 0 (đúng hợp đồng S2).
 

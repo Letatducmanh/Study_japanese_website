@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-07
 
-**Status**: Draft
+**Status**: Done
 
 **Input**: User description: "Sửa các lỗi dữ liệu và logic mà người học nhìn thấy, không đổi giao diện: (1) chữ Kanji có nhiều cách đọc/nghĩa hiển thị sai Hán Việt, ví dụ 行 phải là "HÀNH (đi; tiến hành) / HÀNG (hàng, dòng)"; (2) tìm kiếm trả về quá nhiều kết quả không liên quan; (3) trang Điểm yếu đang xếp các bài chưa học lần nào là "yếu nhất" với 0%; (4) nút luyện ngay từ trang Điểm yếu và Sổ lỗi sai phải chạy đủ các dạng bài dự kiến, không âm thầm bỏ dạng; (5) ba mục không thuộc danh sách từ chính của giáo trình (DVD, おなかが すきます, のどが かわきます) nằm ở phần từ vựng mở rộng, và số liệu từ chính/mở rộng trong kiểm thử và tài liệu khớp với thực tế. Mỗi lỗi có test tái hiện lỗi trước khi sửa."
 
