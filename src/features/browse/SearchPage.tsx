@@ -4,8 +4,12 @@ import { LoadingState } from '@/ui/primitives/LoadingState'
 import { Ruby } from '@/ui/jp/Ruby'
 import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { searchVocab } from '@/data/search-index'
+import { useDebouncedValue } from '@/lib/use-debounced-value'
 import { vi } from '@/i18n/vi'
 import { useAsyncData } from '@/data/hooks/use-async-data'
+
+/** Chờ người gõ dừng chừng này (ms) rồi mới tìm, để danh sách không nháy theo từng phím. */
+const SEARCH_DEBOUNCE_MS = 250
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams()
@@ -16,9 +20,15 @@ export function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
+  const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS)
+  // Ô rỗng thì dùng ngay giá trị rỗng (hiện gợi ý, không chờ).
+  const searchQuery = query === '' ? '' : debouncedQuery
+  // Đang chờ người gõ dừng: chưa nên báo "không tìm thấy" cho chuỗi gõ dở.
+  const pending = query !== '' && query !== debouncedQuery
+
   const { data: results, loading } = useAsyncData(
-    () => searchVocab(query),
-    [query],
+    () => searchVocab(searchQuery),
+    [searchQuery],
   )
 
   return (
@@ -43,7 +53,7 @@ export function SearchPage() {
 
       {query && loading && <LoadingState />}
 
-      {query && !loading && results && results.length === 0 && (
+      {query && !loading && !pending && results && results.length === 0 && (
         <p className="text-sm text-slate-500 dark:text-slate-400">
           {vi.search.empty}
         </p>

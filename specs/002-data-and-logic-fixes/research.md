@@ -62,6 +62,7 @@ Kết quả: 行 → `hanViet = "HÀNH / HÀNG"`, `meaning = "đi; tiến hành 
 4. `boost`: `kana: 3, kanji: 3, romaji: 2, meaning: 1`.
 5. Truy vấn là **một ký tự ASCII** → trả mảng rỗng (spec: "chuỗi một ký tự không được trả danh sách dài vô nghĩa").
 6. Ngưỡng điểm: loại kết quả có điểm < **30%** điểm của kết quả đầu. Giá trị 0,30 chỉ là điểm khởi đầu; chốt trong lúc cài đặt bằng bộ truy vấn mẫu của SC-005 (đo lại bằng cùng script thăm dò).
+   **Giá trị cuối (đã cài và đo ngày 10/11/2026): 0,30, không phải chỉnh.** Đo thật trên 1.295 từ sau khi sửa (số kết quả trước khi cắt `limit`): `sinh vien` và `sinh viên` = **1** (学生), `nhat ban` = **3** (日本 hạng 1), `nuoc ngoai` = 2 (外国 hạng 1), `gakusei` = 1, `gakusai` (gõ sai) = 1 (学生), `sensei` = 2, `nihon` = 3, `zzzz` = 0, `a` = 0 (trước đó 156, 246, 21 …).
 7. Giữ `limit` 30.
 8. Debounce 250 ms ở `SearchPage` (hook `useDebouncedValue` trong `src/lib/`). URL `?q=` vẫn cập nhật theo chữ gõ tức thời; chỉ lời gọi tìm kiếm bị trễ.
 

@@ -119,6 +119,65 @@ Cổng G của story (10/11/2026, trước commit):
 
 ## US4
 
+### Đỏ trước khi sửa (T049)
+
+Ngày 10/11/2026 21:00, khi `searchVocab` còn cấu hình cũ (`prefix: true, fuzzy: 0.2`, ghép bằng HOẶC) và `useDebouncedValue` còn là **bản stub trả ngay** (T043).
+
+**Đo thật số kết quả trước khi giới hạn `limit`** (script thăm dò ngoài repo trên 1.295 từ thật, cấu hình hiện tại): `sinh vien` = **156**, `nhat ban` = **246**, `an` = 68, `xe` = 21, `zzzz` = 0. Test thấy 30 vì `searchVocab` cắt ở `limit` 30.
+
+`npx vitest run src/data/search-index.test.ts src/data/search-index.real.test.ts src/lib/use-debounced-value.test.ts src/features/browse/SearchPage.test.tsx`: **11 đỏ, 14 xanh** (25 test). Mọi test đỏ là `AssertionError` đúng lý do:
+
+| # | Test đỏ | Thông báo lỗi chính | Lý do |
+|---|---|---|---|
+| 1 | `search-index.test.ts › (a) "sinh viên" và "sinh vien" …` | `sinh viên: expected 6 to be less than or equal to 3` | HOẶC + fuzzy kéo thêm 教師, お勘定… |
+| 2 | `… › (b) "nhat ban": 日本 hạng 1, tối đa 3 kết quả` | `expected 5 to be less than or equal to 3` | như trên |
+| 3 | `… › (f) truy vấn vô nghĩa → rỗng; một ký tự ASCII → rỗng` | `expected [ { id: 'mnn1-l02-anata', …(7) } ] to deeply equal []` | `a` khớp tiền tố 1 ký tự |
+| 4 | `… › (g) mọi kết quả có điểm ≥ 30% điểm của kết quả đầu` | `sinh vien → mnn1-l02-tanjoubi: expected 2.81 to be greater than or equal to 2.95` | chưa có ngưỡng điểm tương đối |
+| 5 | `search-index.real.test.ts › "sinh vien": tối đa 3 kết quả, 学生 hạng 1` | `expected 30 to be less than or equal to 3` | 156 kết quả (bị cắt 30) |
+| 6 | `… › "nhat ban": tối đa 3 kết quả, 日本 hạng 1` | `expected 30 to be less than or equal to 3` | 246 kết quả (bị cắt 30) |
+| 7 | `… › truy vấn vô nghĩa hoặc một ký tự ASCII → rỗng` | `expected [ …(30) ] to deeply equal []` | `a` trả đủ 30 kết quả |
+| 8 | `use-debounced-value.test.ts › đổi giá trị thì chưa đổi cho đến khi qua delayMs` | `expected 'b' to be 'a'` | stub trả ngay, không trễ |
+| 9 | `… › đổi liên tiếp trong khoảng chờ chỉ lấy giá trị cuối, tính từ lần đổi cuối` | `expected 's' to be ''` | như trên |
+| 10 | `… › hủy hẹn giờ khi unmount` | `expected 0 to be greater than 0` | stub không đặt/hủy hẹn giờ |
+| 11 | `SearchPage.test.tsx › gõ liên tục từng ký tự không gọi tìm kiếm theo từng phím; chỉ gọi một lần sau 250 ms` | `expected [ [ 's' ], [ 'si' ], [ 'sin' ], …(6) ] to have a length of +0 but got 9` | gọi `searchVocab` theo từng phím |
+
+**Xanh ngay (đúng dự kiến, chốt chặn hoặc đặc tả):** (c) kana/kanji/romaji → 学生 hạng 1 và `sensei` → 先生; (d) `nuoc ngoai` → 外国 top 3; (e) gõ sai `gakusai` → 学生 top 3; (h) `limit`; (i) khớp đúng xếp trước khớp gần đúng; các test cũ; ở dữ liệu thật: `gakusei`, `がくせい`, `学生`, `sensei`, `nihon` → hạng 1 đúng từ, `nuoc ngoai` → 外国 top 3; hai test còn lại của `SearchPage.test.tsx` (ô nhập cập nhật tức thì, gợi ý hiện ngay khi xóa chữ); hai test đầu của `use-debounced-value.test.ts` (giá trị ban đầu).
+
+**T044(j)** (khớp qua romaji xếp trước khớp qua nghĩa, kết quả chưa biết) **xanh ngay**: `gakusei` → 学生 hạng 1, 会話 (nghĩa chứa "gakusei") xếp sau. Ghi nhận là chốt chặn cho FR-014; không cần sửa `boost` riêng cho ca này (`boost` vẫn đặt theo hợp đồng S7 ở T051).
+
+e2e `tests/e2e/search.spec.ts` (360×740; `npm run content:build; npm run build; npx playwright test tests/e2e/search.spec.ts`): **3 đỏ, 1 xanh**:
+- `tìm "sinh vien": tối đa 3 kết quả …` → `Expected: <= 3, Received: 30`
+- `tìm "nhat ban": tối đa 3 kết quả …` → `Expected: <= 3, Received: 30`
+- `một ký tự "a" không ra danh sách kết quả` → `element(s) not found` (không có "Không tìm thấy kết quả." vì `a` đang ra 30 kết quả)
+- xanh: `tìm "gakusei": mục đầu là 学生` và không cuộn ngang.
+
+**T045:** sau khi viết `src/data/search-index.real.test.ts` (nằm ở `src/data`, import `scripts/content/pipeline`), `npm run build`, `npm run lint` và `npx tsc -b` đều **thành công**, nên không cần chuyển file sang `scripts/`.
+
+### Sau khi sửa (T051–T054)
+
+- `src/data/search-index.ts` theo `contracts/search.md` S1–S10: `combineWith: 'AND'`; `fuzzy` theo độ dài từ (từ ≥ 5 ký tự không CJK: 0,15; còn lại không); `prefix` chỉ từ ≥ 2 ký tự (CJK: từ 1 ký tự); `boost` `{ kana: 3, kanji: 3, romaji: 2, meaning: 1 }`; một ký tự ASCII → `[]`; loại kết quả dưới 30% điểm kết quả đầu; giữ `limit` 30. Ngưỡng 0,30 **đạt SC-005 ngay, không phải chỉnh** (ghi vào `research.md` R2).
+- `src/lib/use-debounced-value.ts` cài thật (`useEffect` + `setTimeout`, hủy khi đổi giá trị và khi unmount). `src/features/browse/SearchPage.tsx`: `searchVocab` nhận giá trị đã debounce 250 ms; ô rỗng dùng giá trị rỗng ngay (gợi ý hiện ngay); `?q=` và ô nhập vẫn cập nhật tức thời; trong lúc chờ không báo "Không tìm thấy" cho chuỗi gõ dở. Không đổi chữ, class, bố cục.
+- Chạy lại bốn file vitest ở T049: **25/25 xanh**. e2e `tests/e2e/search.spec.ts` (360×740): **4/4 xanh**.
+- Giao diện không đổi (T054): `git diff -U0 a593f51 -- src/features/browse/SearchPage.tsx` lọc bằng `Select-String 'className=|(^|[\s(>{])<[A-Za-z]'` → **0 dòng khớp** (chỉ thêm import, hằng số, hook và điều kiện `!pending`). `git diff --stat a593f51` cho `registry.ts`, `session.ts`, `grading.ts`, `src/ui`, `src/i18n` → rỗng.
+
+**Số kết quả thực tế sau sửa** (đo trên 1.295 từ thật, trước khi cắt `limit`; trước đó trong ngoặc):
+- `sinh vien` và `sinh viên`: **1** (学生) (156)
+- `nhat ban`: **3** (日本 hạng 1, います [日本に～], 佐藤) (246)
+- `nuoc ngoai`: 2 (外国 hạng 1) (53); `gakusei`: 1; `gakusai` (gõ sai một chữ): 1 (学生); `sensei`: 2; `nihon`: 3; `zzzz`: 0; `a`: 0
+- Truy vấn ngắn hợp lệ vẫn ra danh sách gọn nhờ ngưỡng: `an` 28 (68), `xe` 18 (21), `ni` 44.
+
+Cổng G của story (10/11/2026, trước commit):
+
+| Lệnh | Kết quả |
+|---|---|
+| `npm test -- --testTimeout=30000` | 50 file, **288/288 đạt** (266 + 22 mới) |
+| `npm run build` | thành công, JS gzip **185,50 KB** (≤ 200 KB) |
+| `npm run content:validate` | OK, **568 cảnh báo** (không tăng) |
+| `npm run lint` | 0 lỗi |
+| `npm run check` | **xanh** (exit 0), 288/288, 33,42 giây |
+
+Ảnh chụp 360×740 (ngoài git, `.screens/` đã gitignore): xem phần báo cáo cuối của lượt làm này.
+
 ## US5
 
 ### Đỏ trước khi sửa (T058)
