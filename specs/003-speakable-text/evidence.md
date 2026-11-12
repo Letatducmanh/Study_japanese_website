@@ -183,30 +183,145 @@ grep -rnE "SpeechSynthesisUtterance|speechSynthesis" src --include=*.ts --includ
 
 ## Story 2: e2e mốc trước
 
-(Commit 2)
+Trước khi sửa mã Commit 2 (`public/content/manifest.json` có sẵn; `npm run build` rồi `npx playwright test`, viewport mặc định của từng file, Chromium):
+
+- **18 đạt, 1 đỏ** (1,4 phút, 19 test).
+- Đỏ đúng một test, đúng như dự kiến (Q-2, nợ từ spec 001): `browse.spec.ts:3` "mở trang chủ → vào N5 → Minna no Nihongo 1 → Bài 1" (không thấy heading "Tự học tiếng Nhật cùng Mạnh").
 
 ## Story 2: kết quả ĐỎ
 
-(Commit 2)
+Chạy trước khi sửa mã (`types.ts`, `index.ts`, `McqComponent.tsx` chưa đổi):
+
+`npx vitest run src/features/practice/modes/mcq` → **9 đỏ, 14 xanh** (23 test, 2 file):
+
+| Nhóm | Test đỏ | Số |
+|---|---|---|
+| T026 `mcq.test.ts` (chưa có `promptSpeak`, giá trị `undefined`) | cả sáu hướng | 6 |
+| T027 `McqComponent.test.tsx` | `mcq-vi-jp` có nút loa; `mcq-vi-kanji` có nút loa; `mcq-kanji-reading` có nút loa trước khi chọn | 3 |
+
+`npx playwright test tests/e2e/speakable.spec.ts` → **3 đỏ, 2 xanh** (5 test). Đỏ: `mcq-vi-jp`, `mcq-vi-kanji`, `mcq-kanji-reading` (cùng lý do: nút "Nghe phát âm" có mặt ở đề, `toHaveCount(0)` nhận 1).
+
+Ghi chú khi viết e2e: `tts.ts` gán `utterance.voice = <giọng giả>`; Chrome ném TypeError với đối tượng không phải `SpeechSynthesisVoice` thật, nên `speak` không bao giờ được gọi và `window.__spoken` rỗng. Bản giả vì vậy phải giả cả lớp `SpeechSynthesisUtterance` (đã làm trong `tests/e2e/speakable.spec.ts`). Không phải lỗi của mã ứng dụng.
 
 ## Story 2: test đặc trưng `[đặc trưng]` (xanh ngay)
 
 Xanh trước và sau, không phải bằng chứng đỏ.
 
-(Commit 2)
+- `McqComponent.test.tsx` xanh ngay (6): `mcq-jp-vi` có nút loa và đọc chữ của đề; `mcq-kana-kanji` có nút loa; `mcq-listen-vi` không có "Nghe phát âm", có "Nghe lại", tự đọc khi mở; `mcq-jp-vi` không tự đọc khi mở; chọn đáp án không đổi `grade()`; **E2** (câu dựng tay `promptText: '[お]土産'`, `promptSpeak: 'always'`: đề hiển thị thô `[お]土産`, bấm loa đưa `土産` cho giọng đọc).
+- `speakable.spec.ts` xanh ngay (2): câu hỏi–đáp ngữ pháp được đọc thành `ミラーさんは アメリカ人ですか。 はい、アメリカ人です。`; `mcq-jp-vi` có nút loa ở đề (khẳng định "có mặt", chống xanh giả).
+- **E2 xanh trước và sau, không phải bằng chứng đỏ.** `tasks.md` T029 ban đầu dự kiến E2 đỏ; thực tế xanh ngay vì Commit 1 đã làm sạch chuỗi đọc ở `tts.ts` và mã cũ luôn hiện nút loa. E2 khóa hành vi "chỉ chuỗi đọc bị làm sạch, chữ hiển thị giữ nguyên" và vẫn phải xanh sau khi sửa mã (T033). Chủ dự án đã chọn giữ E2 là `[đặc trưng]`.
 
 ## Story 2: kết quả XANH
 
-(Commit 2)
+Sau khi sửa `types.ts`, `index.ts`, `McqComponent.tsx` (T030–T032):
+
+- `npx vitest run src/features/practice/modes/mcq`: **23/23 xanh** (trước: 9 đỏ). Gồm cả sáu test `[đặc trưng]`, trong đó E2 vẫn xanh sau khi sửa.
+- `npx vitest run` toàn bộ: **61 file, 386 test, tất cả xanh** (trước Commit 2: 60 file, 371 test; thêm 1 file, 15 test).
+- `git diff src/features/practice/modes/mcq/index.ts`: không có hunk nào trong `grade`, `isEligible`, `register`, `choiceOf`, `distractorField`.
+- e2e toàn bộ (`npm run build && npx playwright test`): **23 đạt, 1 đỏ** (24 test; mốc trước 18 đạt, 1 đỏ, 19 test). Đỏ duy nhất vẫn là Q-2 `browse.spec.ts:3` "mở trang chủ → …". Thêm 5 test của `speakable.spec.ts` đều xanh: 3 test đỏ trước đó (`mcq-vi-jp`, `mcq-vi-kanji`, `mcq-kanji-reading`) và 2 `[đặc trưng]`.
 
 ## Ảnh `mcq-kanji-reading`
 
-(Commit 2)
+Chụp bằng `.screens/shot-mcq-kanji-reading.mjs` (Playwright Chromium, 360×740, giả giọng `ja-JP`, `npm run preview` cổng 4173; script tạm, không commit). Từ lấy được: `24日`.
+
+- Trước khi chọn: `.screens/mcq-kanji-reading-before.png`: 0 nút loa.
+- Sau khi chọn: `.screens/mcq-kanji-reading-after.png`: 1 nút loa.
+
+| Số đo | Trước | Sau |
+|---|---|---|
+| `document.documentElement.scrollWidth` | 360 | 360 |
+| lề trái khối đề (px) | 145 | 171 |
+| rộng khối đề (px) | 70 | 70 |
+| cao khối đề (px) | 36 | 36 |
+| cao cả hàng đề + nút (px) | 36 | 44 |
+
+**Không tràn ngang** (360, không lớn hơn 360). Khi nút hiện lại, đề dịch sang phải **26 px** (không phải 44 px như `tasks.md` T043 ghi: hàng được căn giữa, nên chỉ dịch nửa của nút 44 px + khoảng cách 8 px) và hàng cao thêm 8 px (36 → 44). Đề không xuống dòng.
 
 ## Kiểm vùng cấm
 
-(Commit 2)
+Đầu ra nguyên văn (T040, trước khi commit Commit 2):
+
+```
+$ git diff staging --stat   (cây làm việc; thấy thêm 2 file CHƯA staged, xem ghi chú)
+ .specify/integrations/claude.manifest.json         |   8 +-
+ docs/SPECKIT_ROADMAP.md                            |  24 +-
+ scripts/content/speakable-content.test.ts          | 175 ++++++++++++++
+ specs/002-data-and-logic-fixes/tasks.md            |   2 +-
+ .../003-speakable-text/checklists/requirements.md  |  36 +++
+ .../contracts/speakable-contract.md                |  68 ++++++
+ specs/003-speakable-text/data-model.md             |  44 ++++
+ specs/003-speakable-text/evidence.md               | 259 +++++++++++++++++++++
+ specs/003-speakable-text/plan.md                   | 189 +++++++++++++++
+ specs/003-speakable-text/quickstart.md             |  57 +++++
+ specs/003-speakable-text/research.md               | 105 +++++++++
+ specs/003-speakable-text/spec.md                   | 212 +++++++++++++++++
+ specs/003-speakable-text/tasks.md                  | 189 +++++++++++++++
+ src/features/browse/GrammarTab.tsx                 |   2 +-
+ .../practice/modes/dictation/dictation.test.tsx    |  93 ++++++++
+ .../practice/modes/mcq/McqComponent.test.tsx       | 180 ++++++++++++++
+ src/features/practice/modes/mcq/McqComponent.tsx   |   5 +-
+ src/features/practice/modes/mcq/index.ts           |  18 +-
+ src/features/practice/modes/mcq/mcq.test.ts        |  17 ++
+ src/features/practice/modes/mcq/types.ts           |   9 +
+ src/lib/speakable.test.ts                          | 131 +++++++++++
+ src/lib/speakable.ts                               |  74 ++++++
+ src/lib/tts.test.ts                                |  27 +++
+ src/lib/tts.ts                                     |  13 +-
+ src/ui/jp/SpeakButton.test.tsx                     |  40 ++++
+ src/ui/jp/SpeakButton.tsx                          |   7 +-
+ tests/e2e/speakable.spec.ts                        | 106 +++++++++
+ 27 files changed, 2068 insertions(+), 22 deletions(-)
+
+$ git diff staging --name-status | grep "scripts/content/speakable-content.test.ts"
+A	scripts/content/speakable-content.test.ts
+
+$ git diff staging --name-only | grep -vxF ... | grep -E "domain/quiz/(registry|grading)|session|scripts/content|^content/|^public/content" || echo ...
+OK: không đụng vùng cấm
+
+$ git diff --cached staging --stat   (chỉ phần sẽ nằm trong HEAD sau Commit 2)
+ docs/SPECKIT_ROADMAP.md                            |  24 +-
+ scripts/content/speakable-content.test.ts          | 175 ++++++++++++++
+ .../003-speakable-text/checklists/requirements.md  |  36 +++
+ .../contracts/speakable-contract.md                |  68 ++++++
+ specs/003-speakable-text/data-model.md             |  44 ++++
+ specs/003-speakable-text/evidence.md               | 259 +++++++++++++++++++++
+ specs/003-speakable-text/plan.md                   | 189 +++++++++++++++
+ specs/003-speakable-text/quickstart.md             |  57 +++++
+ specs/003-speakable-text/research.md               | 105 +++++++++
+ specs/003-speakable-text/spec.md                   | 212 +++++++++++++++++
+ specs/003-speakable-text/tasks.md                  | 189 +++++++++++++++
+ src/features/browse/GrammarTab.tsx                 |   2 +-
+ .../practice/modes/dictation/dictation.test.tsx    |  93 ++++++++
+ .../practice/modes/mcq/McqComponent.test.tsx       | 180 ++++++++++++++
+ src/features/practice/modes/mcq/McqComponent.tsx   |   5 +-
+ src/features/practice/modes/mcq/index.ts           |  18 +-
+ src/features/practice/modes/mcq/mcq.test.ts        |  17 ++
+ src/features/practice/modes/mcq/types.ts           |   9 +
+ src/lib/speakable.test.ts                          | 131 +++++++++++
+ src/lib/speakable.ts                               |  74 ++++++
+ src/lib/tts.test.ts                                |  27 +++
+ src/lib/tts.ts                                     |  13 +-
+ src/ui/jp/SpeakButton.test.tsx                     |  40 ++++
+ src/ui/jp/SpeakButton.tsx                          |   7 +-
+ tests/e2e/speakable.spec.ts                        | 106 +++++++++
+ 25 files changed, 2060 insertions(+), 20 deletions(-)
+```
+
+Ghi chú: `git diff staging` so **cây làm việc** với `staging`, nên thấy thêm hai file **chưa staged và không thuộc commit nào của spec 003**: `.specify/integrations/claude.manifest.json` (đã sửa từ trước khi làm spec 003, của Companion) và `specs/002-data-and-logic-fixes/tasks.md` (một dấu tick T071 `[ ]` → `[X]` do công cụ Companion ghi lúc 16:29; không phải do tôi và không đưa vào commit). Phần sẽ nằm trong `HEAD` là đầu ra `git diff --cached staging` ở cuối: không có hai file đó. `scripts/content/speakable-content.test.ts` là `A` (thêm mới); không có dòng nào chạm `domain/quiz/(registry|grading)`, `session`, `scripts/content/*` khác, `content/**`, `public/content/**`, schema hay `schemaVersion`; `src/lib/tts.ts` chỉ sửa tại chỗ (13 dòng), không dời.
 
 ## Số liệu cuối
 
-(Commit 2)
+| Mục | Số |
+|---|---|
+| Tổng chuỗi được đọc (vocab 1.295, `kanji.char` 134, `example.word` 657, ngữ pháp 292) | 2.378 |
+| Số chuỗi đổi sau làm sạch | 271 |
+| Khớp `answers.kana[0]` | 1.295/1.295 |
+| Khớp `answers.kanji[0]` | 960/960 |
+| Chuỗi còn ký tự cấm | 0 |
+| Danh sách ngoại lệ | rỗng |
+| Vitest toàn bộ trước Commit 1 (mốc T002) | 57 file, 316 test, 38,99 giây |
+| Vitest sau Commit 1 (trung vị 3 lần, máy rảnh) | 60 file, 371 test, 34,84 giây |
+| Vitest sau Commit 2 (`npm run check`, một lần đo, máy có tải nền) | 61 file, 386 test, 56,85 giây (cả `npm run check` 90,8 giây) |
+| `npm run build` | xanh; JS 610,71 kB, 186,16 kB gzip (dưới ngân sách 200 kB) |
+
+Lần đo 56,85 giây của Commit 2 là một lần đơn lẻ khi máy có tải nền (VS Code, e2e vừa chạy xong); như đã nêu ở mục thời gian, số đo đơn lẻ lúc máy bận không đáng tin và không so được với 34,84 giây lúc máy rảnh. Chưa đo lặp lại.

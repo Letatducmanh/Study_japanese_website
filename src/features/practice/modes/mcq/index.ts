@@ -11,7 +11,7 @@ import {
 import { shuffle } from '@/lib/rng'
 import { vi } from '@/i18n/vi'
 import { McqComponent } from './McqComponent'
-import type { McqChoice, McqQuestion } from './types'
+import type { McqChoice, McqQuestion, PromptSpeak } from './types'
 import type { DistractorField } from '@/domain/quiz/distractors'
 import type { Skill, VocabItem } from '@/domain/types'
 
@@ -25,6 +25,7 @@ interface DirectionConfig {
     text?: string
     reading?: string
     audio?: string
+    speak: PromptSpeak
   }
   choiceOf: (item: VocabItem) => { text: string; reading?: string }
 }
@@ -65,6 +66,7 @@ function createMcqDirection(
         promptText: prompt.text,
         promptReading: prompt.reading,
         promptAudio: prompt.audio,
+        promptSpeak: prompt.speak,
         choices,
         correctChoiceId: choices[correctIndex].id,
       }
@@ -93,6 +95,7 @@ export const mcqJpVi = createMcqDirection({
   buildPrompt: (item) => ({
     text: item.kanji ?? item.kana,
     reading: item.kanji ? item.kana : undefined,
+    speak: 'always',
   }),
   choiceOf: (item) => ({ text: item.meaning }),
 })
@@ -103,7 +106,7 @@ export const mcqViJp = createMcqDirection({
   skill: 'recall',
   distractorField: 'kana',
   isEligibleItem: () => true,
-  buildPrompt: (item) => ({ text: item.meaning }),
+  buildPrompt: (item) => ({ text: item.meaning, speak: 'never' }),
   choiceOf: (item) => ({
     text: item.kanji ?? item.kana,
     reading: item.kanji ? item.kana : undefined,
@@ -116,7 +119,10 @@ export const mcqKanjiReading = createMcqDirection({
   skill: 'reading',
   distractorField: 'kana',
   isEligibleItem: (item) => item.kanji !== null,
-  buildPrompt: (item) => ({ text: item.kanji ?? item.kana }),
+  buildPrompt: (item) => ({
+    text: item.kanji ?? item.kana,
+    speak: 'after-answer',
+  }),
   choiceOf: (item) => ({ text: item.kana }),
 })
 
@@ -126,7 +132,7 @@ export const mcqKanaKanji = createMcqDirection({
   skill: 'recall',
   distractorField: 'kanji',
   isEligibleItem: (item) => item.kanji !== null,
-  buildPrompt: (item) => ({ text: item.kana }),
+  buildPrompt: (item) => ({ text: item.kana, speak: 'always' }),
   choiceOf: (item) => ({ text: item.kanji ?? item.kana }),
 })
 
@@ -136,7 +142,7 @@ export const mcqListenVi = createMcqDirection({
   skill: 'listening',
   distractorField: 'meaning',
   isEligibleItem: () => true,
-  buildPrompt: (item) => ({ audio: item.kanji ?? item.kana }),
+  buildPrompt: (item) => ({ audio: item.kanji ?? item.kana, speak: 'never' }),
   choiceOf: (item) => ({ text: item.meaning }),
 })
 
@@ -146,7 +152,7 @@ export const mcqViKanji = createMcqDirection({
   skill: 'recall',
   distractorField: 'kanji',
   isEligibleItem: (item) => item.kanji !== null,
-  buildPrompt: (item) => ({ text: item.meaning }),
+  buildPrompt: (item) => ({ text: item.meaning, speak: 'never' }),
   choiceOf: (item) => ({ text: item.kanji ?? item.kana }),
 })
 

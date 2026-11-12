@@ -142,3 +142,20 @@ describe('mcqListenVi', () => {
     expect(q.promptAudio).toBe('食べます')
   })
 })
+
+describe('promptSpeak: khi nào nút loa ở đề được hiện', () => {
+  const pool = makePool()
+  const cases = [
+    ['mcq-jp-vi', mcqJpVi, 'always'],
+    ['mcq-vi-jp', mcqViJp, 'never'],
+    ['mcq-kanji-reading', mcqKanjiReading, 'after-answer'],
+    ['mcq-kana-kanji', mcqKanaKanji, 'always'],
+    ['mcq-listen-vi', mcqListenVi, 'never'],
+    ['mcq-vi-kanji', mcqViKanji, 'never'],
+  ] as const
+
+  it.each(cases)('%s → promptSpeak = %s', (_id, direction, expected) => {
+    const q = direction.generate(pool[0], pool, createRng(1))
+    expect(q.promptSpeak).toBe(expected)
+  })
+})
