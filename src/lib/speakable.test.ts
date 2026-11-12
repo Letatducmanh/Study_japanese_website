@@ -129,3 +129,26 @@ describe('toSpeakable — giữ nguyên', () => {
     expect(toSpeakable('晩 / 夜')).toBe('晩')
   })
 })
+describe('toSpeakable — kana của từ vựng (spec 004)', () => {
+  it.each([
+    ['～じん', 'じん'],
+    ['～にん', 'にん'],
+    ['なんじ', 'なんじ'],
+    ['なん', 'なん'],
+    ['なに', 'なに'],
+    ['なんぷん', 'なんぷん'],
+    ['あのかた', 'あのかた'],
+    ['このあいだ', 'このあいだ'],
+    ['[お]はなみ', 'はなみ'],
+    ['～ふん / ～ぷん', 'ふん'],
+  ])('[đặc trưng] kana %j → %j', (kana, expected) => {
+    expect(toSpeakable(kana, 'word')).toBe(expected)
+  })
+
+  it.each(['わたし', 'たべます'])(
+    '[đặc trưng] từ chỉ có kana đọc y như trước: %s',
+    (kana) => {
+      expect(toSpeakable(kana, 'word')).toBe(kana)
+    },
+  )
+})

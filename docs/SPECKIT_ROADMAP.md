@@ -54,19 +54,24 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 | 1 | repo-restructure | ✅ |
 | 2 | data-and-logic-fixes | ✅ |
 | 3 | speakable-text | 🟨 |
-| 4 | ui-kit-and-shell | ⬜ |
-| 5 | practice-ui-migration | ⬜ |
-| 6 | pages-migration | ⬜ |
-| 7 | quality-gaps | ⬜ |
-| 8 | accounts-sync | ⬜ |
-| 9 | srs-review | ⬜ |
-| 10 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
-| 11 | native-app | ⬜ |
+| 4 | kana-pronunciation | 🟨 |
+| 5 | ui-kit-and-shell | ⬜ |
+| 6 | practice-ui-migration | ⬜ |
+| 7 | pages-migration | ⬜ |
+| 8 | quality-gaps | ⬜ |
+| 9 | accounts-sync | ⬜ |
+| 10 | srs-review | ⬜ |
+| 11 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
+| 12 | native-app | ⬜ |
 
 > **Nợ từ speakable-text (spec 003):**
 > - Trường `speak` ở nội dung để ghi đè cách đọc từng từ và đọc theo kana thay kanji.
 > - Trang nghe liên tục để chủ dự án đánh dấu từ đọc sai.
 > - Hai câu ngữ pháp có tiếng Anh/Việt trong câu Nhật ("Thank you" ở `mnn1-l07-g-2469a6f0#0`, "Cảm ơn" ở `mnn1-l07-g-2469a6f0#1`): sửa nội dung ở `quality-gaps`.
+
+> **Nợ từ kana-pronunciation (spec 004):**
+> - Trang nghe liên tục cho toàn bộ 292 câu ví dụ để chủ dự án đánh dấu câu đọc sai (hiện mới nghe thử 42 câu và 20 câu ứng viên).
+> - Bảng sửa cách đọc `content/overrides/speech-corrections.json` chỉ có một mục ("あの 方"); thêm mục mỗi khi nghe ra cụm sai (chỉ thêm dữ liệu, không sửa mã).
 
 Đã có mã, không tạo spec mới: content-pipeline (90%), content-browsing (85%), local-progress (95%), quiz-engine-flashcard (90%), mcq-and-results (90%), vocab-modes (85%), grammar-kanji-quiz (75%), weakness-mistakes (80%). Phần còn thiếu của chúng nằm trong các spec trên (`ARCHITECTURE.md` §9.1).
 

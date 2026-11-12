@@ -77,3 +77,91 @@ describe('SearchPage — debounce lời gọi tìm kiếm (FR-018)', () => {
     expect(screen.getByText(viText.search.hint)).toBeInTheDocument()
   })
 })
+describe('SearchPage — chuỗi đọc ở kết quả (spec 004)', () => {
+  const originalSpeech = window.speechSynthesis
+  let speak: ReturnType<typeof vi.fn>
+
+  function result(overrides: Record<string, unknown>) {
+    return {
+      id: 'r-1',
+      bookId: 'mnn1',
+      lesson: 4,
+      kana: 'わたし',
+      kanji: null,
+      romaji: 'watashi',
+      meaning: 'tôi',
+      score: 1,
+      ...overrides,
+    }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    speak = vi.fn()
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        speak,
+        cancel: vi.fn(),
+        getVoices: vi
+          .fn()
+          .mockReturnValue([{ lang: 'ja-JP' } as SpeechSynthesisVoice]),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      },
+    })
+    mockSearchVocab
+      .mockReset()
+      .mockResolvedValue([
+        result({
+          id: 'r-nanji',
+          kanji: '何時',
+          kana: 'なんじ',
+          romaji: 'nanji',
+        }),
+        result({ id: 'r-watashi', kanji: null, kana: 'わたし' }),
+      ])
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: originalSpeech,
+    })
+  })
+
+  async function searchAndGetButtons() {
+    const { container } = renderPage()
+    type(screen.getByRole('searchbox'), 'nanji')
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300)
+    })
+    return {
+      container,
+      buttons: screen.getAllByRole('button', { name: viText.common.speak }),
+    }
+  }
+
+  it('kết quả có kanji: bấm loa đọc kana, không đọc chữ Hán', async () => {
+    const { buttons } = await searchAndGetButtons()
+    fireEvent.click(buttons[0])
+    expect((speak.mock.calls[0][0] as SpeechSynthesisUtterance).text).toBe(
+      'なんじ',
+    )
+  })
+
+  it('[đặc trưng] kết quả chỉ có kana đọc đúng kana', async () => {
+    const { buttons } = await searchAndGetButtons()
+    fireEvent.click(buttons[1])
+    expect((speak.mock.calls[0][0] as SpeechSynthesisUtterance).text).toBe(
+      'わたし',
+    )
+  })
+
+  it('[đặc trưng] chữ hiển thị ở kết quả không đổi', async () => {
+    const { container } = await searchAndGetButtons()
+    expect(container.textContent).toContain('何時')
+    expect(container.textContent).toContain('わたし')
+  })
+})

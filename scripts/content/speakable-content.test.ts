@@ -173,3 +173,66 @@ describe('toSpeakable trên toàn bộ nội dung đã dựng', () => {
     expect(changed).toBeGreaterThan(0)
   })
 })
+// ---------------------------------------------------------------------------
+// Spec 004 (kana-pronunciation): chuỗi đọc của từ vựng là cách đọc kana.
+// Dùng chung `beforeAll` ở trên (không chạy thêm lần pipeline nào) và giữ timeout 30 giây.
+// ---------------------------------------------------------------------------
+const HAN = /\p{Script=Han}/u
+
+describe('kana-pronunciation (spec 004)', () => {
+  describe('từ vựng', () => {
+    it('[đặc trưng] mọi từ có chuỗi đọc không rỗng, không chữ Hán, không ký tự cấm', () => {
+      expect(vocab.length).toBeGreaterThan(0)
+      const failures = vocab
+        .map((v) => ({
+          id: v.id,
+          kana: v.kana,
+          spoken: toSpeakable(v.kana, 'word'),
+        }))
+        .filter(
+          (r) =>
+            r.spoken.trim() === '' ||
+            HAN.test(r.spoken) ||
+            FORBIDDEN.test(r.spoken),
+        )
+      expect(failures).toEqual([])
+    })
+
+    // Cặp (kanji, kana) tra trong nội dung thật; `何` và `～人` mỗi từ có hai mục nên không tra theo kanji một mình.
+    it.each([
+      ['～人', '～じん', 'じん'],
+      ['～人', '～にん', 'にん'],
+      ['何時', 'なんじ', 'なんじ'],
+      ['何', 'なん', 'なん'],
+      ['何', 'なに', 'なに'],
+      ['何分', 'なんぷん', 'なんぷん'],
+      ['あの方', 'あのかた', 'あのかた'],
+      ['この間', 'このあいだ', 'このあいだ'],
+      ['[お]花見', '[お]はなみ', 'はなみ'],
+      ['～分', '～ふん / ～ぷん', 'ふん'],
+    ])(
+      '[đặc trưng] (%s, %s) tồn tại trong nội dung và được đọc là %s',
+      (kanji, kana, expected) => {
+        const found = vocab.filter((v) => v.kanji === kanji && v.kana === kana)
+        expect(found.length).toBeGreaterThan(0)
+        for (const v of found) {
+          expect(toSpeakable(v.kana, 'word')).toBe(expected)
+        }
+      },
+    )
+
+    it('[đặc trưng] ghi số liệu để đưa vào evidence.md', () => {
+      const valid = vocab.filter((v) => {
+        const spoken = toSpeakable(v.kana, 'word')
+        return (
+          spoken.trim() !== '' && !HAN.test(spoken) && !FORBIDDEN.test(spoken)
+        )
+      }).length
+      const withKanji = vocab.filter((v) => v.kanji !== null).length
+      console.info(
+        `[kana-speech] từ vựng: ${valid}/${vocab.length} có chuỗi đọc hợp lệ; có kanji: ${withKanji}`,
+      )
+      expect(valid).toBe(vocab.length)
+    })
+  })
+})
