@@ -69,4 +69,31 @@ describe('tts', () => {
     const utterance = speak.mock.calls[0][0] as SpeechSynthesisUtterance
     expect(utterance.voice).toBe(female)
   })
+
+  describe('làm sạch chuỗi đọc (toSpeakable)', () => {
+    function spokenText(): string {
+      return (speak.mock.calls[0][0] as SpeechSynthesisUtterance).text
+    }
+
+    it('từ vựng (mặc định word): bỏ phần [..] trước khi đọc', () => {
+      speakJapanese('[お]土産')
+      expect(spokenText()).toBe('土産')
+    })
+
+    it('câu ngữ pháp (kind sentence): nối danh sách → bằng 、', () => {
+      speakJapanese('書きます → 書いて', { kind: 'sentence' })
+      expect(spokenText()).toBe('書きます、書いて')
+    })
+
+    it('mặc định kind là word: lấy cách viết đầu tiên của "晩 / 夜"', () => {
+      speakJapanese('晩 / 夜')
+      expect(spokenText()).toBe('晩')
+    })
+
+    it('chuỗi chỉ gồm ký hiệu bị bỏ thì không huỷ và không đọc gì', () => {
+      speakJapanese('～')
+      expect(cancel).not.toHaveBeenCalled()
+      expect(speak).not.toHaveBeenCalled()
+    })
+  })
 })

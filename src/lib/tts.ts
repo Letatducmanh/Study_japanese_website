@@ -1,5 +1,7 @@
 /** Bọc Web Speech API để đọc tiếng Nhật; không ném lỗi khi thiết bị không hỗ trợ. */
 
+import { toSpeakable, type SpeakKind } from './speakable'
+
 export function isTtsSupported(): boolean {
   return typeof window !== 'undefined' && !!window.speechSynthesis
 }
@@ -56,13 +58,20 @@ export function onVoicesChanged(callback: () => void): () => void {
 
 export interface SpeakOptions {
   rate?: number
+  /** `sentence` cho câu ví dụ ngữ pháp; mặc định `word` (từ vựng, chữ Kanji). */
+  kind?: SpeakKind
 }
 
-/** Đọc văn bản tiếng Nhật; không làm gì nếu thiết bị không hỗ trợ hoặc văn bản rỗng. */
+/**
+ * Đọc văn bản tiếng Nhật; chuỗi được làm sạch (bỏ ký hiệu ghi chú) trước khi đọc.
+ * Không làm gì nếu thiết bị không hỗ trợ, văn bản rỗng, hoặc chuỗi sau làm sạch rỗng.
+ */
 export function speakJapanese(text: string, options: SpeakOptions = {}): void {
   if (!isTtsSupported() || !text.trim()) return
+  const spoken = toSpeakable(text, options.kind ?? 'word')
+  if (!spoken.trim()) return
   window.speechSynthesis.cancel()
-  const utterance = new SpeechSynthesisUtterance(text)
+  const utterance = new SpeechSynthesisUtterance(spoken)
   utterance.lang = 'ja-JP'
   utterance.rate = options.rate ?? 1
   const voice = getJapaneseVoice()

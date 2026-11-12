@@ -53,14 +53,20 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 |---|---|---|
 | 1 | repo-restructure | ✅ |
 | 2 | data-and-logic-fixes | ✅ |
-| 3 | ui-kit-and-shell | ⬜ |
-| 4 | practice-ui-migration | ⬜ |
-| 5 | pages-migration | ⬜ |
-| 6 | quality-gaps | ⬜ |
-| 7 | accounts-sync | ⬜ |
-| 8 | srs-review | ⬜ |
-| 9 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
-| 10 | native-app | ⬜ |
+| 3 | speakable-text | 🟨 |
+| 4 | ui-kit-and-shell | ⬜ |
+| 5 | practice-ui-migration | ⬜ |
+| 6 | pages-migration | ⬜ |
+| 7 | quality-gaps | ⬜ |
+| 8 | accounts-sync | ⬜ |
+| 9 | srs-review | ⬜ |
+| 10 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
+| 11 | native-app | ⬜ |
+
+> **Nợ từ speakable-text (spec 003):**
+> - Trường `speak` ở nội dung để ghi đè cách đọc từng từ và đọc theo kana thay kanji.
+> - Trang nghe liên tục để chủ dự án đánh dấu từ đọc sai.
+> - Hai câu ngữ pháp có tiếng Anh/Việt trong câu Nhật ("Thank you" ở `mnn1-l07-g-2469a6f0#0`, "Cảm ơn" ở `mnn1-l07-g-2469a6f0#1`): sửa nội dung ở `quality-gaps`.
 
 Đã có mã, không tạo spec mới: content-pipeline (90%), content-browsing (85%), local-progress (95%), quiz-engine-flashcard (90%), mcq-and-results (90%), vocab-modes (85%), grammar-kanji-quiz (75%), weakness-mistakes (80%). Phần còn thiếu của chúng nằm trong các spec trên (`ARCHITECTURE.md` §9.1).
 
@@ -107,6 +113,8 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 ```
 /speckit-plan Theo docs/FRONTEND.md §6.2, §6.3, §7 (màn hình 3 đến 10), §8. Giữ nguyên giao diện { q, onAnswer } của QuestionType; không sửa registry, session, grading. Làm theo từng nhóm, mỗi nhóm một commit: (a) trắc nghiệm và các dạng dùng TextChoiceCard/BlankChoiceCard (10 dạng): thay bằng OptionButton + FeedbackSheet, xóa hai card cũ khi hết nơi dùng; (b) nhóm gõ đáp án (typing, dictation, conjugation-typing): thêm bước phản hồi bằng FeedbackSheet; (c) ghép cặp và đúng/sai tốc độ: nhãn riêng, và để PracticeRunPage hoặc một hook chung ghi Attempt thay vì mỗi component tự gọi progressRepository.recordAttempt; (d) flashcard; (e) màn thiết lập (nhóm dạng bài lấy từ registry, thêm trường group vào QuestionType) và màn kết quả. Lớp phím tắt chung đặt trong PracticeShell. Test e2e: gõ sai thấy FeedbackSheet; làm Ghép cặp không thấy "Câu 1/1". Chạy npm run ui:shot và so với ảnh tham chiếu sau mỗi nhóm.
 ```
+
+> **Giữ từ speakable-text (spec 003):** `PromptBlock` phải giữ hành vi nút loa ở đề trắc nghiệm (trường `promptSpeak` của `McqQuestion`): không hiện nút loa cho đề tiếng Việt (`mcq-vi-jp`, `mcq-vi-kanji`); `mcq-kanji-reading` ẩn nút loa trước khi chọn đáp án và hiện lại sau khi chọn (nghe trước sẽ lộ đáp án); khi nút hiện lại, đề dịch ngang khoảng 26 px (nút 44 px + khoảng cách 8 px, đề được căn giữa) và cao thêm 8 px (36 → 44 px), không tràn ngang ở 360 px (xử lý khi làm `PromptBlock`; xem ảnh `.screens/mcq-kanji-reading-before.png` và `-after.png` trong `evidence.md` của 003).
 
 ### 4.5 pages-migration ⬜
 ```

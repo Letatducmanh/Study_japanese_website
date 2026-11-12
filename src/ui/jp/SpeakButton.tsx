@@ -7,14 +7,17 @@ import {
   onVoicesChanged,
   speakJapanese,
 } from '@/lib/tts'
+import type { SpeakKind } from '@/lib/speakable'
 
 interface SpeakButtonProps {
   text: string
   className?: string
+  /** `sentence` cho câu ví dụ ngữ pháp; mặc định `word`. */
+  kind?: SpeakKind
 }
 
 /** Nút phát âm tiếng Nhật; tự ẩn khi thiết bị không có giọng đọc tiếng Nhật. */
-export function SpeakButton({ text, className }: SpeakButtonProps) {
+export function SpeakButton({ text, className, kind = 'word' }: SpeakButtonProps) {
   const [available, setAvailable] = useState(() => hasJapaneseVoice())
 
   useEffect(() => {
@@ -30,7 +33,7 @@ export function SpeakButton({ text, className }: SpeakButtonProps) {
   return (
     <button
       type="button"
-      onClick={() => speakJapanese(text)}
+      onClick={() => speakJapanese(text, { kind })}
       aria-label={vi.common.speak}
       title={vi.common.speak}
       className={
