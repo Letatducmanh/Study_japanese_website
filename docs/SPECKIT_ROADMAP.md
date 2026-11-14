@@ -120,6 +120,7 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 ```
 
 > **Giữ từ speakable-text (spec 003):** `PromptBlock` phải giữ hành vi nút loa ở đề trắc nghiệm (trường `promptSpeak` của `McqQuestion`): không hiện nút loa cho đề tiếng Việt (`mcq-vi-jp`, `mcq-vi-kanji`); `mcq-kanji-reading` ẩn nút loa trước khi chọn đáp án và hiện lại sau khi chọn (nghe trước sẽ lộ đáp án); khi nút hiện lại, đề dịch ngang khoảng 26 px (nút 44 px + khoảng cách 8 px, đề được căn giữa) và cao thêm 8 px (36 → 44 px), không tràn ngang ở 360 px (xử lý khi làm `PromptBlock`; xem ảnh `.screens/mcq-kanji-reading-before.png` và `-after.png` trong `evidence.md` của 003).
+> **Giữ từ kana-pronunciation (spec 004):** chuỗi đọc của nút loa ở đề `mcq-jp-vi` và `mcq-kanji-reading` là **kana của từ** (trường `promptSpeech`), trong khi đề vẫn hiển thị kanji; `PromptBlock` phải nhận chuỗi đọc tách khỏi chữ hiển thị và giữ nguyên các hành vi nút loa/tự đọc ở bảng FR-005 của spec 004.
 
 ### 4.5 pages-migration ⬜
 ```

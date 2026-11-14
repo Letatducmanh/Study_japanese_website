@@ -139,7 +139,7 @@ describe('mcqListenVi', () => {
     const pool = makePool()
     const q = mcqListenVi.generate(pool[0], pool, createRng(1))
     expect(q.promptText).toBeUndefined()
-    expect(q.promptAudio).toBe('食べます')
+    expect(q.promptAudio).toBe('たべます')
   })
 })
 
@@ -158,4 +158,40 @@ describe('promptSpeak: khi nào nút loa ở đề được hiện', () => {
     const q = direction.generate(pool[0], pool, createRng(1))
     expect(q.promptSpeak).toBe(expected)
   })
+})
+
+describe('promptSpeech và promptAudio (spec 004)', () => {
+  const pool = makePool()
+
+  it('mcq-jp-vi: promptSpeech là kana của từ, promptText vẫn là kanji', () => {
+    const q = mcqJpVi.generate(pool[0], pool, createRng(1))
+    expect(q.promptSpeech).toBe('たべます')
+    expect(q.promptText).toBe('食べます')
+  })
+
+  it('mcq-kanji-reading: promptSpeech là kana của từ, promptText vẫn là kanji', () => {
+    const q = mcqKanjiReading.generate(pool[0], pool, createRng(1))
+    expect(q.promptSpeech).toBe('たべます')
+    expect(q.promptText).toBe('食べます')
+  })
+
+  it('mcq-listen-vi: promptAudio là kana của từ', () => {
+    const q = mcqListenVi.generate(pool[0], pool, createRng(1))
+    expect(q.promptAudio).toBe('たべます')
+  })
+
+  const withoutSpeech = [
+    ['mcq-kana-kanji', mcqKanaKanji],
+    ['mcq-vi-jp', mcqViJp],
+    ['mcq-vi-kanji', mcqViKanji],
+    ['mcq-listen-vi', mcqListenVi],
+  ] as const
+
+  it.each(withoutSpeech)(
+    '[đặc trưng] %s: không có promptSpeech',
+    (_id, direction) => {
+      const q = direction.generate(pool[0], pool, createRng(1))
+      expect(q.promptSpeech).toBeUndefined()
+    },
+  )
 })

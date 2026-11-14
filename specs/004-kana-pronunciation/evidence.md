@@ -90,17 +90,104 @@ Ghi chú: `console.info` của test nội dung không hiện khi chạy `npx vit
 
 ## Story 2: kết quả ĐỎ
 
-(Chưa làm.)
+Chạy trước khi sửa mã (`types.ts`, `index.ts`, `McqComponent.tsx`, `DictationComponent.tsx` chưa đổi):
+
+`npx vitest run src/features/practice/modes/mcq src/features/practice/modes/dictation` → **12 đỏ, 36 xanh** (48 test, 3 file, cả 3 file có đỏ).
+
+| Test đỏ | Số | Thông báo ngắn |
+|---|---|---|
+| `dictation.test.tsx` — (a) tự đọc lúc mở, (b) "nghe lại" với `何時` / `なんじ` | 2 | đọc `何時` thay vì `なんじ` |
+| `mcq.test.ts` — `promptSpeech` của `mcqJpVi`, `mcqKanjiReading` | 2 | `promptSpeech` là `undefined`, kỳ vọng `たべます` |
+| `mcq.test.ts` — `mcqListenVi › promptAudio` (test cũ, **kỳ vọng sửa có chủ ý** `食べます` → `たべます`) và test mới `promptAudio là kana của từ` | 2 | `promptAudio` còn là `食べます` |
+| `McqComponent.test.tsx` — **ba kỳ vọng cũ sửa có chủ ý** (xem dưới) | 3 | đọc `食べます` thay vì `たべます` |
+| `McqComponent.test.tsx` — "Nghe lại" của `mcq-listen-vi` đọc kana | 1 | đọc `食べます` |
+| `McqComponent.test.tsx` — câu dựng tay có `promptSpeech` (nút loa đọc `たべます`) | 1 | đọc `食べます` (bỏ qua `promptSpeech`) |
+| `McqComponent.test.tsx` — `promptSpeech` thắng `promptAudio` | 1 | đọc `x` (lấy `promptAudio`) |
+
+**Kỳ vọng cũ được sửa có chủ ý (không phải "test đỏ lại xanh"; đổi hành vi theo FR-005):**
+
+1. `McqComponent.test.tsx` `mcq-kanji-reading … sau khi chọn đọc chữ kanji của đề`: `['食べます']` → `['たべます']`; đổi tên thành "… đọc kana của từ".
+2. `McqComponent.test.tsx` `mcq-jp-vi có nút loa ở đề, đọc chữ của đề`: `['食べます']` → `['たべます']`; đổi tên thành "… đọc kana của từ" và bỏ nhãn `[đặc trưng]` (không còn bảo toàn hành vi cũ).
+3. `McqComponent.test.tsx` `mcq-listen-vi: … tự đọc khi mở`: `['食べます']` → `['たべます']`; đổi tên thành "… tự đọc kana khi mở" và bỏ nhãn `[đặc trưng]`.
+4. `mcq.test.ts` `mcqListenVi › không có promptText, chỉ có promptAudio để đọc`: `promptAudio` `食べます` → `たべます`.
+
+Số khẳng định cũ đổi: 3 ở `McqComponent.test.tsx`, 1 ở `mcq.test.ts`.
+
+`npm run build` **đỏ ở bước `tsc -b`** trước khi sửa mã: ba test mới dùng `promptSpeech`, chưa có trong `McqQuestion` (`TS2339`/`TS2353` ở `mcq.test.ts` và `McqComponent.test.tsx`). Đây là hệ quả đúng của TDD (kiểu chưa có), không phải lỗi môi trường; bước `vite build` không chạy nên `dist/` vẫn là bản build của Commit 1 (cùng hành vi mã trước Story 2), và e2e bên dưới chạy trên bản đó.
+
+`npx playwright test tests/e2e/kana-speech.spec.ts` → **4 đỏ, 1 xanh** (ca Story 1 `～人` vẫn xanh):
+
+| Ca e2e (bài 5) | Kết quả | Thông báo |
+|---|---|---|
+| Chính tả nghe: chuỗi tự đọc là kana | đỏ | `"去年" còn chữ Hán` |
+| Nghe → Nghĩa: tự đọc lúc mở là kana | đỏ | `"新幹線" còn chữ Hán` |
+| Nhật → Nghĩa: mở câu không tự đọc; nút loa đọc kana | đỏ | `"1日" còn chữ Hán` (phần "`__spoken` rỗng lúc mở" đã qua) |
+| Kanji → Cách đọc: ẩn loa trước khi chọn; sau khi chọn đọc kana | đỏ | `"何年" còn chữ Hán` (phần "ẩn loa trước khi chọn" đã qua) |
+
+Tổng bằng chứng ĐỎ Story 2: **16** (12 vitest + 4 e2e). Không có test nào thuộc nhóm dự kiến đỏ mà xanh ngay.
 
 ## Story 2: test đặc trưng `[đặc trưng]` (xanh ngay)
 
 Xanh trước và sau, không phải bằng chứng đỏ.
 
-(Chưa làm.)
+Xanh trước và sau, không phải bằng chứng đỏ.
+
+- `dictation.test.tsx` (7): (c) `grade()` không đổi cho `何時` / `なんじ` (gõ `なんじ` đúng, gõ `いつ` sai, `expected` là `item.kana`); (d) bảng 6 ca cố định khẳng định cả `correct` lẫn `expected` (`[お]みやげ`, `ぎゅうにゅう / ミルク`, `～じん`, `なんじ`, `[お]はなみ`, `～ふん / ～ぷん`; mỗi ca có các lần gõ đúng, gõ sai và gõ kanji → `false` như `tasks.md` T026 (d)). Cả 6 ca xanh ngay, kể cả mọi ca "gõ kanji → false", nên không có khẳng định nào phải dừng hỏi.
+- `mcq.test.ts` (4): `promptSpeech` là `undefined` ở `mcq-kana-kanji`, `mcq-vi-jp`, `mcq-vi-kanji`, `mcq-listen-vi`.
+- `McqComponent.test.tsx` (3): đề `mcq-jp-vi` vẫn hiển thị `食べます`; `mcq-jp-vi` không tự đọc khi mở; không có `promptSpeech` thì nút loa rơi về `promptText` (`食べます`).
+- Các test cũ giữ nguyên và vẫn xanh: ba test `grade`/chính tả cũ ở `dictation.test.tsx`, mọi test `grade()` và `promptSpeak` ở `mcq.test.ts`, và ở `McqComponent.test.tsx`: `mcq-vi-jp`/`mcq-vi-kanji` không có loa, `mcq-kana-kanji` có loa, `mcq-jp-vi` không tự đọc, chọn đáp án không đổi `grade()`, ca E2 `[お]土産` → `土産`, `mcq-kanji-reading` ẩn loa trước khi chọn.
+- e2e: hai khẳng định "`__spoken` rỗng lúc mở" (Nhật → Nghĩa) và "ẩn loa trước khi chọn" (Kanji → Cách đọc) đã qua trước khi ca đỏ ở khẳng định chữ Hán.
+
+Tổng: 14 test vitest mới xanh ngay (7 + 4 + 3). Không có test nào thuộc nhóm "dự kiến đỏ" mà xanh ngay.
 
 ## Story 2: kết quả XANH
 
-(Chưa làm.)
+Sau khi sửa mã trong đúng hai thư mục `src/features/practice/modes/mcq/` (`types.ts`, `index.ts`, `McqComponent.tsx`) và `dictation/` (`DictationComponent.tsx`):
+
+| Số đo | Trước | Sau |
+|---|---|---|
+| Lệnh Story 2 (`mcq`, `dictation`) | 12 đỏ / 36 xanh (48 test) | **48/48 xanh** |
+| `npx vitest run` toàn bộ | 63 file, 423 test (mốc sau Commit 1) | **63 file, 445 test, tất cả xanh** (thêm 22 test: dictation 9, `mcq.test.ts` 7, `McqComponent.test.tsx` 6) |
+| `npm run build` + `npx playwright test` toàn bộ | 25 test: 24 đạt, 1 đỏ (mốc sau Commit 1) | **29 test: 28 đạt, 1 đỏ**; đỏ duy nhất vẫn là Q-2 `browse.spec.ts:3`; 4 ca mới của `kana-speech.spec.ts` xanh |
+| `npm run check` (thẳng) | — | **xanh, exit 0** ở lần thứ hai (xem ghi chú), `content:validate` OK **568 cảnh báo** (bằng mốc), `tsc -b`, `eslint .`, vitest 63 file / 445 test |
+| `npm run build` | `tsc -b` đỏ trước khi sửa mã (thiếu `promptSpeech`) | **xanh**; JS 610,71 kB, **186,19 kB gzip** (dưới ngân sách 200 kB; Commit 1: 186,16 kB) |
+| Băm `public/content` (45 file, bỏ `README.md`) | `2deeab18…ca068` | `2deeab187c4f7f57777689b29fdb3ff5708a26a3dec30a02e6a4d99e6f8ca068` (**giống hệt mốc**) |
+
+**Ghi chú về `npm run check`:** lần chạy đầu đỏ 1 test (`WeaknessPage.lessons.test.tsx` › "A: chỉ làm Bài 3 và Bài 5 …", hết giờ mặc định 5 giây lúc máy bận). Đây là một trong 5 test cũ dễ hết giờ đã ghi ở `specs/003-speakable-text/evidence.md` (nợ ngoài phạm vi). Chạy riêng file đó: 5/5 xanh (4,10 giây). Chạy lại `npm run check` thẳng: xanh (exit 0). Không phải đỏ hai lần liên tiếp nên không dừng; không tăng timeout, không sửa test đó.
+
+**Một test cũ phải đổi cách dựng (không đổi khẳng định):** `McqComponent.test.tsx` ca E2 `[đặc trưng] E2: đề hiển thị chữ thô "[お]土産" …` dựng câu bằng `{ ...mcqJpVi.generate(...), promptText: '[お]土産', … }`. Vì `generate` nay trả thêm `promptSpeech: 'たべます'`, câu dựng tay thừa hưởng trường này nên nút loa đọc `たべます`. Đã thêm `promptSpeech: undefined` vào phần dựng câu để mô tả đúng "câu không có `promptSpeech` rơi về `promptText`"; khẳng định (`['土産']`) giữ nguyên và xanh. Mã không sai: đây là hệ quả của việc câu thật nay có `promptSpeech`.
+
+Kiểm bảo toàn và FR-012 (T037):
+
+```
+$ grep -rnE "SpeechSynthesisUtterance|speechSynthesis" src --include=*.ts --include=*.tsx | grep -vE "\.test\.tsx?:" | grep -vE "^src/(lib/tts|test/setup)\.ts:"
+(rỗng, 0 dòng)
+
+$ grep -rnE "kanji \?\? (q\.item\.|item\.|r\.)?kana" src/features --include=*.tsx --include=*.ts | grep -E "Speak|speak"
+(rỗng, 0 dòng)
+
+$ grep -n "audio:.*kanji" src/features/practice/modes/mcq/index.ts
+(rỗng, 0 dòng)
+
+$ git diff src/features/practice/modes/dictation/index.ts | wc -l
+0
+
+$ git diff -U0 src/features/practice/modes/mcq/index.ts | grep "^@@"
+@@ -27,0 +28 @@ interface DirectionConfig {
+@@ -68,0 +70 @@ function createMcqDirection(
+@@ -97,0 +100 @@ export const mcqJpVi = createMcqDirection({
+@@ -123,0 +127 @@ export const mcqKanjiReading = createMcqDirection({
+@@ -145 +149 @@ export const mcqListenVi = createMcqDirection({
+```
+
+Hàm `grade` của `mcq/index.ts` nằm ở dòng 76–86; không hunk nào rơi vào đó (các hunk ở dòng 28, 70, 100, 127, 149). `git diff src/features/practice/modes/dictation/index.ts` rỗng (0 dòng): chấm điểm chính tả nghe không đổi. Chữ hiển thị: các test hiển thị ở `McqComponent.test.tsx` (đề `mcq-jp-vi` vẫn là `食べます`, câu dựng tay hiển thị `食べます`) xanh.
+
+**Lập luận cấu trúc cho SC-004 (chấm điểm chính tả nghe không đổi cho mọi từ):**
+
+1. `src/features/practice/modes/dictation/index.ts` không đổi (`git diff` rỗng), nên `grade`, `gradeTyped(given, question.item.answers.kana)` và `expected` (`item.kana`) không đổi.
+2. `answers.*` do pipeline sinh; pipeline và nội dung không đổi (băm `public/content` giống hệt mốc, bảng trên; kiểm lại ở T072).
+3. Không viết được test theo từng từ trong `scripts/` vì `src/domain/quiz/grading.ts` import `@/lib/kana` (bí danh `@/` không chạy dưới `tsconfig.node.json`).
+4. Thay vào đó có bảng 6 ca cố định ở `dictation.test.tsx` (`[đặc trưng] (d)`), khẳng định cả `correct` lẫn `expected` (xanh trước và sau khi sửa mã).
 
 ## Story 3: kết quả ĐỎ
 
@@ -176,6 +263,65 @@ OK: không đụng schemaVersion (ngoài tài liệu specs/004)
 Kết luận: không file nào ở vùng cấm (registry, grading, session, pipeline, `content/**`, `public/content/**`), không có file bị xóa hay đổi tên (`src/lib/tts.ts` không đụng), không đổi `schemaVersion`. Chỉ `scripts/content/speakable-content.test.ts` (loại trừ đúng đường dẫn, đã có từ spec 003, chỉ thêm describe) nằm dưới `scripts/content/`. 19 file, đúng danh sách dự kiến.
 
 Đề xuất cho các commit sau: lệnh `schemaVersion` trong `tasks.md` nên loại trừ `specs/004-kana-pronunciation` (như trên) để khỏi báo nhầm.
+
+### Commit 2 (trước khi commit)
+
+Lệnh `schemaVersion` đã sửa trong `tasks.md` (loại trừ `specs/004-kana-pronunciation`; sửa nằm trong chính Commit 2), so với `staging` nên gồm cả Commit 1 và Commit 2.
+
+```
+$ git diff --cached staging --name-only | grep -vxF "scripts/content/speakable-content.test.ts" | grep -E "domain/quiz/(registry|grading)|session|scripts/content|^content/|^public/content" || echo "OK: không đụng vùng cấm"
+OK: không đụng vùng cấm
+
+$ git diff --cached staging -U0 -- . ':(exclude)specs/004-kana-pronunciation' | grep -E "^[+-].*schemaVersion" || echo "OK: không đụng schemaVersion (ngoài tài liệu specs/004)"
+OK: không đụng schemaVersion (ngoài tài liệu specs/004)
+
+$ git diff --cached staging --name-status | grep -E "^(R|D)" || echo OK
+OK
+
+$ git diff --cached --name-only   (đúng 11 đường dẫn của T041)
+docs/SPECKIT_ROADMAP.md
+specs/004-kana-pronunciation/evidence.md
+specs/004-kana-pronunciation/tasks.md
+src/features/practice/modes/dictation/DictationComponent.tsx
+src/features/practice/modes/dictation/dictation.test.tsx
+src/features/practice/modes/mcq/McqComponent.test.tsx
+src/features/practice/modes/mcq/McqComponent.tsx
+src/features/practice/modes/mcq/index.ts
+src/features/practice/modes/mcq/mcq.test.ts
+src/features/practice/modes/mcq/types.ts
+tests/e2e/kana-speech.spec.ts
+
+$ git diff --cached staging --stat   (gồm cả Commit 1 đã commit và Commit 2 đang staged; so với `staging`)
+ docs/SPECKIT_ROADMAP.md                            |  22 +-
+ scripts/content/speakable-content.test.ts          |  63 ++++
+ .../checklists/requirements.md                     |  37 +++
+ .../contracts/speech-contract.md                   |  92 ++++++
+ specs/004-kana-pronunciation/data-model.md         |  65 ++++
+ specs/004-kana-pronunciation/evidence.md           | 340 +++++++++++++++++++++
+ specs/004-kana-pronunciation/plan.md               | 221 ++++++++++++++
+ specs/004-kana-pronunciation/quickstart.md         |  67 ++++
+ specs/004-kana-pronunciation/research.md           | 116 +++++++
+ specs/004-kana-pronunciation/spec.md               | 217 +++++++++++++
+ specs/004-kana-pronunciation/tasks.md              | 316 +++++++++++++++++++
+ src/features/browse/SearchPage.test.tsx            |  88 ++++++
+ src/features/browse/SearchPage.tsx                 |   2 +-
+ src/features/browse/VocabTab.test.tsx              | 119 ++++++++
+ src/features/browse/VocabTab.tsx                   |   2 +-
+ .../modes/dictation/DictationComponent.tsx         |   4 +-
+ .../practice/modes/dictation/dictation.test.tsx    | 169 ++++++++++
+ .../modes/flashcard/FlashcardComponent.test.tsx    |  90 ++++++
+ .../modes/flashcard/FlashcardComponent.tsx         |   2 +-
+ .../practice/modes/mcq/McqComponent.test.tsx       |  77 ++++-
+ src/features/practice/modes/mcq/McqComponent.tsx   |   4 +-
+ src/features/practice/modes/mcq/index.ts           |   6 +-
+ src/features/practice/modes/mcq/mcq.test.ts        |  38 ++-
+ src/features/practice/modes/mcq/types.ts           |  17 +-
+ src/lib/speakable.test.ts                          |  23 ++
+ tests/e2e/kana-speech.spec.ts                      | 136 +++++++++
+ 26 files changed, 2309 insertions(+), 24 deletions(-)
+```
+
+Kết luận: không file nào ở vùng cấm (registry, grading, session, pipeline, `content/**`, `public/content/**`), không file bị xóa hay đổi tên (`src/lib/tts.ts` không đụng), không đổi `schemaVersion`; `dictation/index.ts` không đổi, hàm `grade` của `mcq/index.ts` không đổi. Chỉ `scripts/content/speakable-content.test.ts` (đã có từ Commit 1) nằm dưới `scripts/content/`.
 
 ## Thời gian vitest trước/sau
 

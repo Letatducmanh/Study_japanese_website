@@ -14,7 +14,7 @@ export function DictationComponent({ q, onAnswer }: DictationComponentProps) {
   const [value, setValue] = useState('')
 
   useEffect(() => {
-    speakJapanese(q.item.kanji ?? q.item.kana)
+    speakJapanese(q.item.kana)
     const el = inputRef.current
     if (!el) return
     el.focus()
@@ -31,7 +31,7 @@ export function DictationComponent({ q, onAnswer }: DictationComponentProps) {
     <div className="flex flex-col items-center gap-4">
       <button
         type="button"
-        onClick={() => speakJapanese(q.item.kanji ?? q.item.kana)}
+        onClick={() => speakJapanese(q.item.kana)}
         className="flex min-h-11 items-center gap-2 rounded-full bg-primary-50 px-4 text-sm font-medium text-primary-700 dark:bg-slate-800 dark:text-primary-500"
       >
         🔊 {vi.dictation.replay}
