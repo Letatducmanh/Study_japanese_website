@@ -50,7 +50,7 @@ Trước commit, so **phần đã staged** với `staging` (cùng lệnh với `
 
 ```
 git diff --cached staging --name-only | grep -vxF "scripts/content/speakable-content.test.ts" | grep -E "domain/quiz/(registry|grading)|session|scripts/content|^content/|^public/content" || echo "OK: không đụng vùng cấm"
-git diff --cached staging -U0 | grep -E "^[+-].*schemaVersion" || echo "OK: không đụng schemaVersion"
+git diff --cached staging -U0 -- . ':(exclude)specs/004-kana-pronunciation' | grep -E "^[+-].*schemaVersion" || echo "OK: không đụng schemaVersion (ngoài tài liệu specs/004)"
 git diff --cached staging --name-status | grep -E "^(R|D)" || echo OK
 ```
 

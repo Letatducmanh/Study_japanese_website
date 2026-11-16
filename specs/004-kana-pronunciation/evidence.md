@@ -191,17 +191,88 @@ Hàm `grade` của `mcq/index.ts` nằm ở dòng 76–86; không hunk nào rơi
 
 ## Story 3: kết quả ĐỎ
 
-(Chưa làm.)
+Chạy trước khi sửa mã (`speakable.ts` chưa có `exampleWordSpeech`/`kanjiCharSpeech`; `KanjiPage.tsx` chưa đổi):
+
+`npx vitest run src/lib/speakable.test.ts src/features/browse/KanjiPage.test.tsx scripts/content/speakable-content.test.ts` → **40 đỏ, 68 xanh** (108 test, 3 file, cả 3 file có đỏ).
+
+| Test đỏ | Số | Thông báo ngắn |
+|---|---|---|
+| `speakable.test.ts` — `exampleWordSpeech` (7 ca: `ひとり`, `じゅっぷん, じっぷん`, `なに, なん`, khoảng trắng quanh dấu phẩy, rỗng, `, `, ` , ,`) | 7 | `exampleWordSpeech is not a function` |
+| `speakable.test.ts` — `kanjiCharSpeech` (tám chữ thật + không có Kun + không có On + cả hai rỗng + Kun đầu có đuôi riêng + không lấy "Kun đầu tiên có ・") | 13 | `kanjiCharSpeech is not a function` |
+| `KanjiPage.test.tsx` — loa chữ đơn `一` (đọc `一` thay vì `イチ、ひとつ`); loa ví dụ `一人`, `十分`, `何` (đọc chữ thay vì `ひとり`, `じゅっぷん`, `なに`) | 4 | đọc chữ Hán |
+| `speakable-content.test.ts › Kanji` — mọi chữ đơn, mọi ví dụ, tám chữ thật, 畑/午, ba ví dụ thật, đúng 11 chữ mở rộng, dòng số liệu | 16 | `is not a function` (hàm thiếu) |
+
+`npm run build` **đỏ ở bước `tsc -b`** trước khi sửa mã: `TS2305` thiếu `exampleWordSpeech`/`kanjiCharSpeech` ở `speakable.test.ts` và `speakable-content.test.ts`. Hệ quả đúng của TDD; `vite build` không chạy nên `dist/` vẫn là bản của Commit 2 (cùng hành vi mã trước Story 3), và e2e bên dưới chạy trên bản đó.
+
+`npx playwright test tests/e2e/kana-speech.spec.ts` → **5 đỏ, 5 xanh** (năm ca Story 1 và 2 vẫn xanh). Cả năm ca Kanji đỏ ở khẳng định chuỗi đọc (trang đã mở và nút loa đã bấm được):
+
+| Ca e2e | Kết quả |
+|---|---|
+| `/kanji/一`: loa chữ đơn → `イチ、ひとつ`; ví dụ `一人` → `ひとり` | đỏ (đọc `一`) |
+| `/kanji/十`: ví dụ `十分` → `じゅっぷん` | đỏ (đọc `十分`) |
+| `/kanji/何`: ví dụ `何` → `なに` | đỏ (đọc `何`) |
+| `/kanji/上`: loa chữ đơn → `ジョウ、うえ` | đỏ (đọc `上`) |
+| `/kanji/行`: loa chữ đơn → `コウ、いく` | đỏ (đọc `行`) |
+
+Tổng bằng chứng ĐỎ Story 3: **45** (40 vitest + 5 e2e). Không có test nào thuộc nhóm dự kiến đỏ mà xanh ngay.
+
+Ghi chú về dựng test: lần đầu `KanjiPage.test.tsx` import `vi as vitestVi` nên `vi.mock` không được đưa lên đầu file và trang báo lỗi tải dữ liệu (cả 6 đỏ vì lý do sai). Đã đổi sang import `vi` trực tiếp (như `BookPage.test.tsx`) trước khi ghi bằng chứng ĐỎ ở trên; các số liệu trong bảng là của lần chạy sau khi sửa lỗi dựng test, trước khi sửa mã.
 
 ## Story 3: test đặc trưng `[đặc trưng]` (xanh ngay)
 
 Xanh trước và sau, không phải bằng chứng đỏ.
 
-(Chưa làm.)
+Xanh trước và sau, không phải bằng chứng đỏ.
+
+- `KanjiPage.test.tsx` (2): số nút loa không đổi (1 cho chữ đơn + 1 cho mỗi ví dụ = 4); chữ hiển thị không đổi (`一`, `一人`, `十分`, `何`, Kun `ひと、ひと・つ` còn dấu "・", On `イチ、イツ`).
+- Các test cũ ở `speakable.test.ts` (toàn bộ `toSpeakable`, kể cả 12 ca kana của Story 1) và ở `speakable-content.test.ts` (kể cả toàn bộ phần từ vựng của spec 004) giữ nguyên và vẫn xanh.
+- e2e: năm ca Story 1–2 vẫn xanh.
+
+Tổng: 2 test vitest mới xanh ngay. Không có test nào thuộc nhóm "dự kiến đỏ" mà xanh ngay.
 
 ## Story 3: kết quả XANH
 
-(Chưa làm.)
+Sau khi sửa mã: `src/lib/speakable.ts` (thêm `exampleWordSpeech`, `kanjiCharSpeech`; vẫn thuần, không import) và `src/features/browse/KanjiPage.tsx` (hai nút loa: chữ đơn `kanjiCharSpeech(item.on, item.kun)`, ví dụ `exampleWordSpeech(example.reading)`; phần hiển thị không đổi).
+
+| Số đo | Trước | Sau |
+|---|---|---|
+| Lệnh Story 3 (`speakable.test.ts`, `KanjiPage.test.tsx`, `speakable-content.test.ts`) | 40 đỏ / 68 xanh (108 test) | **108/108 xanh** |
+| `npx vitest run` toàn bộ | 63 file, 445 test (mốc sau Commit 2) | **64 file, 487 test, tất cả xanh** (thêm 1 file `KanjiPage.test.tsx` và 42 test: `speakable.test.ts` 20, `KanjiPage.test.tsx` 6, `speakable-content.test.ts` 16) |
+| `npm run build` + `npx playwright test` toàn bộ | 29 test: 28 đạt, 1 đỏ (mốc sau Commit 2) | **34 test: 33 đạt, 1 đỏ**; đỏ duy nhất vẫn là Q-2 `browse.spec.ts:3`; 5 ca Kanji mới của `kana-speech.spec.ts` xanh |
+| `npm run build` | `tsc -b` đỏ trước khi sửa mã (thiếu hai hàm) | **xanh**; JS 610,97 kB, **186,30 kB gzip** (dưới ngân sách 200 kB; Commit 2: 186,19 kB) |
+
+Dòng số liệu của test nội dung (chạy riêng với `--silent=false`):
+
+```
+[kana-speech] Kanji: 134 chữ, 657 ví dụ, 11 chữ mở rộng
+```
+
+Đúng kỳ vọng (134 chữ, 657 ví dụ, 11 chữ mở rộng = 白, 一 đến 九, 大). Tám chữ thật (一, 二, 白, 人, 上, 大, 行, 食) ra đúng `イチ、ひとつ`, `ニ、ふたつ`, `ハク、しろい`, `ジン、ひと`, `ジョウ、うえ` (không phải `あげる`), `ダイ、おおきい`, `コウ、いく`, `ショク、たべる`; 畑 chỉ Kun đầu, 午 chỉ `ゴ`; ví dụ `十分` → `じゅっぷん`, `何` → `なに`, `一人` → `ひとり`. Không khẳng định nào phải sửa cho khớp dữ liệu.
+
+Kiểm bảo toàn và FR-012 (T054):
+
+```
+$ grep -rnE "SpeechSynthesisUtterance|speechSynthesis" src --include=*.ts --include=*.tsx | grep -vE "\.test\.tsx?:" | grep -vE "^src/(lib/tts|test/setup)\.ts:"
+(rỗng, 0 dòng)
+
+$ grep -rnE "kanji \?\? (q\.item\.|item\.|r\.)?kana" src/features --include=*.tsx --include=*.ts | grep -E "Speak|speak"
+(rỗng, 0 dòng)
+
+$ grep -rnE "SpeakButton text=\{(item\.char|example\.word)\}" src/features/browse
+(rỗng, 0 dòng)
+```
+
+**Ghi chú về `npm run check` (ba lần, chạy thẳng):**
+
+| Lần | Kết quả | Ghi chú |
+|---|---|---|
+| 1 | đỏ (exit 1) | 4 test hết giờ 5 giây (`parse-grammar`, `parse-vocab`, `enrich`, `WeaknessPage.lessons` A) khi máy bận |
+| 2 | đỏ (exit 1) | 4 test hết giờ 5 giây (`parse-grammar` ×2, `enrich`, `WeaknessPage.lessons` A) khi máy bận |
+| 3 | **xanh (exit 0)** | chạy một mình khi máy rảnh (đã tắt `npm run dev`, đóng trình duyệt, không chạy gì song song): `content:validate` OK 568 cảnh báo, `tsc -b`, `eslint .`, vitest 64 file / 487 test, 40,35 giây |
+
+Cả hai lần đỏ chỉ do đúng nhóm 5 test cũ dễ hết giờ mặc định 5 giây (nợ đã ghi ở `specs/003-speakable-text/evidence.md`), không có test nào khác đỏ; `content:validate`, `tsc -b`, `eslint .` xanh cả hai lần. Chạy riêng 4 file đó: 25/25 xanh trong 10,5 giây. Chủ dự án chọn chạy lại khi máy rảnh; lần 3 xanh. Không sửa test cũ, không nâng timeout.
+
+**SC-004:** không đổi ở story này (chỉ thêm hai hàm Kanji và đổi chuỗi ở trang Kanji); lập luận đầy đủ ở Story 2 và Story 4.
 
 ## Story 4: kết quả ĐỎ
 
@@ -322,6 +393,66 @@ $ git diff --cached staging --stat   (gồm cả Commit 1 đã commit và Commit
 ```
 
 Kết luận: không file nào ở vùng cấm (registry, grading, session, pipeline, `content/**`, `public/content/**`), không file bị xóa hay đổi tên (`src/lib/tts.ts` không đụng), không đổi `schemaVersion`; `dictation/index.ts` không đổi, hàm `grade` của `mcq/index.ts` không đổi. Chỉ `scripts/content/speakable-content.test.ts` (đã có từ Commit 1) nằm dưới `scripts/content/`.
+
+### Commit 3 (trước khi commit)
+
+Lệnh `schemaVersion` đã sửa trong `tasks.md` (loại trừ `specs/004-kana-pronunciation`; sửa nằm trong chính Commit 2), so với `staging` nên gồm cả Commit 1, 2 và 3.
+
+```
+$ git diff --cached staging --name-only | grep -vxF "scripts/content/speakable-content.test.ts" | grep -E "domain/quiz/(registry|grading)|session|scripts/content|^content/|^public/content" || echo "OK: không đụng vùng cấm"
+OK: không đụng vùng cấm
+
+$ git diff --cached staging -U0 -- . ':(exclude)specs/004-kana-pronunciation' | grep -E "^[+-].*schemaVersion" || echo "OK: không đụng schemaVersion (ngoài tài liệu specs/004)"
+OK: không đụng schemaVersion (ngoài tài liệu specs/004)
+
+$ git diff --cached staging --name-status | grep -E "^(R|D)" || echo OK
+OK
+
+$ git diff --cached --name-only   (đúng 9 đường dẫn của T057)
+scripts/content/speakable-content.test.ts
+specs/004-kana-pronunciation/evidence.md
+specs/004-kana-pronunciation/quickstart.md
+specs/004-kana-pronunciation/tasks.md
+src/features/browse/KanjiPage.test.tsx
+src/features/browse/KanjiPage.tsx
+src/lib/speakable.test.ts
+src/lib/speakable.ts
+tests/e2e/kana-speech.spec.ts
+
+$ git diff --cached staging --stat   (gồm Commit 1 và 2 đã commit và Commit 3 đang staged; so với `staging`)
+ docs/SPECKIT_ROADMAP.md                            |  22 +-
+ scripts/content/speakable-content.test.ts          | 207 ++++++++-
+ .../checklists/requirements.md                     |  37 ++
+ .../contracts/speech-contract.md                   |  92 ++++
+ specs/004-kana-pronunciation/data-model.md         |  65 +++
+ specs/004-kana-pronunciation/evidence.md           | 471 +++++++++++++++++++++
+ specs/004-kana-pronunciation/plan.md               | 221 ++++++++++
+ specs/004-kana-pronunciation/quickstart.md         |  67 +++
+ specs/004-kana-pronunciation/research.md           | 116 +++++
+ specs/004-kana-pronunciation/spec.md               | 217 ++++++++++
+ specs/004-kana-pronunciation/tasks.md              | 316 ++++++++++++++
+ src/features/browse/KanjiPage.test.tsx             | 139 ++++++
+ src/features/browse/KanjiPage.tsx                  |   5 +-
+ src/features/browse/SearchPage.test.tsx            |  88 ++++
+ src/features/browse/SearchPage.tsx                 |   2 +-
+ src/features/browse/VocabTab.test.tsx              | 119 ++++++
+ src/features/browse/VocabTab.tsx                   |   2 +-
+ .../modes/dictation/DictationComponent.tsx         |   4 +-
+ .../practice/modes/dictation/dictation.test.tsx    | 169 ++++++++
+ .../modes/flashcard/FlashcardComponent.test.tsx    |  90 ++++
+ .../modes/flashcard/FlashcardComponent.tsx         |   2 +-
+ .../practice/modes/mcq/McqComponent.test.tsx       |  77 +++-
+ src/features/practice/modes/mcq/McqComponent.tsx   |   4 +-
+ src/features/practice/modes/mcq/index.ts           |   6 +-
+ src/features/practice/modes/mcq/mcq.test.ts        |  38 +-
+ src/features/practice/modes/mcq/types.ts           |  17 +-
+ src/lib/speakable.test.ts                          |  84 +++-
+ src/lib/speakable.ts                               |  36 ++
+ tests/e2e/kana-speech.spec.ts                      | 184 ++++++++
+ 29 files changed, 2868 insertions(+), 29 deletions(-)
+```
+
+Kết luận: không file nào ở vùng cấm (registry, grading, session, pipeline, `content/**`, `public/content/**`), không file bị xóa hay đổi tên (`src/lib/tts.ts` không đụng), không đổi `schemaVersion`; `speakable.ts` vẫn thuần (không import). Lần chạy đầu lệnh `schemaVersion` báo `+  schemaVersion: 1,` trong fixture manifest của `KanjiPage.test.tsx` (chép từ `BookPage.test.tsx`); trường này không cần cho test (`loadManifest` đã được mock) nên đã xóa dòng đó, chạy lại ra `OK`. Chỉ `scripts/content/speakable-content.test.ts` (đã có từ Commit 1) nằm dưới `scripts/content/`.
 
 ## Thời gian vitest trước/sau
 

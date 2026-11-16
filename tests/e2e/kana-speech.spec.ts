@@ -134,3 +134,51 @@ test('Kanji → Cách đọc: ẩn loa trước khi chọn, sau khi chọn đọ
   expect(texts).toHaveLength(1)
   expectKana(texts[0], kanaChars)
 })
+
+const kanjiUrl = (char: string) => '/kanji/' + encodeURIComponent(char)
+
+test('Trang Kanji 一: loa chữ đơn đọc "イチ、ひとつ"; ví dụ 一人 đọc "ひとり"', async ({
+  page,
+}) => {
+  await page.goto(kanjiUrl('一'))
+  const speakButtons = page.getByRole('button', { name: 'Nghe phát âm' })
+  await expect(speakButtons.first()).toBeVisible()
+  await speakButtons.first().click()
+  expect(await spoken(page)).toContain('イチ、ひとつ')
+
+  const example = page.locator('li').filter({ hasText: 'ひとり' }).first()
+  await example.getByRole('button', { name: 'Nghe phát âm' }).click()
+  expect(await spoken(page)).toContain('ひとり')
+})
+
+test('Trang Kanji 十: loa ở ví dụ 十分 đọc "じゅっぷん"', async ({ page }) => {
+  await page.goto(kanjiUrl('十'))
+  const example = page.locator('li').filter({ hasText: 'じゅっぷん' }).first()
+  await expect(example).toBeVisible()
+  await example.getByRole('button', { name: 'Nghe phát âm' }).click()
+  expect(await spoken(page)).toContain('じゅっぷん')
+})
+
+test('Trang Kanji 何: loa ở ví dụ 何 đọc "なに"', async ({ page }) => {
+  await page.goto(kanjiUrl('何'))
+  const example = page.locator('li').filter({ hasText: 'なに, なん' }).first()
+  await expect(example).toBeVisible()
+  await example.getByRole('button', { name: 'Nghe phát âm' }).click()
+  expect(await spoken(page)).toContain('なに')
+})
+
+test('Trang Kanji 上: loa chữ đơn đọc "ジョウ、うえ"', async ({ page }) => {
+  await page.goto(kanjiUrl('上'))
+  const button = page.getByRole('button', { name: 'Nghe phát âm' }).first()
+  await expect(button).toBeVisible()
+  await button.click()
+  expect(await spoken(page)).toContain('ジョウ、うえ')
+})
+
+test('Trang Kanji 行: loa chữ đơn đọc "コウ、いく"', async ({ page }) => {
+  await page.goto(kanjiUrl('行'))
+  const button = page.getByRole('button', { name: 'Nghe phát âm' }).first()
+  await expect(button).toBeVisible()
+  await button.click()
+  expect(await spoken(page)).toContain('コウ、いく')
+})

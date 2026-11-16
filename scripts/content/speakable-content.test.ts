@@ -2,7 +2,12 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { toSpeakable, type SpeakKind } from '../../src/lib/speakable.ts'
+import {
+  exampleWordSpeech,
+  kanjiCharSpeech,
+  toSpeakable,
+  type SpeakKind,
+} from '../../src/lib/speakable.ts'
 import { runContentPipeline } from './pipeline.ts'
 
 // Lần chạy pipeline RIÊNG (thứ ba trong bộ test): `public/content/*.json` bị gitignore và
@@ -18,7 +23,9 @@ interface VocabJson {
 interface KanjiJson {
   id: string
   char: string
-  examples: { word: string }[]
+  on: string[]
+  kun: string[]
+  examples: { word: string; reading: string }[]
 }
 interface GrammarJson {
   id: string
@@ -49,6 +56,7 @@ const normalize = (s: string): string =>
 let outDir = ''
 const spoken: SpokenString[] = []
 const vocab: VocabJson[] = []
+const kanjiItems: KanjiJson[] = []
 
 function readLessonFiles(): LessonJson[] {
   const files: LessonJson[] = []
@@ -81,6 +89,7 @@ beforeAll(() => {
       spoken.push({ id: v.id, text: v.kanji ?? v.kana, kind: 'word' })
     }
     for (const k of lesson.kanji ?? []) {
+      kanjiItems.push(k)
       spoken.push({ id: k.id, text: k.char, kind: 'word' })
       k.examples.forEach((e, i) =>
         spoken.push({ id: `${k.id}#ví-dụ-${i}`, text: e.word, kind: 'word' }),
@@ -233,6 +242,137 @@ describe('kana-pronunciation (spec 004)', () => {
         `[kana-speech] từ vựng: ${valid}/${vocab.length} có chuỗi đọc hợp lệ; có kanji: ${withKanji}`,
       )
       expect(valid).toBe(vocab.length)
+    })
+  })
+
+  describe('Kanji', () => {
+    const byChar = (char: string): KanjiJson => {
+      const found = kanjiItems.find((k) => k.char === char)
+      expect(found, `không thấy chữ ${char}`).toBeDefined()
+      return found as KanjiJson
+    }
+    const speechOf = (char: string): string => {
+      const k = byChar(char)
+      return kanjiCharSpeech(k.on, k.kun)
+    }
+    const allExamples = (): Array<{
+      char: string
+      reading: string
+      word: string
+    }> =>
+      kanjiItems.flatMap((k) =>
+        k.examples.map((e) => ({
+          char: k.char,
+          reading: e.reading,
+          word: e.word,
+        })),
+      )
+
+    it('mọi chữ Kanji đơn có chuỗi đọc không rỗng, không chữ Hán, không "・"', () => {
+      expect(kanjiItems.length).toBeGreaterThan(0)
+      const failures = kanjiItems
+        .map((k) => ({ char: k.char, spoken: kanjiCharSpeech(k.on, k.kun) }))
+        .filter(
+          (r) =>
+            r.spoken.trim() === '' ||
+            HAN.test(r.spoken) ||
+            r.spoken.includes('・'),
+        )
+      expect(failures).toEqual([])
+    })
+
+    it('mọi từ ví dụ có chuỗi đọc không rỗng, không chữ Hán, không ","', () => {
+      expect(allExamples().length).toBeGreaterThan(0)
+      const failures = allExamples()
+        .map((e) => ({ ...e, spoken: exampleWordSpeech(e.reading) }))
+        .filter(
+          (r) =>
+            r.spoken.trim() === '' ||
+            HAN.test(r.spoken) ||
+            r.spoken.includes(','),
+        )
+      expect(failures).toEqual([])
+    })
+
+    it.each([
+      ['一', 'イチ、ひとつ'],
+      ['二', 'ニ、ふたつ'],
+      ['白', 'ハク、しろい'],
+      ['人', 'ジン、ひと'],
+      ['上', 'ジョウ、うえ'],
+      ['大', 'ダイ、おおきい'],
+      ['行', 'コウ、いく'],
+      ['食', 'ショク、たべる'],
+    ])('bảng thật: chữ %s đọc là %s', (char, expected) => {
+      expect(speechOf(char)).toBe(expected)
+    })
+
+    it('畑 (không có On) chỉ đọc Kun đầu; 午 (không có Kun) chỉ đọc On đầu', () => {
+      const hatake = speechOf('畑')
+      expect(hatake).not.toContain('、')
+      expect(hatake).toBe(byChar('畑').kun[0].replace(/・/gu, ''))
+      expect(speechOf('午')).toBe('ゴ')
+    })
+
+    it.each([
+      ['十', '十分', 'じゅっぷん'],
+      ['何', '何', 'なに'],
+      ['一', '一人', 'ひとり'],
+    ])('ví dụ thật: chữ %s, ví dụ %s đọc là %s', (char, word, expected) => {
+      const example = byChar(char).examples.find((e) => e.word === word)
+      expect(example, `không thấy ví dụ ${word} ở chữ ${char}`).toBeDefined()
+      expect(exampleWordSpeech((example as { reading: string }).reading)).toBe(
+        expected,
+      )
+    })
+
+    it('đúng 11 chữ được mở rộng thành dạng có đuôi (白, 一 đến 九, 大)', () => {
+      // Theo quy tắc: Kun đầu không có "・" và có Kun khác bắt đầu bằng "<Kun đầu>・".
+      const byRule = kanjiItems
+        .filter((k) => {
+          const first = k.kun[0]
+          return (
+            first !== undefined &&
+            !first.includes('・') &&
+            k.kun.some((other) => other.startsWith(first + '・'))
+          )
+        })
+        .map((k) => k.char)
+      // Theo hàm: phần Kun của chuỗi đọc khác Kun đầu đã bỏ "・".
+      const byFunction = kanjiItems
+        .filter((k) => {
+          if (k.kun.length === 0) return false
+          const kunPart = kanjiCharSpeech([], k.kun)
+          return kunPart !== k.kun[0].replace(/・/gu, '')
+        })
+        .map((k) => k.char)
+      const expected = [
+        '白',
+        '一',
+        '二',
+        '三',
+        '四',
+        '五',
+        '六',
+        '七',
+        '八',
+        '九',
+        '大',
+      ]
+      expect([...byRule].sort()).toEqual([...expected].sort())
+      expect([...byFunction].sort()).toEqual([...expected].sort())
+      expect(byRule).toHaveLength(11)
+    })
+
+    it('ghi số liệu để đưa vào evidence.md', () => {
+      const expanded = kanjiItems.filter((k) => {
+        if (k.kun.length === 0) return false
+        return kanjiCharSpeech([], k.kun) !== k.kun[0].replace(/・/gu, '')
+      }).length
+      console.info(
+        `[kana-speech] Kanji: ${kanjiItems.length} chữ, ${allExamples().length} ví dụ, ${expanded} chữ mở rộng`,
+      )
+      expect(expanded).toBe(11)
     })
   })
 })

@@ -72,3 +72,39 @@ export function toSpeakable(text: string, kind: SpeakKind = 'word'): string {
   if (s === text) return text
   return tidy(s)
 }
+
+/** Dấu phẩy ngăn cách các cách đọc của từ ví dụ ("じゅっぷん, じっぷん"). */
+const READING_SEPARATOR = /\s*,\s*/u
+/** Dấu chấm nối thân và đuôi của âm Kun ("あ・げる"). */
+const KUN_DOT = /・/gu
+
+/**
+ * Chuỗi ĐỌC của một từ ví dụ ở trang Kanji: cách đọc kana đầu tiên.
+ * "じゅっぷん, じっぷん" → "じゅっぷん". Không có phần nào thì trả về chuỗi rỗng.
+ * Quy tắc và ví dụ: specs/004-kana-pronunciation/contracts/speech-contract.md (C-3).
+ */
+export function exampleWordSpeech(reading: string): string {
+  return nonEmptyParts(reading, READING_SEPARATOR)[0] ?? ''
+}
+
+/**
+ * Chuỗi ĐỌC của một chữ Kanji đơn: On đầu tiên rồi Kun đầu tiên, nối bằng "、", bỏ mọi "・".
+ * Kun đầu chỉ được mở rộng thành dạng có đuôi khi nó là phần gốc của một Kun khác
+ * ("ひと" có "ひと・つ" → "ひとつ"); không lấy "Kun đầu tiên có ・" (上 phải ra "うえ", không phải "あげる").
+ * Quy tắc và ví dụ: specs/004-kana-pronunciation/contracts/speech-contract.md (C-4).
+ */
+export function kanjiCharSpeech(
+  on: readonly string[],
+  kun: readonly string[],
+): string {
+  const onFirst = on[0]?.trim() ?? ''
+  const kunFirst = kun[0]?.trim() ?? ''
+  const stem = kunFirst + '・'
+  const kunSpoken =
+    kunFirst !== '' && !kunFirst.includes('・')
+      ? (kun.find((k) => k.trim().startsWith(stem)) ?? kunFirst)
+      : kunFirst
+  return [onFirst, kunSpoken.trim().replace(KUN_DOT, '')]
+    .filter((part) => part !== '')
+    .join('、')
+}

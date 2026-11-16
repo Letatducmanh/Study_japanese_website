@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toSpeakable } from './speakable'
+import { exampleWordSpeech, kanjiCharSpeech, toSpeakable } from './speakable'
 
 describe('toSpeakable — từ vựng (word)', () => {
   it.each([
@@ -151,4 +151,63 @@ describe('toSpeakable — kana của từ vựng (spec 004)', () => {
       expect(toSpeakable(kana, 'word')).toBe(kana)
     },
   )
+})
+
+describe('exampleWordSpeech — cách đọc đầu của từ ví dụ (spec 004)', () => {
+  it.each([
+    ['ひとり', 'ひとり'],
+    ['じゅっぷん, じっぷん', 'じゅっぷん'],
+    ['なに, なん', 'なに'],
+    ['なに ,  なん', 'なに'],
+    ['', ''],
+    [', ', ''],
+    [' , ,', ''],
+  ])('%j → %j', (reading, expected) => {
+    expect(exampleWordSpeech(reading)).toBe(expected)
+  })
+})
+
+describe('kanjiCharSpeech — On đầu、Kun đầu (spec 004)', () => {
+  it.each([
+    ['一', ['イチ', 'イツ'], ['ひと', 'ひと・つ'], 'イチ、ひとつ'],
+    ['二', ['ニ'], ['ふた', 'ふた・つ'], 'ニ、ふたつ'],
+    ['白', ['ハク', 'ビャク'], ['しろ', 'しろ・い'], 'ハク、しろい'],
+    ['人', ['ジン', 'ニン'], ['ひと'], 'ジン、ひと'],
+    [
+      '上',
+      ['ジョウ', 'ショウ'],
+      ['うえ', 'うわ', 'かみ', 'あ・げる', 'あ・がる', 'のぼ・る'],
+      'ジョウ、うえ',
+    ],
+    ['大', ['ダイ', 'タイ'], ['おお', 'おお・きい'], 'ダイ、おおきい'],
+    [
+      '行',
+      ['コウ', 'ギョウ', 'アン'],
+      ['い・く', 'ゆ・く', 'おこな・う'],
+      'コウ、いく',
+    ],
+    ['食', ['ショク', 'ジキ'], ['た・べる', 'く・う'], 'ショク、たべる'],
+  ])('%s: On %j, Kun %j → %s', (_char, on, kun, expected) => {
+    expect(kanjiCharSpeech(on, kun)).toBe(expected)
+  })
+
+  it('không có Kun: chỉ On đầu, không có "、" thừa', () => {
+    expect(kanjiCharSpeech(['ゴ'], [])).toBe('ゴ')
+  })
+
+  it('không có On: chỉ Kun đầu', () => {
+    expect(kanjiCharSpeech([], ['はたけ', 'はた'])).toBe('はたけ')
+  })
+
+  it('không có cả hai: chuỗi rỗng', () => {
+    expect(kanjiCharSpeech([], [])).toBe('')
+  })
+
+  it('Kun đầu đã có đuôi riêng thì không bị đổi', () => {
+    expect(kanjiCharSpeech([], ['い・く'])).toBe('いく')
+  })
+
+  it('Kun đầu chỉ mở rộng khi là phần gốc của Kun khác (không lấy "Kun đầu tiên có ・")', () => {
+    expect(kanjiCharSpeech([], ['うえ', 'あ・げる'])).toBe('うえ')
+  })
 })

@@ -6,6 +6,7 @@ import { Ruby } from '@/ui/jp/Ruby'
 import { SpeakButton } from '@/ui/jp/SpeakButton'
 import { loadManifest, resolveVocabItems } from '@/data/content-loader'
 import { loadAllKanjiForBook } from '@/data/kanji-lookup'
+import { exampleWordSpeech, kanjiCharSpeech } from '@/lib/speakable'
 import { vi } from '@/i18n/vi'
 import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { KanjiExample, KanjiItem } from '@/domain/types'
@@ -55,7 +56,7 @@ export function KanjiPage() {
       <div className="flex items-center gap-4">
         <span className="text-6xl leading-none">{item.char}</span>
         <div className="flex flex-col gap-1">
-          <SpeakButton text={item.char} />
+          <SpeakButton text={kanjiCharSpeech(item.on, item.kun)} />
           <p className="text-lg font-semibold text-primary-700 dark:text-primary-500">
             {item.hanViet}
           </p>
@@ -88,7 +89,7 @@ export function KanjiPage() {
           <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
             {item.examples.map((example, i) => (
               <li key={i} className="flex min-h-11 items-center gap-2 py-2">
-                <SpeakButton text={example.word} />
+                <SpeakButton text={exampleWordSpeech(example.reading)} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <Ruby base={example.word} reading={example.reading} />
