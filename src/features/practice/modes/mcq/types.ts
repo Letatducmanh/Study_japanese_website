@@ -18,10 +18,23 @@ export interface McqQuestion {
   /** Văn bản hiển thị làm đề bài (không dùng khi câu hỏi chỉ phát âm thanh). */
   promptText?: string
   promptReading?: string
-  /** Văn bản để đọc bằng TTS — luôn có ở hướng "Nghe → Nghĩa". */
+  /**
+   * Văn bản tự đọc lúc mở câu hỏi và cho nút "Nghe lại" — luôn có ở hướng "Nghe → Nghĩa";
+   * là kana của từ.
+   */
   promptAudio?: string
+  /**
+   * Chuỗi nút loa ở đề sẽ ĐỌC (kana của từ khi đề hiển thị kanji). Ưu tiên hơn
+   * `promptAudio`/`promptText` cho nút loa ở đề; không ảnh hưởng tự đọc lúc mở
+   * (chỉ `promptAudio` tự đọc) và nút "Nghe lại". Khác `promptSpeak`: trường đó chỉ
+   * quyết định có hiện nút loa hay không.
+   */
+  promptSpeech?: string
   choices: McqChoice[]
   correctChoiceId: string
-  /** Quyết định nút loa ở đề; không ảnh hưởng tự đọc (`promptAudio`) và nút "Nghe lại". */
+  /**
+   * Có hiện nút loa ở đề hay không (`always` | `after-answer` | `never`); không quyết định
+   * nút đọc gì (xem `promptSpeech`), không ảnh hưởng tự đọc (`promptAudio`) và nút "Nghe lại".
+   */
   promptSpeak: PromptSpeak
 }

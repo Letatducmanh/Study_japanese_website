@@ -113,7 +113,7 @@ describe('McqComponent: nút loa ở đề', () => {
     expect(speakButton()).toBeNull()
   })
 
-  it('mcq-kanji-reading: ẩn nút loa trước khi chọn, hiện sau khi chọn và đọc chữ kanji của đề', async () => {
+  it('mcq-kanji-reading: ẩn nút loa trước khi chọn, hiện sau khi chọn và đọc kana của từ', async () => {
     const q = mcqKanjiReading.generate(pool[0], pool, createRng(1))
     renderQuestion(q)
     expect(speakButton()).toBeNull()
@@ -126,13 +126,13 @@ describe('McqComponent: nút loa ở đề', () => {
     expect(button).not.toBeNull()
 
     await userEvent.click(button!)
-    expect(spokenTexts()).toEqual(['食べます'])
+    expect(spokenTexts()).toEqual(['たべます'])
   })
 
-  it('[đặc trưng] mcq-jp-vi có nút loa ở đề, đọc chữ của đề', async () => {
+  it('mcq-jp-vi có nút loa ở đề, đọc kana của từ', async () => {
     renderQuestion(mcqJpVi.generate(pool[0], pool, createRng(1)))
     await userEvent.click(speakButton()!)
-    expect(spokenTexts()).toEqual(['食べます'])
+    expect(spokenTexts()).toEqual(['たべます'])
   })
 
   it('[đặc trưng] mcq-kana-kanji có nút loa ở đề', () => {
@@ -140,13 +140,13 @@ describe('McqComponent: nút loa ở đề', () => {
     expect(speakButton()).not.toBeNull()
   })
 
-  it('[đặc trưng] mcq-listen-vi: không có nút "Nghe phát âm", có "Nghe lại", tự đọc khi mở', () => {
+  it('mcq-listen-vi: không có nút "Nghe phát âm", có "Nghe lại", tự đọc kana khi mở', () => {
     renderQuestion(mcqListenVi.generate(pool[0], pool, createRng(1)))
     expect(speakButton()).toBeNull()
     expect(
       screen.getByRole('button', { name: new RegExp(viText.mcq.replay) }),
     ).toBeInTheDocument()
-    expect(spokenTexts()).toEqual(['食べます'])
+    expect(spokenTexts()).toEqual(['たべます'])
   })
 
   it('[đặc trưng] mcq-jp-vi không tự đọc khi mở câu hỏi', () => {
@@ -170,11 +170,76 @@ describe('McqComponent: nút loa ở đề', () => {
       promptText: '[お]土産',
       promptReading: undefined,
       promptAudio: undefined,
+      promptSpeech: undefined,
       promptSpeak: 'always',
     }
     const { container } = renderQuestion(q)
     expect(container.textContent).toContain('[お]土産')
     await userEvent.click(speakButton()!)
     expect(spokenTexts()).toEqual(['土産'])
+  })
+
+  describe('đọc kana của từ (spec 004)', () => {
+    it('[đặc trưng] mcq-jp-vi: đề vẫn hiển thị kanji "食べます"', () => {
+      const { container } = renderQuestion(
+        mcqJpVi.generate(pool[0], pool, createRng(1)),
+      )
+      expect(container.textContent).toContain('食べます')
+    })
+
+    it('[đặc trưng] mcq-jp-vi: không tự đọc khi mở câu hỏi', () => {
+      renderQuestion(mcqJpVi.generate(pool[0], pool, createRng(1)))
+      expect(speak).not.toHaveBeenCalled()
+    })
+
+    it('mcq-listen-vi: nút "Nghe lại" đọc kana "たべます"', async () => {
+      renderQuestion(mcqListenVi.generate(pool[0], pool, createRng(1)))
+      await userEvent.click(
+        screen.getByRole('button', { name: new RegExp(viText.mcq.replay) }),
+      )
+      expect(spokenTexts()).toEqual(['たべます', 'たべます'])
+    })
+
+    it('câu dựng tay có promptSpeech: nút loa đọc "たべます", đề hiển thị "食べます"', async () => {
+      const q: McqQuestion = {
+        ...mcqJpVi.generate(pool[0], pool, createRng(1)),
+        promptText: '食べます',
+        promptSpeech: 'たべます',
+        promptAudio: undefined,
+        promptSpeak: 'always',
+      }
+      const { container } = renderQuestion(q)
+      expect(container.textContent).toContain('食べます')
+      await userEvent.click(speakButton()!)
+      expect(spokenTexts()).toEqual(['たべます'])
+    })
+
+    it('promptSpeech thắng promptAudio ở nút loa của đề', async () => {
+      const q: McqQuestion = {
+        ...mcqJpVi.generate(pool[0], pool, createRng(1)),
+        promptText: '食べます',
+        promptSpeech: 'たべます',
+        promptAudio: 'x',
+        promptSpeak: 'always',
+      }
+      renderQuestion(q)
+      // promptAudio tự đọc lúc mở (hành vi cũ); nút loa dùng promptSpeech
+      speak.mockClear()
+      await userEvent.click(speakButton()!)
+      expect(spokenTexts()).toEqual(['たべます'])
+    })
+
+    it('[đặc trưng] không có promptSpeech: nút loa rơi về promptText', async () => {
+      const q: McqQuestion = {
+        ...mcqJpVi.generate(pool[0], pool, createRng(1)),
+        promptText: '食べます',
+        promptSpeech: undefined,
+        promptAudio: undefined,
+        promptSpeak: 'always',
+      }
+      renderQuestion(q)
+      await userEvent.click(speakButton()!)
+      expect(spokenTexts()).toEqual(['食べます'])
+    })
   })
 })

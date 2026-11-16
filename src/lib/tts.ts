@@ -1,5 +1,6 @@
 /** Bọc Web Speech API để đọc tiếng Nhật; không ném lỗi khi thiết bị không hỗ trợ. */
 
+import corrections from '../../content/overrides/speech-corrections.json'
 import { toSpeakable, type SpeakKind } from './speakable'
 
 export function isTtsSupported(): boolean {
@@ -68,7 +69,12 @@ export interface SpeakOptions {
  */
 export function speakJapanese(text: string, options: SpeakOptions = {}): void {
   if (!isTtsSupported() || !text.trim()) return
-  const spoken = toSpeakable(text, options.kind ?? 'word')
+  const kind = options.kind ?? 'word'
+  const spoken = toSpeakable(
+    text,
+    kind,
+    kind === 'sentence' ? corrections.sentence : [],
+  )
   if (!spoken.trim()) return
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(spoken)

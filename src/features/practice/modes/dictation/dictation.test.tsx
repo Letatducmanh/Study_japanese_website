@@ -91,3 +91,172 @@ describe('DictationComponent — chuỗi đưa cho giọng đọc', () => {
     expect(textOf(1)).toBe('みやげ')
   })
 })
+
+describe('DictationComponent — đọc kana (spec 004)', () => {
+  const original = window.speechSynthesis
+  let speak: ReturnType<typeof vitestVi.fn>
+
+  beforeEach(() => {
+    speak = vitestVi.fn()
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        speak,
+        cancel: vitestVi.fn(),
+        getVoices: vitestVi
+          .fn()
+          .mockReturnValue([{ lang: 'ja-JP' } as SpeechSynthesisVoice]),
+        addEventListener: vitestVi.fn(),
+        removeEventListener: vitestVi.fn(),
+      },
+    })
+  })
+
+  afterEach(() => {
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: original,
+    })
+  })
+
+  const spoken = (): string[] =>
+    speak.mock.calls.map((c) => (c[0] as SpeechSynthesisUtterance).text)
+
+  const nanji = () =>
+    makeItem({
+      kanji: '何時',
+      kana: 'なんじ',
+      answers: { kana: ['なんじ'], kanji: ['何時'], meaning: ['mấy giờ'] },
+    })
+
+  it('(a) tự đọc lúc mở câu hỏi là kana "なんじ", không phải "何時"', () => {
+    render(<DictationComponent q={{ item: nanji() }} onAnswer={() => {}} />)
+    expect(spoken()).toEqual(['なんじ'])
+  })
+
+  it('(b) bấm "nghe lại" cũng đọc "なんじ"', async () => {
+    render(<DictationComponent q={{ item: nanji() }} onAnswer={() => {}} />)
+    await userEvent.click(
+      screen.getByRole('button', { name: new RegExp(viText.dictation.replay) }),
+    )
+    expect(spoken()).toEqual(['なんじ', 'なんじ'])
+  })
+
+  it('[đặc trưng] (c) grade() không đổi: gõ なんじ đúng, gõ いつ sai, expected là item.kana', () => {
+    const item = nanji()
+    const q = dictationQuestionType.generate(item, [item], () => 0.5)
+    expect(dictationQuestionType.grade(q, 'なんじ')).toEqual({
+      correct: true,
+      expected: 'なんじ',
+      given: 'なんじ',
+    })
+    expect(dictationQuestionType.grade(q, 'いつ')).toEqual({
+      correct: false,
+      expected: 'なんじ',
+      given: 'いつ',
+    })
+  })
+
+  const gradeCases: Array<{
+    name: string
+    item: Partial<VocabItem>
+    typed: Array<[string, boolean]>
+    expected: string
+  }> = [
+    {
+      name: '(1) có [ ]',
+      item: {
+        kana: '[お]みやげ',
+        kanji: null,
+        answers: { kana: ['みやげ'], kanji: [], meaning: [] },
+      },
+      typed: [
+        ['みやげ', true],
+        ['おみやげ', false],
+      ],
+      expected: '[お]みやげ',
+    },
+    {
+      name: '(2) có " / "',
+      item: {
+        kana: 'ぎゅうにゅう / ミルク',
+        kanji: null,
+        answers: { kana: ['ぎゅうにゅう', 'ミルク'], kanji: [], meaning: [] },
+      },
+      typed: [
+        ['ミルク', true],
+        ['ちがう', false],
+      ],
+      expected: 'ぎゅうにゅう / ミルク',
+    },
+    {
+      name: '(3) có ～',
+      item: {
+        kana: '～じん',
+        kanji: '～人',
+        answers: { kana: ['じん'], kanji: ['人'], meaning: [] },
+      },
+      typed: [
+        ['じん', true],
+        ['にん', false],
+        ['人', false],
+      ],
+      expected: '～じん',
+    },
+    {
+      name: '(4) có kanji',
+      item: {
+        kana: 'なんじ',
+        kanji: '何時',
+        answers: { kana: ['なんじ'], kanji: ['何時'], meaning: [] },
+      },
+      typed: [
+        ['なんじ', true],
+        ['いつ', false],
+        ['何時', false],
+      ],
+      expected: 'なんじ',
+    },
+    {
+      name: '(5) có [ ] và kanji',
+      item: {
+        kana: '[お]はなみ',
+        kanji: '[お]花見',
+        answers: { kana: ['はなみ'], kanji: ['花見'], meaning: [] },
+      },
+      typed: [
+        ['はなみ', true],
+        ['花見', false],
+      ],
+      expected: '[お]はなみ',
+    },
+    {
+      name: '(6) có ～ và " / "',
+      item: {
+        kana: '～ふん / ～ぷん',
+        kanji: '～分',
+        answers: { kana: ['ふん', 'ぷん'], kanji: ['分'], meaning: [] },
+      },
+      typed: [
+        ['ふん', true],
+        ['ぷん', true],
+        ['ぱん', false],
+        ['分', false],
+      ],
+      expected: '～ふん / ～ぷん',
+    },
+  ]
+
+  it.each(gradeCases)(
+    '[đặc trưng] (d) grade() không đổi: $name',
+    ({ item: overrides, typed, expected }) => {
+      const item = makeItem(overrides)
+      const q = dictationQuestionType.generate(item, [item], () => 0.5)
+      for (const [given, correct] of typed) {
+        const result = dictationQuestionType.grade(q, given)
+        expect({ given, correct: result.correct }).toEqual({ given, correct })
+        expect(result.expected).toBe(expected)
+      }
+    },
+  )
+})

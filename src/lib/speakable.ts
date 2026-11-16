@@ -7,6 +7,10 @@
  * Hàm thuần, không phụ thuộc DOM/`window`: file này cũng được `scripts/` import (test nội dung)
  * và khi đó được biên dịch với thư viện không có DOM.
  * Quy tắc và ví dụ: specs/003-speakable-text/contracts/speakable-contract.md (C-1).
+ *
+ * Hai hàm `exampleWordSpeech`, `kanjiCharSpeech` (trang Kanji) và bảng sửa cách đọc cho câu
+ * (`SpeechCorrection`) cũng chỉ tạo chuỗi để ĐỌC, không dùng chấm điểm. Bảng sửa do nơi gọi truyền vào
+ * (file này không import JSON): specs/004-kana-pronunciation/contracts/speech-contract.md (C-1).
  */
 
 /**
@@ -54,11 +58,53 @@ function joinListItems(parts: string[]): string {
 }
 
 /**
+ * Một mục của bảng sửa cách đọc: cụm `match` (khớp đúng chữ, kể cả dấu cách) được đọc là `speak`.
+ * Bảng nằm trong dữ liệu (`content/overrides/speech-corrections.json`), không viết cứng trong mã.
+ */
+export interface SpeechCorrection {
+  match: string
+  speak: string
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
+}
+
+/**
+ * Áp bảng sửa lên chuỗi gốc, một lượt (mục dài khớp trước; kết quả của mục này không khớp lại
+ * ở mục khác), mọi vị trí. Mục có `match` rỗng bị bỏ qua. Không mục nào khớp: trả về y nguyên.
+ */
+function applyCorrections(
+  text: string,
+  corrections: readonly SpeechCorrection[],
+): string {
+  const speakOf = new Map<string, string>()
+  for (const { match, speak } of corrections) {
+    if (match !== '' && !speakOf.has(match)) speakOf.set(match, speak)
+  }
+  if (speakOf.size === 0) return text
+  const pattern = new RegExp(
+    [...speakOf.keys()]
+      .sort((a, b) => b.length - a.length)
+      .map(escapeRegExp)
+      .join('|'),
+    'gu',
+  )
+  return text.replace(pattern, (found) => speakOf.get(found) ?? found)
+}
+
+/**
  * Trả về chuỗi sẽ được ĐỌC (có thể là chuỗi rỗng nếu đầu vào chỉ gồm ký hiệu bị bỏ).
  * Nếu không quy tắc nào đổi gì thì trả về y nguyên đầu vào, kể cả dấu cách.
  */
-export function toSpeakable(text: string, kind: SpeakKind = 'word'): string {
-  let s = text.replace(OPTIONAL_PART, '').replace(PLACEHOLDER, '')
+export function toSpeakable(
+  text: string,
+  kind: SpeakKind = 'word',
+  corrections: readonly SpeechCorrection[] = [],
+): string {
+  const corrected =
+    kind === 'sentence' ? applyCorrections(text, corrections) : text
+  let s = corrected.replace(OPTIONAL_PART, '').replace(PLACEHOLDER, '')
 
   if (kind === 'word') {
     if (ANY_SLASH.test(s)) s = nonEmptyParts(s, ALTERNATIVE_SEPARATOR)[0] ?? ''
@@ -71,4 +117,40 @@ export function toSpeakable(text: string, kind: SpeakKind = 'word'): string {
 
   if (s === text) return text
   return tidy(s)
+}
+
+/** Dấu phẩy ngăn cách các cách đọc của từ ví dụ ("じゅっぷん, じっぷん"). */
+const READING_SEPARATOR = /\s*,\s*/u
+/** Dấu chấm nối thân và đuôi của âm Kun ("あ・げる"). */
+const KUN_DOT = /・/gu
+
+/**
+ * Chuỗi ĐỌC của một từ ví dụ ở trang Kanji: cách đọc kana đầu tiên.
+ * "じゅっぷん, じっぷん" → "じゅっぷん". Không có phần nào thì trả về chuỗi rỗng.
+ * Quy tắc và ví dụ: specs/004-kana-pronunciation/contracts/speech-contract.md (C-3).
+ */
+export function exampleWordSpeech(reading: string): string {
+  return nonEmptyParts(reading, READING_SEPARATOR)[0] ?? ''
+}
+
+/**
+ * Chuỗi ĐỌC của một chữ Kanji đơn: On đầu tiên rồi Kun đầu tiên, nối bằng "、", bỏ mọi "・".
+ * Kun đầu chỉ được mở rộng thành dạng có đuôi khi nó là phần gốc của một Kun khác
+ * ("ひと" có "ひと・つ" → "ひとつ"); không lấy "Kun đầu tiên có ・" (上 phải ra "うえ", không phải "あげる").
+ * Quy tắc và ví dụ: specs/004-kana-pronunciation/contracts/speech-contract.md (C-4).
+ */
+export function kanjiCharSpeech(
+  on: readonly string[],
+  kun: readonly string[],
+): string {
+  const onFirst = on[0]?.trim() ?? ''
+  const kunFirst = kun[0]?.trim() ?? ''
+  const stem = kunFirst + '・'
+  const kunSpoken =
+    kunFirst !== '' && !kunFirst.includes('・')
+      ? (kun.find((k) => k.trim().startsWith(stem)) ?? kunFirst)
+      : kunFirst
+  return [onFirst, kunSpoken.trim().replace(KUN_DOT, '')]
+    .filter((part) => part !== '')
+    .join('、')
 }

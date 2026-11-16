@@ -38,7 +38,9 @@ export function McqComponent({ q, onAnswer }: McqComponentProps) {
         <div className="flex items-center gap-2">
           {(q.promptSpeak === 'always' ||
             (q.promptSpeak === 'after-answer' && picked !== null)) && (
-            <SpeakButton text={q.promptAudio ?? q.promptText} />
+            <SpeakButton
+              text={q.promptSpeech ?? q.promptAudio ?? q.promptText}
+            />
           )}
           <span className="text-3xl font-medium text-slate-900 dark:text-slate-100">
             <Ruby base={q.promptText} reading={q.promptReading} />

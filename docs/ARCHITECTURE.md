@@ -347,7 +347,7 @@ tu-hoc-tieng-nhat-cung-manh/
 │   ├── manifest.yaml
 │   ├── n5/mnn1/{vocab,grammar}.md
 │   ├── n5/kanji-master-n5/kanji.md
-│   └── overrides/{verb-groups,pos,id-aliases}.yaml
+│   └── overrides/{verb-groups,pos,id-aliases}.yaml  + speech-corrections.json   # speech-corrections.json do src/lib/tts.ts đọc trực tiếp, không qua pipeline
 │
 ├── scripts/content/              # pipeline build nội dung (Node/TS)
 │   ├── parse-vocab.ts  parse-grammar.ts  parse-kanji.ts

@@ -25,6 +25,7 @@ interface DirectionConfig {
     text?: string
     reading?: string
     audio?: string
+    speech?: string
     speak: PromptSpeak
   }
   choiceOf: (item: VocabItem) => { text: string; reading?: string }
@@ -66,6 +67,7 @@ function createMcqDirection(
         promptText: prompt.text,
         promptReading: prompt.reading,
         promptAudio: prompt.audio,
+        promptSpeech: prompt.speech,
         promptSpeak: prompt.speak,
         choices,
         correctChoiceId: choices[correctIndex].id,
@@ -95,6 +97,7 @@ export const mcqJpVi = createMcqDirection({
   buildPrompt: (item) => ({
     text: item.kanji ?? item.kana,
     reading: item.kanji ? item.kana : undefined,
+    speech: item.kana,
     speak: 'always',
   }),
   choiceOf: (item) => ({ text: item.meaning }),
@@ -121,6 +124,7 @@ export const mcqKanjiReading = createMcqDirection({
   isEligibleItem: (item) => item.kanji !== null,
   buildPrompt: (item) => ({
     text: item.kanji ?? item.kana,
+    speech: item.kana,
     speak: 'after-answer',
   }),
   choiceOf: (item) => ({ text: item.kana }),
@@ -142,7 +146,7 @@ export const mcqListenVi = createMcqDirection({
   skill: 'listening',
   distractorField: 'meaning',
   isEligibleItem: () => true,
-  buildPrompt: (item) => ({ audio: item.kanji ?? item.kana, speak: 'never' }),
+  buildPrompt: (item) => ({ audio: item.kana, speak: 'never' }),
   choiceOf: (item) => ({ text: item.meaning }),
 })
 

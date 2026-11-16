@@ -54,19 +54,28 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 | 1 | repo-restructure | ✅ |
 | 2 | data-and-logic-fixes | ✅ |
 | 3 | speakable-text | 🟨 |
-| 4 | ui-kit-and-shell | ⬜ |
-| 5 | practice-ui-migration | ⬜ |
-| 6 | pages-migration | ⬜ |
-| 7 | quality-gaps | ⬜ |
-| 8 | accounts-sync | ⬜ |
-| 9 | srs-review | ⬜ |
-| 10 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
-| 11 | native-app | ⬜ |
+| 4 | kana-pronunciation | 🟨 |
+| 5 | ui-kit-and-shell | ⬜ |
+| 6 | practice-ui-migration | ⬜ |
+| 7 | pages-migration | ⬜ |
+| 8 | quality-gaps | ⬜ |
+| 9 | accounts-sync | ⬜ |
+| 10 | srs-review | ⬜ |
+| 11 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
+| 12 | native-app | ⬜ |
 
 > **Nợ từ speakable-text (spec 003):**
 > - Trường `speak` ở nội dung để ghi đè cách đọc từng từ và đọc theo kana thay kanji.
 > - Trang nghe liên tục để chủ dự án đánh dấu từ đọc sai.
 > - Hai câu ngữ pháp có tiếng Anh/Việt trong câu Nhật ("Thank you" ở `mnn1-l07-g-2469a6f0#0`, "Cảm ơn" ở `mnn1-l07-g-2469a6f0#1`): sửa nội dung ở `quality-gaps`.
+
+> **Nợ từ kana-pronunciation (spec 004):**
+> - Trang nghe liên tục cho toàn bộ 292 câu ví dụ để chủ dự án đánh dấu câu đọc sai (hiện mới nghe thử 42 câu và 20 câu ứng viên).
+> - Bảng sửa cách đọc `content/overrides/speech-corrections.json` chỉ có một mục ("あの 方"); thêm mục mỗi khi nghe ra cụm sai (chỉ thêm dữ liệu, không sửa mã).
+> - `quality-gaps`: nâng giới hạn thời gian 5 giây mặc định của 5 test cũ dễ hết giờ khi máy bận (`scripts/content/enrich.test.ts`, `parse-grammar.test.ts` (2 test), `parse-vocab.test.ts`, `src/features/weakness/WeaknessPage.lessons.test.tsx`); làm `npm run check` ổn định.
+> - Phản hồi của Mạnh sau khi nghe thử spec 004 (chỉ ghi nợ, chưa làm):
+>   - A. Trang tìm kiếm: bấm loa không được chuyển trang; bấm vào từ thì nhảy sang trang bài và cuộn tới đúng hàng của từ đó. Làm **trước** `ui-kit-and-shell`.
+>   - B. Chính tả nghe: gõ sai thì khung đỏ và chưa cho sang từ tiếp, gõ đúng thì khung xanh; sai lần đầu vẫn tính là sai, đếm số lần sai, có nút "Bỏ qua" xếp mức yếu cao nhất, không có nút "Xem đáp án". Làm **sau** `ui-kit-and-shell`.
 
 Đã có mã, không tạo spec mới: content-pipeline (90%), content-browsing (85%), local-progress (95%), quiz-engine-flashcard (90%), mcq-and-results (90%), vocab-modes (85%), grammar-kanji-quiz (75%), weakness-mistakes (80%). Phần còn thiếu của chúng nằm trong các spec trên (`ARCHITECTURE.md` §9.1).
 
@@ -115,6 +124,7 @@ Mỗi spec có 2 prompt: `specify` (nói CÁI GÌ) và `plan` (nói LÀM THẾ N
 ```
 
 > **Giữ từ speakable-text (spec 003):** `PromptBlock` phải giữ hành vi nút loa ở đề trắc nghiệm (trường `promptSpeak` của `McqQuestion`): không hiện nút loa cho đề tiếng Việt (`mcq-vi-jp`, `mcq-vi-kanji`); `mcq-kanji-reading` ẩn nút loa trước khi chọn đáp án và hiện lại sau khi chọn (nghe trước sẽ lộ đáp án); khi nút hiện lại, đề dịch ngang khoảng 26 px (nút 44 px + khoảng cách 8 px, đề được căn giữa) và cao thêm 8 px (36 → 44 px), không tràn ngang ở 360 px (xử lý khi làm `PromptBlock`; xem ảnh `.screens/mcq-kanji-reading-before.png` và `-after.png` trong `evidence.md` của 003).
+> **Giữ từ kana-pronunciation (spec 004):** chuỗi đọc của nút loa ở đề `mcq-jp-vi` và `mcq-kanji-reading` là **kana của từ** (trường `promptSpeech`), trong khi đề vẫn hiển thị kanji; `PromptBlock` phải nhận chuỗi đọc tách khỏi chữ hiển thị và giữ nguyên các hành vi nút loa/tự đọc ở bảng FR-005 của spec 004.
 
 ### 4.5 pages-migration ⬜
 ```

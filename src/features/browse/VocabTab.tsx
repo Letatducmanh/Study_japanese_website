@@ -128,7 +128,7 @@ function VocabRow({
       : null
   return (
     <li className="flex min-h-11 items-center gap-3 py-2">
-      <SpeakButton text={item.kanji ?? item.kana} />
+      <SpeakButton text={item.kana} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <span className="text-lg font-medium text-slate-900 dark:text-slate-100">

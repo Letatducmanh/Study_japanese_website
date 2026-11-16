@@ -101,7 +101,7 @@ export function FlashcardComponent({ q, onAnswer }: FlashcardComponentProps) {
         onClick={() => setFlipped((f) => !f)}
         className="flex min-h-48 w-full max-w-sm flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800"
       >
-        <SpeakButton text={item.kanji ?? item.kana} />
+        <SpeakButton text={item.kana} />
         {!flipped ? (
           <>
             <span className="text-4xl font-medium text-slate-900 dark:text-slate-100">
