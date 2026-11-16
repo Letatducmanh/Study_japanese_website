@@ -57,6 +57,7 @@ let outDir = ''
 const spoken: SpokenString[] = []
 const vocab: VocabJson[] = []
 const kanjiItems: KanjiJson[] = []
+const sentences: { id: string; jp: string }[] = []
 
 function readLessonFiles(): LessonJson[] {
   const files: LessonJson[] = []
@@ -96,6 +97,9 @@ beforeAll(() => {
       )
     }
     for (const g of lesson.grammar ?? []) {
+      g.examples.forEach((e, i) =>
+        sentences.push({ id: `${g.id}#${i}`, jp: e.jp }),
+      )
       g.examples.forEach((e, i) =>
         spoken.push({ id: `${g.id}#${i}`, text: e.jp, kind: 'sentence' }),
       )
@@ -373,6 +377,77 @@ describe('kana-pronunciation (spec 004)', () => {
         `[kana-speech] Kanji: ${kanjiItems.length} chữ, ${allExamples().length} ví dụ, ${expanded} chữ mở rộng`,
       )
       expect(expanded).toBe(11)
+    })
+  })
+
+  describe('bảng sửa cách đọc', () => {
+    interface Correction {
+      match: string
+      speak: string
+      note?: string
+    }
+    const table = (): Correction[] => {
+      const json = JSON.parse(
+        readFileSync(
+          join(process.cwd(), 'content/overrides/speech-corrections.json'),
+          'utf-8',
+        ),
+      ) as { sentence: Correction[] }
+      return json.sentence
+    }
+
+    it('FR-010: có ít nhất một mục; mỗi mục hợp lệ; match không trùng', () => {
+      const entries = table()
+      expect(entries.length).toBeGreaterThanOrEqual(1)
+      for (const e of entries) {
+        expect(typeof e.match).toBe('string')
+        expect(typeof e.speak).toBe('string')
+        expect(e.match.trim()).not.toBe('')
+        expect(e.speak.trim()).not.toBe('')
+        expect(e.speak).not.toBe(e.match)
+        expect(HAN.test(e.speak), `speak "${e.speak}" còn chữ Hán`).toBe(false)
+      }
+      const matches = entries.map((e) => e.match)
+      expect(new Set(matches).size).toBe(matches.length)
+    })
+
+    it('mỗi match khớp ít nhất một câu trong nội dung (không có mục chết)', () => {
+      for (const e of table()) {
+        expect(
+          sentences.some((s) => s.jp.includes(e.match)),
+          `mục "${e.match}" không khớp câu nào`,
+        ).toBe(true)
+      }
+    })
+
+    it('câu đổi khi và chỉ khi chứa một match; câu "あの 方" ra "あの かた"', () => {
+      const entries = table()
+      const wrong = sentences.filter((s) => {
+        const changed =
+          toSpeakable(s.jp, 'sentence', entries) !==
+          toSpeakable(s.jp, 'sentence')
+        const contains = entries.some((e) => s.jp.includes(e.match))
+        return changed !== contains
+      })
+      expect(wrong).toEqual([])
+      const ano = sentences.find((s) => s.id === 'mnn1-l01-g-31547a22#0')
+      expect(ano, 'không thấy câu mnn1-l01-g-31547a22#0').toBeDefined()
+      expect(toSpeakable((ano as { jp: string }).jp, 'sentence', entries)).toBe(
+        'あの かたは どなたですか。 ワット先生です。',
+      )
+    })
+
+    it('ghi số liệu để đưa vào evidence.md', () => {
+      const entries = table()
+      const changed = sentences.filter(
+        (s) =>
+          toSpeakable(s.jp, 'sentence', entries) !==
+          toSpeakable(s.jp, 'sentence'),
+      ).length
+      console.info(
+        `[kana-speech] bảng sửa: ${entries.length} mục, ${changed}/${sentences.length} câu bị đổi`,
+      )
+      expect(changed).toBeGreaterThan(0)
     })
   })
 })

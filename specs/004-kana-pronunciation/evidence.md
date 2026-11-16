@@ -276,17 +276,93 @@ Cả hai lần đỏ chỉ do đúng nhóm 5 test cũ dễ hết giờ mặc đ�
 
 ## Story 4: kết quả ĐỎ
 
-(Chưa làm.)
+Chạy trước khi sửa mã (`speakable.ts` chưa nhận tham số thứ ba; `tts.ts` chưa nạp bảng; file `content/overrides/speech-corrections.json` chưa có):
+
+`npx vitest run src/lib scripts/content/speakable-content.test.ts src/features/browse/GrammarTab.test.tsx` → **11 đỏ, 146 xanh** (157 test, 10 file, 4 file có đỏ).
+
+| Test đỏ | Số | Thông báo ngắn |
+|---|---|---|
+| `speakable.test.ts` — (a) câu `あの 方` → `あの かた`; (b) mục thử `AB` → `x` áp cho mọi câu chứa cụm; (c) một lượt không áp chồng; (d) mục dài khớp trước mục ngắn | 4 | tham số bảng bị bỏ qua, chuỗi không đổi |
+| `speakable.test.ts` — (e2) mục `match` rỗng bị bỏ qua nhưng mục `AB` → `y` cạnh nó vẫn áp (**ca đỏ thật bổ sung, xem dưới**) | 1 | nhận `AB`, kỳ vọng `y` |
+| `tts.test.ts` — câu `あの 方…` (kind `sentence`) đọc `あの かた…` theo bảng thật | 1 | đọc `あの 方…` |
+| `GrammarTab.test.tsx` — loa ở ví dụ `あの 方…` | 1 | đọc `あの 方は…` |
+| `speakable-content.test.ts › bảng sửa cách đọc` (FR-010; mỗi `match` khớp câu thật; câu đổi khi và chỉ khi chứa `match`; dòng số liệu) | 4 | `ENOENT` (chưa có file JSON) |
+
+Đỏ do thiếu file JSON ở nhóm cuối là chủ ý: file chỉ được tạo sau khi thấy đỏ (T068), và `toSpeakable` có tham số bảng chỉ được viết sau (T069).
+
+`npm run build` **đỏ ở bước `tsc -b`** trước khi sửa mã: `TS2554` (`Expected 1-2 arguments, but got 3`) ở `speakable.test.ts` (13 chỗ) và `speakable-content.test.ts` (3 chỗ). Hệ quả đúng của TDD; `vite build` không chạy nên `dist/` vẫn là bản của Commit 3, và e2e bên dưới chạy trên bản đó.
+
+`npx playwright test tests/e2e/kana-speech.spec.ts` → **1 đỏ, 10 xanh**: ca `Ngữ pháp Bài 1: câu "あの 方" được đọc là "あの かた", chữ hiển thị không đổi` đỏ vì `__spoken` nhận `["あの 方は どなたですか。 ワット先生です。"]`.
+
+Tổng bằng chứng ĐỎ Story 4: **12** (11 vitest + 1 e2e).
+
+**Lệch có chủ ý so với `tasks.md` (T062 (e)):** bản đầu của `tasks.md` ghi (e) "mục có `match` rỗng bị bỏ qua" là dự kiến ĐỎ, nhưng khi chạy thật nó **xanh ngay**. Lý do: `toSpeakable` chưa nhận tham số thứ ba nên bảng toàn mục rỗng không đổi gì, khẳng định "không đổi chuỗi" đúng sẵn và chưa chứng minh được mã mới bỏ qua mục rỗng. Theo luật dừng và hỏi, đã dừng báo chủ dự án; chủ dự án chọn (ngày 2026-11-16): giữ (e) là `[đặc trưng]` (xanh trước và sau), sửa T062 trong `tasks.md`, và thêm ca (e2) đỏ thật `[{ match: '', speak: 'x' }, { match: 'AB', speak: 'y' }]` trên `AB` → `y`, thấy ĐỎ ở trên và sẽ XANH sau khi sửa mã.
 
 ## Story 4: test đặc trưng `[đặc trưng]` (xanh ngay)
 
 Xanh trước và sau, không phải bằng chứng đỏ.
 
-(Chưa làm.)
+Xanh trước và sau, không phải bằng chứng đỏ.
+
+- `speakable.test.ts` (7 ca, tính cả ba mục của `it.each` ở (i)): (e) mục `match` rỗng bị bỏ qua (**xanh ngay do lệch có chủ ý nói ở trên, không phải bằng chứng đỏ**); (f) bảng rỗng và không truyền bảng giống hệt nhau; (g) `あの方は…` viết liền không khớp mục `あの 方`; (h) kind `word` bỏ qua bảng; (i) `４人です。`, `６月13日です。`, `ミラーさんは アメリカ人ですか。` không đổi dù có bảng thử.
+- `tts.test.ts` (2): cùng chuỗi `あの 方…` với kind mặc định `word` không đổi cụm; câu không chứa cụm đọc như trước.
+- `GrammarTab.test.tsx` (2): ví dụ `ミラーさん…` đọc như trước; chữ hiển thị không đổi (còn `あの 方は`).
+- e2e: mười ca Story 1–3 vẫn xanh.
+
+Không có test nào khác thuộc nhóm "dự kiến đỏ" mà xanh ngay.
 
 ## Story 4: kết quả XANH
 
-(Chưa làm.)
+Sau khi sửa mã và thêm dữ liệu:
+
+- `content/overrides/speech-corrections.json` (file DUY NHẤT thêm dưới `content/`): một mục `{ "match": "あの 方", "speak": "あの かた", "note": "…" }` (lý do bằng tiếng Việt).
+- `src/lib/speakable.ts`: `SpeechCorrection`, tham số thứ ba `corrections` của `toSpeakable` (chỉ áp cho `sentence`, trước mọi quy tắc khác, một lượt bằng một biểu thức chính quy, mục dài trước, bỏ qua `match` rỗng); vẫn thuần, không import JSON.
+- `src/lib/tts.ts` (tại chỗ, không dời): `import corrections from '../../content/overrides/speech-corrections.json'` (default import) và truyền `corrections.sentence` khi `kind === 'sentence'`.
+- Không sửa `tsconfig.app.json`, `tsconfig.node.json`, `vite.config.ts`, pipeline, validate, `SpeakButton.tsx`, `GrammarTab.tsx`.
+
+| Số đo | Trước | Sau |
+|---|---|---|
+| Lệnh Story 4 (`src/lib`, `speakable-content.test.ts`, `GrammarTab.test.tsx`) | 11 đỏ / 146 xanh (157 test) | **157/157 xanh** (cả ca (e2) đỏ thật đã xanh) |
+| `npx vitest run` toàn bộ | 64 file, 487 test (mốc sau Commit 3) | **65 file, 509 test, tất cả xanh** (thêm 1 file `GrammarTab.test.tsx` và 22 test) |
+| `npm run build` + `npx playwright test` toàn bộ | 34 test: 33 đạt, 1 đỏ (mốc sau Commit 3) | **35 test: 34 đạt, 1 đỏ**; đỏ duy nhất vẫn là Q-2 `browse.spec.ts:3`; ca `あの 方` mới xanh |
+| `npm run check` (thẳng) | — | **xanh, exit 0 ngay lần đầu**: `content:validate` OK **568 cảnh báo**, `tsc -b`, `eslint .` (không đỏ vì luật lớp, không cần ngoại lệ), vitest 65 file / 509 test (37,02 giây) |
+| `npm run build` | `tsc -b` đỏ trước khi sửa mã (`TS2554`) | **xanh**; JS 611,58 kB, **186,53 kB gzip** (dưới ngân sách 200 kB; mốc 186,16 kB) |
+
+Dòng số liệu của test nội dung (chạy riêng với `--silent=false`):
+
+```
+[kana-speech] bảng sửa: 1 mục, 1/292 câu bị đổi
+```
+
+Câu bị đổi duy nhất: `mnn1-l01-g-31547a22#0` → `あの かたは どなたですか。 ワット先生です。`.
+
+**T072: không đụng pipeline và nội dung (cơ chế nạp JSON với file thật):**
+
+```
+$ npm run content:validate
+[content:validate] OK — 568 cảnh báo.            (mốc: 568)
+
+$ npm run content:build
+[content:build] Xong — 568 cảnh báo, xem content-report.md
+
+$ node .screens/hash-content.mjs        (bỏ public/content/README.md)
+{"files":45,"hash":"2deeab187c4f7f57777689b29fdb3ff5708a26a3dec30a02e6a4d99e6f8ca068"}
+```
+
+Số cảnh báo (568) và băm gộp 45 file `2deeab187c4f7f57777689b29fdb3ff5708a26a3dec30a02e6a4d99e6f8ca068` **giống hệt mốc** lập ở T004: file mới không ảnh hưởng nội dung dựng. Cơ chế nạp JSON: `npm run build` xanh và `tsc -b` xanh không sửa tsconfig, `vite.config.ts`; `eslint .` xanh.
+
+**T073:** ba lệnh `grep` (FR-012 chỉ-`tts.ts`; `kanji ?? kana` cho giọng đọc; `SpeakButton text={item.char|example.word}`) đều **rỗng (0 dòng)**: mọi `speakJapanese`/`SpeakButton` ở `src/features` vẫn đi qua `src/lib/tts.ts`.
+
+**T074:** trang nghe thử 20 câu dựng lại bằng **mã thật** (`toSpeakable(s.jp, 'sentence', bảng.sentence)`, bảng đọc bằng `readFileSync` + `JSON.parse` từ `content/overrides/speech-corrections.json`): `d:\Projects\project japanese\Source code\Code\.screens\tts-sentences-004.html` (20 câu; một câu bị bảng đổi: `mnn1-l01-g-31547a22#0`). `git status` không liệt kê file nào dưới `.screens/` (đã gitignore). Script tạm `.screens/make-sentences-004.mts` không commit.
+
+**Lập luận cấu trúc cho SC-004 (chấm điểm chính tả nghe không đổi cho mọi từ, 1.295 từ):**
+
+1. `src/features/practice/modes/dictation/index.ts` không đổi trong cả bốn commit (`git diff staging..HEAD -- src/features/practice/modes/dictation/index.ts` rỗng), nên `grade`, `gradeTyped(given, question.item.answers.kana)` và `expected` (`item.kana`) không đổi.
+2. `answers.*` do pipeline sinh; pipeline và nội dung không đổi: băm `public/content` giữ nguyên (T072) và số cảnh báo giữ 568, cho cả 1.295 từ.
+3. Không viết được test theo từng từ trong `scripts/` vì `src/domain/quiz/grading.ts` import `@/lib/kana` (bí danh `@/` không chạy dưới `tsconfig.node.json`).
+4. Thay vào đó có bảng 6 ca cố định ở `dictation.test.tsx` (`[đặc trưng] (d)`), khẳng định cả `correct` lẫn `expected`.
+
+**Ghi chú về `npm run check` ở Story 4:** chạy một lần, xanh ngay (máy rảnh: Mạnh đã tắt `npm run dev` và đóng trình duyệt), không có test cũ nào hết giờ.
 
 ## Kiểm vùng cấm
 
@@ -454,6 +530,84 @@ $ git diff --cached staging --stat   (gồm Commit 1 và 2 đã commit và Commi
 
 Kết luận: không file nào ở vùng cấm (registry, grading, session, pipeline, `content/**`, `public/content/**`), không file bị xóa hay đổi tên (`src/lib/tts.ts` không đụng), không đổi `schemaVersion`; `speakable.ts` vẫn thuần (không import). Lần chạy đầu lệnh `schemaVersion` báo `+  schemaVersion: 1,` trong fixture manifest của `KanjiPage.test.tsx` (chép từ `BookPage.test.tsx`); trường này không cần cho test (`loadManifest` đã được mock) nên đã xóa dòng đó, chạy lại ra `OK`. Chỉ `scripts/content/speakable-content.test.ts` (đã có từ Commit 1) nằm dưới `scripts/content/`.
 
+### Commit 4 (trước khi commit)
+
+Các lệnh "Commit 4" của `tasks.md` (loại trừ ĐÚNG hai đường dẫn bằng `grep -vxF`, không loại cả `content/**`), so với `staging` nên gồm cả bốn commit cộng dồn.
+
+```
+$ git diff --cached staging --name-only | grep -vxF "scripts/content/speakable-content.test.ts" | grep -vxF "content/overrides/speech-corrections.json" | grep -E "domain/quiz/(registry|grading)|session|scripts/content|^content/|^public/content" || echo "OK: không đụng vùng cấm"
+OK: không đụng vùng cấm
+
+$ git diff --cached staging --name-status | grep -E "^A[[:space:]]+content/overrides/speech-corrections.json$"
+A	content/overrides/speech-corrections.json
+
+$ git diff --cached staging --name-only | grep -c "^content/"
+1
+
+$ git diff --cached staging -U0 -- . ':(exclude)specs/004-kana-pronunciation' | grep -E "^[+-].*schemaVersion" || echo "OK: không đụng schemaVersion (ngoài tài liệu specs/004)"
+OK: không đụng schemaVersion (ngoài tài liệu specs/004)
+
+$ git diff --cached staging --name-status | grep -E "^(R|D)" || echo OK
+OK
+
+$ git diff --cached --name-only   (12 đường dẫn của T077 đã cập nhật: thêm docs/SPECKIT_ROADMAP.md theo yêu cầu của chủ dự án)
+content/overrides/speech-corrections.json
+docs/ARCHITECTURE.md
+docs/SPECKIT_ROADMAP.md
+scripts/content/speakable-content.test.ts
+specs/004-kana-pronunciation/evidence.md
+specs/004-kana-pronunciation/tasks.md
+src/features/browse/GrammarTab.test.tsx
+src/lib/speakable.test.ts
+src/lib/speakable.ts
+src/lib/tts.test.ts
+src/lib/tts.ts
+tests/e2e/kana-speech.spec.ts
+
+$ git diff -U0 docs/ARCHITECTURE.md   (đúng một dòng - và một dòng +)
+-│   └── overrides/{verb-groups,pos,id-aliases}.yaml
++│   └── overrides/{verb-groups,pos,id-aliases}.yaml  + speech-corrections.json   # speech-corrections.json do src/lib/tts.ts đọc trực tiếp, không qua pipeline
+
+$ git diff --cached staging --stat   (bốn commit cộng dồn; so với `staging`)
+ content/overrides/speech-corrections.json          |   9 +
+ docs/ARCHITECTURE.md                               |   2 +-
+ docs/SPECKIT_ROADMAP.md                            |  26 +-
+ scripts/content/speakable-content.test.ts          | 282 ++++++++-
+ .../checklists/requirements.md                     |  37 ++
+ .../contracts/speech-contract.md                   |  92 +++
+ specs/004-kana-pronunciation/data-model.md         |  65 +++
+ specs/004-kana-pronunciation/evidence.md           | 638 +++++++++++++++++++++
+ specs/004-kana-pronunciation/plan.md               | 221 +++++++
+ specs/004-kana-pronunciation/quickstart.md         |  67 +++
+ specs/004-kana-pronunciation/research.md           | 116 ++++
+ specs/004-kana-pronunciation/spec.md               | 217 +++++++
+ specs/004-kana-pronunciation/tasks.md              | 316 ++++++++++
+ src/features/browse/GrammarTab.test.tsx            |  94 +++
+ src/features/browse/KanjiPage.test.tsx             | 139 +++++
+ src/features/browse/KanjiPage.tsx                  |   5 +-
+ src/features/browse/SearchPage.test.tsx            |  88 +++
+ src/features/browse/SearchPage.tsx                 |   2 +-
+ src/features/browse/VocabTab.test.tsx              | 119 ++++
+ src/features/browse/VocabTab.tsx                   |   2 +-
+ .../modes/dictation/DictationComponent.tsx         |   4 +-
+ .../practice/modes/dictation/dictation.test.tsx    | 169 ++++++
+ .../modes/flashcard/FlashcardComponent.test.tsx    |  90 +++
+ .../modes/flashcard/FlashcardComponent.tsx         |   2 +-
+ .../practice/modes/mcq/McqComponent.test.tsx       |  77 ++-
+ src/features/practice/modes/mcq/McqComponent.tsx   |   4 +-
+ src/features/practice/modes/mcq/index.ts           |   6 +-
+ src/features/practice/modes/mcq/mcq.test.ts        |  38 +-
+ src/features/practice/modes/mcq/types.ts           |  17 +-
+ src/lib/speakable.test.ts                          | 164 +++++-
+ src/lib/speakable.ts                               |  86 ++-
+ src/lib/tts.test.ts                                |  46 ++
+ src/lib/tts.ts                                     |   8 +-
+ tests/e2e/kana-speech.spec.ts                      | 207 +++++++
+ 34 files changed, 3422 insertions(+), 33 deletions(-)
+```
+
+Kết luận: không file nào ở vùng cấm (registry, grading, session, pipeline, validate, `public/content/**`); file thêm dưới `content/` đúng một (`content/overrides/speech-corrections.json`, trạng thái `A`); không file bị xóa hay đổi tên (`src/lib/tts.ts` sửa tại chỗ, không dời); không đổi `schemaVersion`; `tsconfig.app.json`, `tsconfig.node.json`, `vite.config.ts` không đổi; `dictation/index.ts` không đổi. Chỉ `scripts/content/speakable-content.test.ts` nằm dưới `scripts/content/`. `docs/SPECKIT_ROADMAP.md` (khối nợ) là file thứ 12, thêm theo yêu cầu của chủ dự án; `tasks.md` T077 đã cập nhật.
+
 ## Thời gian vitest trước/sau
 
 Máy có tải nền (VS Code, các tiến trình khác), nên số đo đơn lẻ dao động nhiều (spec 003 ghi 34,84 giây lúc máy rảnh, 52–63 giây lúc có tải).
@@ -463,9 +617,22 @@ Máy có tải nền (VS Code, các tiến trình khác), nên số đo đơn l�
 | mốc (T002) | trước Story 1 | 61 | 386 | 52,88 giây | xanh |
 | sau Story 1, lần 1 (`npx vitest run`) | sau | 63 | 423 | 62,54 giây | xanh |
 | sau Story 1, lần 2 (trong `npm run check`) | sau | 63 | 423 | 52,19 giây | xanh |
+| sau Story 4, lần 1 (`npx vitest run`) | sau | 65 | 509 | 43,92 giây | xanh |
+| sau Story 4, lần 2 (trong `npm run check`) | sau | 65 | 509 | 37,02 giây | xanh (máy rảnh) |
 
 Story 1 không thêm lần chạy pipeline nào (dùng chung `beforeAll` của `speakable-content.test.ts`).
 
 ## Số liệu cuối
 
-(Chưa làm.)
+| Số đo | Giá trị |
+|---|---|
+| Từ vựng có chuỗi đọc hợp lệ (không rỗng, không chữ Hán, không ký tự cấm) | **1.295/1.295** (960 từ có kanji) |
+| Chữ Kanji đơn / từ ví dụ | **134 chữ, 657 ví dụ** |
+| Chữ Kanji mở rộng thành dạng có đuôi | **11** (白, 一 đến 九, 大) |
+| Bảng sửa cách đọc | **1 mục**, **1/292** câu bị đổi |
+| Vitest | 63 file, 423 test (sau Commit 1) → 63 file, 445 test (Commit 2) → 64 file, 487 test (Commit 3) → **65 file, 509 test** (Commit 4); mốc đầu 61 file, 386 test |
+| E2e | mốc 24 test (23 đạt, 1 đỏ Q-2) → **35 test (34 đạt, 1 đỏ Q-2)** |
+| `content:validate` | 568 cảnh báo, bằng mốc |
+| Băm `public/content` (45 file) | `2deeab187c4f7f57777689b29fdb3ff5708a26a3dec30a02e6a4d99e6f8ca068`, bằng mốc |
+| JS gzip | 186,53 kB (mốc 186,16 kB; ngân sách 200 kB) |
+| Bằng chứng ĐỎ trước khi sửa mã | Story 1: 8; Story 2: 16; Story 3: 45; Story 4: 12 |

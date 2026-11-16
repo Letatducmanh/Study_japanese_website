@@ -211,3 +211,83 @@ describe('kanjiCharSpeech — On đầu、Kun đầu (spec 004)', () => {
     expect(kanjiCharSpeech([], ['うえ', 'あ・げる'])).toBe('うえ')
   })
 })
+
+describe('toSpeakable — bảng sửa cách đọc cho câu (spec 004)', () => {
+  const ANO_KATA = 'あの 方は どなたですか。 …ワット先生です。'
+  const table = [{ match: 'あの 方', speak: 'あの かた' }]
+
+  it('(a) câu có "あの 方" được đọc là "あの かた"', () => {
+    expect(toSpeakable(ANO_KATA, 'sentence', table)).toBe(
+      'あの かたは どなたですか。 ワット先生です。',
+    )
+  })
+
+  it('(b) thêm mục thử vào bảng thì áp cho mọi câu chứa cụm; câu khác không đổi', () => {
+    const extra = [{ match: 'AB', speak: 'x' }]
+    expect(toSpeakable('AB と AB', 'sentence', extra)).toBe('x と x')
+    expect(toSpeakable('CD と CD', 'sentence', extra)).toBe('CD と CD')
+  })
+
+  it('(c) một lượt, không áp chồng: kết quả của mục này không khớp lại ở mục khác', () => {
+    const chain = [
+      { match: 'あ', speak: 'い' },
+      { match: 'い', speak: 'う' },
+    ]
+    expect(toSpeakable('あい', 'sentence', chain)).toBe('いう')
+  })
+
+  it('(d) mục dài khớp trước mục ngắn', () => {
+    const overlap = [
+      { match: 'あ', speak: 'x' },
+      { match: 'あい', speak: 'y' },
+    ]
+    expect(toSpeakable('あい', 'sentence', overlap)).toBe('y')
+  })
+
+  it('[đặc trưng] (e) mục có match rỗng bị bỏ qua: không lỗi, không đổi chuỗi', () => {
+    const empty = [{ match: '', speak: 'x' }]
+    expect(toSpeakable('あい', 'sentence', empty)).toBe('あい')
+    expect(toSpeakable(ANO_KATA, 'sentence', empty)).toBe(
+      toSpeakable(ANO_KATA, 'sentence'),
+    )
+  })
+
+  it('(e2) mục rỗng bị bỏ qua nhưng mục hợp lệ cạnh nó vẫn áp', () => {
+    const mixed = [
+      { match: '', speak: 'x' },
+      { match: 'AB', speak: 'y' },
+    ]
+    expect(toSpeakable('AB', 'sentence', mixed)).toBe('y')
+  })
+
+  it('[đặc trưng] (f) bảng rỗng và không truyền bảng cho kết quả giống hệt nhau', () => {
+    expect(toSpeakable(ANO_KATA, 'sentence', [])).toBe(
+      toSpeakable(ANO_KATA, 'sentence'),
+    )
+    expect(toSpeakable(ANO_KATA, 'sentence')).toBe(
+      'あの 方は どなたですか。 ワット先生です。',
+    )
+  })
+
+  it('[đặc trưng] (g) "あの方は…" viết liền không khớp mục "あの 方"', () => {
+    expect(toSpeakable('あの方は どなたですか。', 'sentence', table)).toBe(
+      'あの方は どなたですか。',
+    )
+  })
+
+  it('[đặc trưng] (h) kind word bỏ qua bảng', () => {
+    expect(toSpeakable('あの 方', 'word', table)).toBe(
+      toSpeakable('あの 方', 'word'),
+    )
+  })
+
+  it.each(['４人です。', '６月13日です。', 'ミラーさんは アメリカ人ですか。'])(
+    '[đặc trưng] (i) "%s" không đổi dù có bảng thử',
+    (sentence) => {
+      expect(toSpeakable(sentence, 'sentence', table)).toBe(
+        toSpeakable(sentence, 'sentence'),
+      )
+      expect(toSpeakable(sentence, 'sentence', table)).toBe(sentence)
+    },
+  )
+})

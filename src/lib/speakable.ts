@@ -7,6 +7,10 @@
  * Hàm thuần, không phụ thuộc DOM/`window`: file này cũng được `scripts/` import (test nội dung)
  * và khi đó được biên dịch với thư viện không có DOM.
  * Quy tắc và ví dụ: specs/003-speakable-text/contracts/speakable-contract.md (C-1).
+ *
+ * Hai hàm `exampleWordSpeech`, `kanjiCharSpeech` (trang Kanji) và bảng sửa cách đọc cho câu
+ * (`SpeechCorrection`) cũng chỉ tạo chuỗi để ĐỌC, không dùng chấm điểm. Bảng sửa do nơi gọi truyền vào
+ * (file này không import JSON): specs/004-kana-pronunciation/contracts/speech-contract.md (C-1).
  */
 
 /**
@@ -54,11 +58,53 @@ function joinListItems(parts: string[]): string {
 }
 
 /**
+ * Một mục của bảng sửa cách đọc: cụm `match` (khớp đúng chữ, kể cả dấu cách) được đọc là `speak`.
+ * Bảng nằm trong dữ liệu (`content/overrides/speech-corrections.json`), không viết cứng trong mã.
+ */
+export interface SpeechCorrection {
+  match: string
+  speak: string
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
+}
+
+/**
+ * Áp bảng sửa lên chuỗi gốc, một lượt (mục dài khớp trước; kết quả của mục này không khớp lại
+ * ở mục khác), mọi vị trí. Mục có `match` rỗng bị bỏ qua. Không mục nào khớp: trả về y nguyên.
+ */
+function applyCorrections(
+  text: string,
+  corrections: readonly SpeechCorrection[],
+): string {
+  const speakOf = new Map<string, string>()
+  for (const { match, speak } of corrections) {
+    if (match !== '' && !speakOf.has(match)) speakOf.set(match, speak)
+  }
+  if (speakOf.size === 0) return text
+  const pattern = new RegExp(
+    [...speakOf.keys()]
+      .sort((a, b) => b.length - a.length)
+      .map(escapeRegExp)
+      .join('|'),
+    'gu',
+  )
+  return text.replace(pattern, (found) => speakOf.get(found) ?? found)
+}
+
+/**
  * Trả về chuỗi sẽ được ĐỌC (có thể là chuỗi rỗng nếu đầu vào chỉ gồm ký hiệu bị bỏ).
  * Nếu không quy tắc nào đổi gì thì trả về y nguyên đầu vào, kể cả dấu cách.
  */
-export function toSpeakable(text: string, kind: SpeakKind = 'word'): string {
-  let s = text.replace(OPTIONAL_PART, '').replace(PLACEHOLDER, '')
+export function toSpeakable(
+  text: string,
+  kind: SpeakKind = 'word',
+  corrections: readonly SpeechCorrection[] = [],
+): string {
+  const corrected =
+    kind === 'sentence' ? applyCorrections(text, corrections) : text
+  let s = corrected.replace(OPTIONAL_PART, '').replace(PLACEHOLDER, '')
 
   if (kind === 'word') {
     if (ANY_SLASH.test(s)) s = nonEmptyParts(s, ALTERNATIVE_SEPARATOR)[0] ?? ''

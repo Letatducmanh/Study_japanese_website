@@ -97,3 +97,49 @@ describe('tts', () => {
     })
   })
 })
+
+describe('tts — bảng sửa cách đọc của câu (spec 004)', () => {
+  const originalSpeechSynthesis = window.speechSynthesis
+  let speak: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    speak = vi.fn()
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        speak,
+        cancel: vi.fn(),
+        getVoices: vi.fn().mockReturnValue([makeVoice('ja-JP')]),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      },
+    })
+  })
+
+  afterEach(() => {
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: originalSpeechSynthesis,
+    })
+  })
+
+  const spokenText = (): string =>
+    (speak.mock.calls[0][0] as SpeechSynthesisUtterance).text
+
+  const ANO_KATA = 'あの 方は どなたですか。 …ワット先生です。'
+
+  it('câu "あの 方" (kind sentence) được đọc là "あの かた" theo bảng thật', () => {
+    speakJapanese(ANO_KATA, { kind: 'sentence' })
+    expect(spokenText()).toBe('あの かたは どなたですか。 ワット先生です。')
+  })
+
+  it('[đặc trưng] cùng chuỗi với kind mặc định word: bảng chỉ áp cho câu', () => {
+    speakJapanese(ANO_KATA)
+    expect(spokenText()).toContain('あの 方')
+  })
+
+  it('[đặc trưng] câu không chứa cụm đọc như trước', () => {
+    speakJapanese('ミラーさんは アメリカ人ですか。', { kind: 'sentence' })
+    expect(spokenText()).toBe('ミラーさんは アメリカ人ですか。')
+  })
+})

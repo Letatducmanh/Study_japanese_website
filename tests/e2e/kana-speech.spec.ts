@@ -182,3 +182,26 @@ test('Trang Kanji 行: loa chữ đơn đọc "コウ、いく"', async ({ page 
   await button.click()
   expect(await spoken(page)).toContain('コウ、いく')
 })
+
+test('Ngữ pháp Bài 1: câu "あの 方" được đọc là "あの かた", chữ hiển thị không đổi', async ({
+  page,
+}) => {
+  await page.goto('/b/mnn1/1')
+  await page.getByRole('button', { name: 'Ngữ pháp' }).click()
+  // Ví dụ nằm trong thẻ <details> đang thu gọn: mở thẻ chứa nó trước.
+  const point = page
+    .locator('details')
+    .filter({ hasText: 'あの 方は どなたですか。' })
+    .first()
+  await point.locator('summary').click()
+  const card = point
+    .locator('div.rounded-md')
+    .filter({ hasText: 'あの 方は どなたですか。' })
+    .first()
+  await expect(card).toContainText('あの 方は どなたですか。')
+  await card.getByRole('button', { name: 'Nghe phát âm' }).click()
+  expect(await spoken(page)).toContain(
+    'あの かたは どなたですか。 ワット先生です。',
+  )
+  await expect(card).toContainText('あの 方は どなたですか。')
+})
