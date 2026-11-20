@@ -66,12 +66,13 @@ export function SearchPage() {
           </p>
           <ul className="flex flex-col divide-y divide-slate-100 dark:divide-slate-800">
             {results.map((r) => (
-              <li key={r.id}>
+              <li key={r.id} className="flex items-center gap-3">
+                {/* Nút loa và liên kết là hai phần tử anh em: không lồng nút trong <a>. */}
+                <SpeakButton text={r.kana} />
                 <Link
                   to={`/b/${r.bookId}/${r.lesson}`}
-                  className="flex min-h-11 items-center gap-3 py-2"
+                  className="flex min-h-11 min-w-0 flex-1 items-center py-2"
                 >
-                  <SpeakButton text={r.kana} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline gap-2">
                       <Ruby

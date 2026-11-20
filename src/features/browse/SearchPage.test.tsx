@@ -1,5 +1,6 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SearchPage } from './SearchPage'
 import { vi as viText } from '@/i18n/vi'
@@ -163,5 +164,177 @@ describe('SearchPage — chuỗi đọc ở kết quả (spec 004)', () => {
     const { container } = await searchAndGetButtons()
     expect(container.textContent).toContain('何時')
     expect(container.textContent).toContain('わたし')
+  })
+})
+
+function LocationProbe() {
+  const location = useLocation()
+  return <div data-testid="location">{location.pathname + location.search}</div>
+}
+
+describe('SearchPage — bấm loa không điều hướng (spec 005)', () => {
+  const originalSpeech = window.speechSynthesis
+  const KANA = ['わたし', 'あなた', 'がくせい', 'せんせい', 'かいしゃいん']
+  let speak: ReturnType<typeof vi.fn>
+
+  function makeResults(count: number) {
+    return KANA.slice(0, count).map((kana, i) => ({
+      id: `r-${i + 1}`,
+      bookId: 'mnn1',
+      lesson: 4,
+      kana,
+      kanji: i % 2 === 0 ? null : '学生',
+      romaji: `romaji-${i + 1}`,
+      meaning: `nghĩa ${i + 1}`,
+      score: 1,
+    }))
+  }
+
+  beforeEach(() => {
+    // shouldAdvanceTime: để userEvent (chờ setTimeout) không kẹt dưới đồng hồ giả.
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    speak = vi.fn()
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: {
+        speak,
+        cancel: vi.fn(),
+        getVoices: vi
+          .fn()
+          .mockReturnValue([{ lang: 'ja-JP' } as SpeechSynthesisVoice]),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      },
+    })
+    mockSearchVocab.mockReset().mockResolvedValue(makeResults(2))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: originalSpeech,
+    })
+  })
+
+  async function searchWithRoutes() {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/search']}>
+        <Routes>
+          <Route path="/search" element={<SearchPage />} />
+          <Route
+            path="/b/:bookId/:lesson"
+            element={<div data-testid="lesson-page" />}
+          />
+        </Routes>
+        <LocationProbe />
+      </MemoryRouter>,
+    )
+    fireEvent.change(screen.getByRole('searchbox'), {
+      target: { value: 'watashi' },
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300)
+    })
+    return {
+      user,
+      buttons: screen.getAllByRole('button', { name: viText.common.speak }),
+      location: () => screen.getByTestId('location').textContent,
+    }
+  }
+
+  const spokenText = (call: number) =>
+    (speak.mock.calls[call][0] as SpeechSynthesisUtterance).text
+
+  it('(a) bấm loa ở kết quả đầu: địa chỉ, ô tìm kiếm không đổi, chỉ phát âm một lần', async () => {
+    const { user, buttons, location } = await searchWithRoutes()
+    expect(location()).toBe('/search?q=watashi')
+
+    await user.click(buttons[0])
+
+    expect(location()).toBe('/search?q=watashi')
+    expect(screen.queryByTestId('lesson-page')).toBeNull()
+    expect((screen.getByRole('searchbox') as HTMLInputElement).value).toBe(
+      'watashi',
+    )
+    expect(speak).toHaveBeenCalledTimes(1)
+    expect(spokenText(0)).toBe('わたし')
+  })
+
+  it('(b) nút loa không nằm trong thẻ <a>: nút và liên kết là hai phần tử anh em trong <li>', async () => {
+    const { buttons } = await searchWithRoutes()
+    expect(buttons).toHaveLength(2)
+    for (const button of buttons) {
+      expect(button.closest('a')).toBeNull()
+      const item = button.closest('li') as HTMLElement
+      const link = within(item).getByRole('link')
+      expect(button.parentElement).toBe(link.parentElement)
+      expect(link.parentElement).toBe(item)
+    }
+  })
+
+  it('(c) bàn phím: Tab tới nút loa; Enter và Space chỉ phát âm, không điều hướng', async () => {
+    const { user, location } = await searchWithRoutes()
+    screen.getByRole('searchbox').focus()
+
+    await user.tab()
+    const firstSpeak = screen.getAllByRole('button', {
+      name: viText.common.speak,
+    })[0]
+    expect(firstSpeak).toHaveFocus()
+
+    await user.keyboard('{Enter}')
+    await user.keyboard(' ')
+
+    expect(location()).toBe('/search?q=watashi')
+    expect(screen.queryByTestId('lesson-page')).toBeNull()
+    expect(speak).toHaveBeenCalledTimes(2)
+  })
+
+  it('(d) bấm loa liên tiếp ở năm kết quả: không điều hướng, đọc đúng kana từng kết quả, không console.error', async () => {
+    mockSearchVocab.mockResolvedValue(makeResults(5))
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const { user, buttons, location } = await searchWithRoutes()
+      expect(buttons).toHaveLength(5)
+
+      for (let i = 0; i < buttons.length; i++) {
+        await user.click(buttons[i])
+        expect(location()).toBe('/search?q=watashi')
+        expect(speak).toHaveBeenCalledTimes(i + 1)
+        expect(spokenText(i)).toBe(KANA[i])
+      }
+      expect(screen.queryByTestId('lesson-page')).toBeNull()
+      expect(errorSpy).not.toHaveBeenCalled()
+    } finally {
+      errorSpy.mockRestore()
+    }
+  })
+
+  it('[đặc trưng] (e) liên kết của hàng vẫn mở trang bài và chứa chữ hiển thị của từ', async () => {
+    await searchWithRoutes()
+    const links = screen.getAllByRole('link')
+    expect(links).toHaveLength(2)
+    expect(links[0].getAttribute('href')).toMatch(/^\/b\/mnn1\/4/)
+    expect(links[1].getAttribute('href')).toMatch(/^\/b\/mnn1\/4/)
+    expect(links[1].textContent).toContain('学生')
+  })
+
+  it('[đặc trưng] (f) nút loa giữ vùng chạm 44×44 (h-11 w-11)', async () => {
+    const { buttons } = await searchWithRoutes()
+    for (const button of buttons) {
+      expect(button.className).toContain('h-11')
+      expect(button.className).toContain('w-11')
+    }
+  })
+
+  it('[đặc trưng] (g) chữ hiển thị (kanji, romaji, nghĩa) vẫn nằm trong hàng', async () => {
+    await searchWithRoutes()
+    const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(2)
+    expect(items[1].textContent).toContain('学生')
+    expect(items[1].textContent).toContain('romaji-2')
+    expect(items[1].textContent).toContain('nghĩa 2')
   })
 })

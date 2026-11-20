@@ -55,14 +55,15 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 | 2 | data-and-logic-fixes | ✅ |
 | 3 | speakable-text | 🟨 |
 | 4 | kana-pronunciation | 🟨 |
-| 5 | ui-kit-and-shell | ⬜ |
-| 6 | practice-ui-migration | ⬜ |
-| 7 | pages-migration | ⬜ |
-| 8 | quality-gaps | ⬜ |
-| 9 | accounts-sync | ⬜ |
-| 10 | srs-review | ⬜ |
-| 11 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
-| 12 | native-app | ⬜ |
+| 5 | search-speaker-and-jump | 🟨 |
+| 6 | ui-kit-and-shell | ⬜ |
+| 7 | practice-ui-migration | ⬜ |
+| 8 | pages-migration | ⬜ |
+| 9 | quality-gaps | ⬜ |
+| 10 | accounts-sync | ⬜ |
+| 11 | srs-review | ⬜ |
+| 12 | stats-pwa-release (✅ phát hành 1.0 khi xong) | ⬜ |
+| 13 | native-app | ⬜ |
 
 > **Nợ từ speakable-text (spec 003):**
 > - Trường `speak` ở nội dung để ghi đè cách đọc từng từ và đọc theo kana thay kanji.
@@ -74,8 +75,11 @@ Ký hiệu: ⬜ chưa làm · 🟨 đang làm · ✅ xong. Số thư mục `spec
 > - Bảng sửa cách đọc `content/overrides/speech-corrections.json` chỉ có một mục ("あの 方"); thêm mục mỗi khi nghe ra cụm sai (chỉ thêm dữ liệu, không sửa mã).
 > - `quality-gaps`: nâng giới hạn thời gian 5 giây mặc định của 5 test cũ dễ hết giờ khi máy bận (`scripts/content/enrich.test.ts`, `parse-grammar.test.ts` (2 test), `parse-vocab.test.ts`, `src/features/weakness/WeaknessPage.lessons.test.tsx`); làm `npm run check` ổn định.
 > - Phản hồi của Mạnh sau khi nghe thử spec 004 (chỉ ghi nợ, chưa làm):
->   - A. Trang tìm kiếm: bấm loa không được chuyển trang; bấm vào từ thì nhảy sang trang bài và cuộn tới đúng hàng của từ đó. Làm **trước** `ui-kit-and-shell`.
+>   - A. Trang tìm kiếm: bấm loa không được chuyển trang; bấm vào từ thì nhảy sang trang bài và cuộn tới đúng hàng của từ đó. Làm **trước** `ui-kit-and-shell`. (đang làm ở spec 005 `search-speaker-and-jump`)
 >   - B. Chính tả nghe: gõ sai thì khung đỏ và chưa cho sang từ tiếp, gõ đúng thì khung xanh; sai lần đầu vẫn tính là sai, đếm số lần sai, có nút "Bỏ qua" xếp mức yếu cao nhất, không có nút "Xem đáp án". Làm **sau** `ui-kit-and-shell`.
+
+> **Nợ từ search-speaker-and-jump (spec 005):**
+> - Các nút loa ở kết quả tìm kiếm đều có tên "Nghe phát âm" nên người dùng trình đọc màn hình không phân biệt được từ nào; sửa cần đụng `src/ui/jp/SpeakButton.tsx` (vùng cấm của spec 005), chuyển cho `ui-kit-and-shell` hoặc `pages-migration`.
 
 Đã có mã, không tạo spec mới: content-pipeline (90%), content-browsing (85%), local-progress (95%), quiz-engine-flashcard (90%), mcq-and-results (90%), vocab-modes (85%), grammar-kanji-quiz (75%), weakness-mistakes (80%). Phần còn thiếu của chúng nằm trong các spec trên (`ARCHITECTURE.md` §9.1).
 
