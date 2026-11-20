@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ErrorState } from '@/ui/primitives/ErrorState'
 import { KanjiCard } from './KanjiCard'
 import { LoadingState } from '@/ui/primitives/LoadingState'
@@ -15,10 +15,9 @@ import { GrammarTab } from '@/features/browse/GrammarTab'
 import { KanjiRelatedTab } from '@/features/browse/KanjiRelatedTab'
 import { VocabTab } from '@/features/browse/VocabTab'
 import { vi } from '@/i18n/vi'
+import { parseLessonJump, type LessonTab } from '@/lib/lesson-url'
 import { useAsyncData } from '@/data/hooks/use-async-data'
 import type { EditionFilter } from '@/domain/types'
-
-type Tab = 'vocab' | 'grammar' | 'kanji'
 
 export function LessonPage() {
   const { bookId, lesson } = useParams<{ bookId: string; lesson: string }>()
@@ -59,7 +58,20 @@ function TextbookLesson({
   editionFilterDefault: EditionFilter
 }) {
   const lessonNumber = Number(lessonParam)
-  const [tab, setTab] = useState<Tab>('vocab')
+
+  // Đích nhảy nằm trong địa chỉ (?tab=…&word=…): tham số thắng tab đang giữ trong bộ nhớ;
+  // không có tham số thì giữ hành vi cũ (spec 005, contracts/lesson-jump-url.md).
+  const [searchParams] = useSearchParams()
+  const jump = parseLessonJump(searchParams)
+  const [tab, setTab] = useState<LessonTab>(jump.tab ?? 'vocab')
+  const jumpKey = `${jump.tab ?? ''}|${jump.wordId ?? ''}`
+  const [seenJumpKey, setSeenJumpKey] = useState(jumpKey)
+  if (seenJumpKey !== jumpKey) {
+    setSeenJumpKey(jumpKey)
+    if (jump.tab) setTab(jump.tab)
+  }
+  // Từ đã được cuộn tới: để quay lại tab Từ vựng không cuộn lặp.
+  const [scrolledTo, setScrolledTo] = useState<string | null>(null)
 
   const {
     data: index,
@@ -81,7 +93,7 @@ function TextbookLesson({
   const lessonMeta = index.lessons.find((l) => l.lesson === lessonNumber)
   if (!lessonMeta) return <NotFound />
 
-  const tabs: { id: Tab; label: string }[] = [
+  const tabs: { id: LessonTab; label: string }[] = [
     { id: 'vocab', label: vi.lesson.tabVocab },
     { id: 'grammar', label: vi.lesson.tabGrammar },
     { id: 'kanji', label: vi.lesson.tabKanji },
@@ -113,8 +125,14 @@ function TextbookLesson({
       <div className="py-2">
         {tab === 'vocab' && (
           <VocabTab
+            key={jump.wordId ?? 'no-jump'}
             vocab={lessonFile.vocab}
             editionFilterDefault={editionFilterDefault}
+            highlightId={jump.wordId}
+            scrollToId={
+              jump.wordId && scrolledTo !== jump.wordId ? jump.wordId : undefined
+            }
+            onScrolled={setScrolledTo}
           />
         )}
         {tab === 'grammar' && <GrammarTab grammar={lessonFile.grammar} />}
