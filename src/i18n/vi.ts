@@ -104,6 +104,7 @@ export const vi = {
     noVocab: 'Bài này chưa có từ vựng.',
     noGrammar: 'Bài này chưa có ngữ pháp.',
     noKanjiRelated: 'Không có Kanji liên quan trong bài này.',
+    jumpHighlightLabel: 'Từ vừa tìm',
   },
 
   kanjiChapter: {

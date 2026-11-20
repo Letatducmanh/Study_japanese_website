@@ -97,6 +97,8 @@ src/lib/lesson-url.test.ts                  # THÊM: hai chiều khớp nhau, ID
 src/features/browse/SearchPage.tsx          # SỬA: Link dùng lessonUrl({ bookId, lesson, wordId: r.id })
 src/features/browse/LessonPage.tsx          # SỬA: useSearchParams + parseLessonJump; tab theo tham số; scrolledTo; key và props cho VocabTab; type Tab → LessonTab
 src/features/browse/VocabTab.tsx            # SỬA: id hàng, props highlightId/scrollToId/onScrolled, relaxFilters, effect cuộn, tô sáng + nhãn
+src/features/browse/vocab-filters.ts        # THÊM: relaxFilters + type SectionFilter (thuần; tách khỏi VocabTab.tsx vì react-refresh chỉ cho file component export component)
+src/features/browse/vocab-filters.test.ts   # THÊM
 src/i18n/vi.ts                              # SỬA: lesson.jumpHighlightLabel = 'Từ vừa tìm'
 src/features/browse/VocabTab.test.tsx       # SỬA: tô sáng, cuộn một lần, nới bộ lọc (6 trường hợp), từ trùng, ID lạ
 src/features/browse/LessonPage.jump.test.tsx    # THÊM: describe.each [MemoryRouter, createMemoryRouter + lazy()]

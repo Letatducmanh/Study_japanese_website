@@ -113,25 +113,106 @@ Bố cục hàng giữ như trước: nút loa 44×44, khoảng cách 12 px tớ
 
 ## Story 2: kết quả ĐỎ
 
-(chưa làm)
+Chạy ngày 2026-11-21 trên mã chưa sửa cho Story 2 (HEAD = `88aad6a`; chưa có `src/lib/lesson-url.ts`, `vocab-filters.ts`, chưa có prop/`id`/nhãn ở `VocabTab`, `LessonPage` chưa đọc `tab`/`word`).
+
+**Đơn vị** — `npx vitest run src/lib/lesson-url.test.ts src/features/browse`:
+
+| File | Kết quả | Lý do đỏ |
+|---|---|---|
+| `src/lib/lesson-url.test.ts` | **file không nạp được** (29 test chưa chạy: 6 `lessonUrl` + 7 `parseLessonJump` + 16 hai chiều) | `Failed to resolve import "./lesson-url"` (chưa có module) |
+| `src/features/browse/vocab-filters.test.ts` | **file không nạp được** (8 test chưa chạy: 6 trường hợp phần × bản + ID lạ + chỉ nới chiều che) | `Failed to resolve import "./vocab-filters"` |
+| `VocabTab.test.tsx` | 17 test: **8 ĐỎ**, 9 xanh | (a) hàng tô sáng chưa có (`expected [] to have a length of 1`); (b) từ trùng; (c) cuộn một lần, StrictMode, scrollToId vắng; (d) ID lạ (hàng chưa có `id`); (e) nới bộ lọc; (f) hàng chưa có `id` `vocab-<id>` |
+| `LessonPage.jump.test.tsx` | 12 test (6 ca × 2 kiểu router): **8 ĐỎ**, 4 xanh | (a) `expected null not to be null` (chưa có hàng `vocab-w-ext`); (b) `Unable to find an element with the text: Bài này chưa có ngữ pháp.` (tham số `tab` bị bỏ qua); (e) như (b); (f) `expected "vi.fn()" to be called 1 times, but got 0 times`. Cả hai kiểu router (`MemoryRouter + Routes` và `createMemoryRouter + RouterProvider + lazy()`) đỏ giống nhau. |
+| `SearchPage.test.tsx` | 16 test: **3 ĐỎ**, 13 xanh | (a) `expected [ '/b/mnn1/4', '/b/mnn1/4' ] to deeply equal [ Array(2) ]`; (b) `[ '/b/mnn1/2', '/b/mnn1/14' ]` thiếu `?tab=vocab&word=…`; (c) `expected '/b/mnn1/4' to be '/b/mnn1/4?tab=vocab&word=r-1'` |
+
+Tổng: 19 test chạy được và ĐỎ, cộng 2 file (37 test) chưa nạp được vì thiếu module. Typecheck (`tsc -b`, nên cả `npm run build`) cũng đỏ ở giai đoạn này vì test tham chiếu module và prop chưa có; đúng như dự kiến, chỉ xanh sau khi viết mã.
+
+**e2e 360×740** — `npx playwright test tests/e2e/search-jump.spec.ts --reporter=list` trên bản build của HEAD (`npm run build` ở bước này dừng ở `tsc -b` vì lý do trên, nên `dist/` còn là bản build Story 1, cũng là mã hiện tại): **9 ĐỎ**, 1 xanh. Chín ca đều đỏ ở cùng một chỗ: `kết quả của "<truy vấn>" phải có liên kết mang word=<id>`, `Expected: 1, Received: 0` (liên kết kết quả chưa mang `word=`):
+
+| Ca | Truy vấn |
+|---|---|
+| từ đầu Bài 1 | `watashi` (`mnn1-l01-87a2e9c8`) |
+| từ giữa Bài 13 | `keizai` (`mnn1-l13-34e1bf15`) |
+| từ cuối Bài 13 (mở rộng) | `nodo ga kawakimasu` (`mnn1-l13-af449570`) |
+| từ mở rộng đầu Bài 13 | `menyu` (`mnn1-l13-0ccab9cc`) |
+| từ trùng 佐藤/砂糖 | `sato` (`mnn1-l02-b23ffe1b`) |
+| đang ở tab Ngữ pháp rồi tìm | từ giữa Bài 13 |
+| F5 | từ cuối Bài 13 |
+| Quay lại | từ cuối Bài 13 |
+| giảm chuyển động | từ cuối Bài 13 |
+
+**Ghi chú trung thực về thiết kế test.** Lần chạy đầu có ba test dự kiến XANH (`[đặc trưng]`) lại ĐỎ vì chính test phụ thuộc thứ chưa có: `VocabTab` `[đặc trưng]` (f) gọi `queryByText(viText.lesson.jumpHighlightLabel)` khi khóa i18n chưa có; `LessonPage.jump` (c) và e2e "ID không còn trong bài" dùng `id` hàng mới để nhận biết hàng. Đó là lỗi của test, không phải mã, nên sửa test trước khi ghi bằng chứng: nhãn dùng hằng `'Từ vừa tìm'`, hàng nhận bằng romaji hiển thị hoặc `main ul li`. Ngược lại, (d) của `VocabTab` (ID lạ) vốn xanh ngay vì không tô sáng gì là hành vi cũ; để nó đỏ đúng lý do, thêm khẳng định "mọi hàng của bài vẫn có `id` `vocab-<id>`" (cũng đúng yêu cầu: ID lạ không làm hỏng việc dựng).
 
 ## Story 2: test đặc trưng `[đặc trưng]` (xanh ngay)
 
 Xanh trước và sau, không phải bằng chứng đỏ.
 
-(chưa làm)
+Cùng lần chạy ở trên (mã chưa sửa), các test dưới đây **xanh ngay** như dự kiến (sau khi sửa thiết kế test như ghi chú ở mục ĐỎ):
+
+- `VocabTab.test.tsx`: `[đặc trưng]` (e) không `highlightId`, bộ lọc bản `new` → từ bản cũ vẫn bị ẩn như trước; `[đặc trưng]` (f) không `highlightId` → không tô sáng, không nhãn, không cuộn, chữ hiển thị không đổi; `[đặc trưng]` (g) nút loa của hàng vẫn đọc kana. Cộng 6 test cũ (spec 004): xanh.
+- `LessonPage.jump.test.tsx`, ở cả hai kiểu router: `[đặc trưng]` (c) không tham số → tab Từ vựng, không tô sáng, không cuộn; `[đặc trưng]` (d) `?word=khong-co` → trang dựng bình thường, không tô sáng, không cuộn, không `console.error`. (4 test: 2 ca × 2 router.)
+- `SearchPage.test.tsx`: 13 test còn lại (debounce, chuỗi đọc spec 004, và các test bấm loa của Story 1).
+- `search-jump.spec.ts`: `[đặc trưng]` ID không còn trong bài → trang bài mở bình thường (có tiêu đề bài, danh sách từ, không `aria-current`, không `pageerror`/`console.error`).
 
 ## Story 2: kết quả XANH
 
-(chưa làm)
+Chạy ngày 2026-11-21 sau khi viết mã Story 2 (T027–T032), sau khi tắt `vite` dev server của dự án (cổng 5173) và không còn `preview` nào (cổng 4173):
+
+| Lệnh | Kết quả | Mốc trước (đỏ ở mục trên / sau Story 1) |
+|---|---|---|
+| `npx vitest run src/lib/lesson-url.test.ts src/features/browse/vocab-filters.test.ts` | 37/37 đạt (29 + 8) | 2 file không nạp được |
+| `npx vitest run src/lib/lesson-url.test.ts src/features/browse` | 8 file, **93/93 đạt** | 19 đỏ + 2 file không nạp được |
+| `npx vitest run` (toàn bộ) | **68/68 file đạt, 579/579 test đạt**, 62,75 giây (máy có tải; lần đo ở Story 1 là 34,08 giây khi rảnh) | 65 / 516 sau Story 1 (+63 test mới: 29 `lesson-url`, 8 `vocab-filters`, 11 `VocabTab`, 12 `LessonPage.jump`, 3 `SearchPage`) |
+| `npm run build && npx playwright test --reporter=list` (toàn bộ) | **47 đạt, 1 đỏ**: chỉ Q-2 `browse.spec.ts` "mở trang chủ → …" | 37 đạt, 1 đỏ sau Story 1 (+10 ca `search-jump.spec.ts`: 9 đỏ→xanh, 1 `[đặc trưng]`) |
+
+Cả 10 ca `search-jump.spec.ts` xanh ngay lần chạy đầu sau khi viết mã, gồm phép đo hình học: hàng nằm trọn trong khung nhìn, `row.top ≥ header.bottom`, `row.bottom ≤ nav.top`, `elementFromPoint` ở tâm hàng thuộc hàng, `aria-current="true"`, chữ `Từ vừa tìm`, viền trái ≥ 4 px, ở cả từ đầu Bài 1, từ giữa và cuối Bài 13 (từ mở rộng), 佐藤/砂糖, F5, Quay lại, ID lạ, giảm chuyển động. Không test e2e nào khác Q-2 đỏ.
+
+**Cổng trước commit (T038)**, ngày 2026-11-21, sau khi tắt `vite` dev server (5173) và không còn `preview` nào (4173; cả hai cổng không ai nghe):
+
+| Lần | Lệnh | Kết quả |
+|---|---|---|
+| 1 | `npm run check` | **ĐỎ ở lint**: `src/features/browse/LessonPage.jump.test.tsx:120:5 react-hooks/immutability` ("Modifying component props or hook arguments is not allowed", do `GrabNavigate` gán `target.current` trong effect). Không phải luật lớp (ARCHITECTURE §4.2), không phải nợ cũ: lỗi của test do tôi viết. |
+| (sửa) | | Đổi `GrabNavigate` nhận callback `onReady(navigate)` thay vì gán vào prop; không `eslint-disable`, không sửa `eslint.config.js`. `npx eslint` và `tsc -b` sạch. |
+| 2 | `npm run check` | **xanh**: `content:validate` OK (568 cảnh báo, như mốc), `tsc -b` sạch, `eslint .` sạch, vitest 68/68 file, 579/579 test, 36,93 giây |
+| 2 | `npm run build` | thành công (`built in 822ms`) |
+| 2 | `npx playwright test tests/e2e/search-jump.spec.ts tests/e2e/search.spec.ts` trên bản build cuối | 17/17 đạt |
+
+Số lần `npm run check` trong Story 2: hai (một đỏ do lint trong test, một xanh); chưa có hai lần đỏ liên tiếp.
 
 ## Story 2: loại kết quả khác mở đi đâu
 
-(chưa làm)
+Kiểm ngày 2026-11-21 (T034), trước khi commit:
+
+| # | Lệnh | Kết quả |
+|---|---|---|
+| a | `git diff -U0 -- . ':(exclude)specs' \| grep -E "^\+.*(eslint-disable\|useLocation\|useNavigation\|useBlocker\|localStorage\|sessionStorage)"` | rỗng |
+| a' | cùng `grep` trên 6 file mới (chưa theo dõi nên `git diff` không thấy): `lesson-url.ts`, `lesson-url.test.ts`, `vocab-filters.ts`, `vocab-filters.test.ts`, `LessonPage.jump.test.tsx`, `search-jump.spec.ts` | rỗng |
+| b | `git diff --stat -- src/ui/jp/SpeakButton.tsx src/lib/tts.ts src/lib/speakable.ts src/data/search-index.ts eslint.config.js package.json package-lock.json` | rỗng |
+| c | dòng thêm của `VocabTab.tsx` (và cả `vocab-filters.ts`) khớp `#hex\|slate-\|primary-\|amber-\|dark:` | rỗng |
+
+**Loại kết quả khác mở đi đâu (FR-016).** Trang `/search` chỉ có kết quả từ vựng, nên hiện **chưa có** loại Kanji hay ngữ pháp nào để giữ cách mở cũ. Kết quả từ vựng giờ mở `/b/<sách>/<bài>?tab=vocab&word=<id>`. Các liên kết khác tới trang bài giữ nguyên, mở `/b/<sách>/<bài>` không tham số (không có hàng tô sáng, FR-017): `KanjiPage.tsx` (từ liên quan), `HomePage.tsx` (tiếp tục học, thẻ chính), `WeaknessPage.tsx` (bài yếu), `BookPage.tsx` (danh sách bài).
 
 ## Story 2: ảnh chụp
 
-(chưa làm)
+Chụp ngày 2026-11-21 bằng `.screens/_shot-005-us2.mjs` (script tạm, `.screens/` đã gitignore, không commit) trên bản build qua `npm run preview` (đã tắt sau khi chụp), 360×740, `deviceScaleFactor: 2`. Từ lấy từ `public/content/mnn1/l01.json` và `l13.json`; mỗi ảnh là khung nhìn sau khi bấm từ ở kết quả tìm kiếm. Số đo `row` so với thanh (px, hệ toạ độ khung nhìn; thanh trên cao tới 57, thanh dưới bắt đầu ở 681):
+
+| Ảnh | Cảnh | Hàng (top–bottom) | Trong thanh? | Không bị che? |
+|---|---|---|---|---|
+| `.screens/005-us2-1-first.png` | từ đầu Bài 1 (`watashi`) | 318–390 | có | có |
+| `.screens/005-us2-2-middle.png` | từ giữa Bài 13 (`keizai`) | 346–418 | có | có |
+| `.screens/005-us2-3-last.png` | từ cuối Bài 13, từ mở rộng (`のどが かわきます`) | 498–608 | có | có |
+| `.screens/005-us2-4-extended.png` | từ mở rộng đầu Bài 13 (`メニュー`) | 348–413 | có | có |
+| `.screens/005-us2-5-sato-1.png` | 佐藤, Bài 2 (`/b/mnn1/2?tab=vocab&word=mnn1-l02-b23ffe1b`) | 343–415 | có | có |
+| `.screens/005-us2-5-sato-2.png` | 砂糖, Bài 14, sau Quay lại rồi bấm hàng kia (`/b/mnn1/14?...mnn1-l14-97deba9a`) | 336–408 | có | có |
+| `.screens/005-us2-6-reload.png` | F5 ở trang của ảnh 3 | 527–637 | có | có |
+| `.screens/005-us2-7-back.png` | Quay lại từ ảnh 3: `/search?q=nodo+ga+kawakimasu`, ô tìm kiếm còn `nodo ga kawakimasu` | — | — | — |
+| `.screens/005-us2-8-unknown.png` | ID lạ `?word=khong-co`: bài mở bình thường, 0 hàng `aria-current` | — | — | — |
+| `.screens/005-us2-9-dark.png` | như ảnh 3, giao diện tối | 498–608 | có | có |
+| `.screens/005-us2-10-other-tab.png` | mở Bài 13, bấm tab Ngữ pháp, rồi tìm từ giữa bằng ô tìm kiếm trên TopBar: tab Từ vựng mở | 334–406 | có | có |
+
+Mọi ảnh có hàng tô sáng đều đo `aria-current="true"`, `border-left-width` 4px và chữ `Từ vừa tìm`. Ở ảnh 6 (F5) hàng nằm thấp hơn ảnh 3 khoảng 29 px (527 so với 498): sau F5 trình duyệt khôi phục vị trí cuộn cũ rồi mới tới lượt cuộn của trang; kết quả vẫn đúng hàng, tô sáng và trong khung nhìn.
+
+Ca hàng bị bộ lọc che không chụp được ở nội dung thật (mặc định bộ lọc là "Tất cả"); đã bao bằng test đơn vị `vocab-filters.test.ts` (đủ 6 trường hợp phần × bản) và `VocabTab.test.tsx` (e).
 
 ## Ghi chú SC-004
 
@@ -169,14 +250,55 @@ Không có ngoại lệ đường dẫn nào trong vùng cấm ở Commit 1 (kh�
  13 files changed
 ```
 
+### Commit 2 (`feat(005)`)
+
+Chạy trên phần đã stage (15 file), cùng `ZONE` như Commit 1. Hai file mới ở `src/lib/` là ngoại lệ được loại bằng `grep -vxF` (nguyên dòng): `src/lib/lesson-url.ts`, `src/lib/lesson-url.test.ts`; chúng nằm ngoài `ZONE` (chỉ cấm `src/lib/tts` và `src/lib/speakable`) nên lệnh vẫn ra `OK` mà không cần loại.
+
+| # | Lệnh | Kết quả |
+|---|---|---|
+| 1 | `git diff --cached staging --name-only \| grep -vxF "src/lib/lesson-url.ts" \| grep -vxF "src/lib/lesson-url.test.ts" \| grep -E "$ZONE"` | `OK: không đụng vùng cấm` |
+| 2 | `git diff --cached --name-status \| grep -cE "^A[[:space:]]+src/lib/lesson-url(\.test)?\.ts$"` | `2` (đúng hai file mới ở `src/lib/`) |
+| 3 | `git diff --cached -U0 -- . ':(exclude)specs/005-search-speaker-and-jump' \| grep -E "^[+-].*schemaVersion"` | **1 dòng khớp, là dương tính giả**: `+  schemaVersion: 1,` ở dòng 42 của `src/features/browse/LessonPage.jump.test.tsx`, giá trị mẫu của đối tượng `Manifest` giả trong test (kiểu `Manifest` bắt buộc trường này). Không đổi gì ở `schemaVersion` thật: `git diff --cached --name-only -- src/domain` rỗng; `src/domain/schemas.ts:157,250` và `src/domain/types.ts:160` không bị đụng. |
+| 4 | `git diff --cached staging --name-status \| grep -E "^(R\|D)"` | `OK: không xóa/đổi tên file` |
+| 5 | `git diff --cached -U0 -- . ':(exclude)specs/005-search-speaker-and-jump' \| grep -E "^\+.*(eslint-disable\|stopPropagation\|preventDefault)"` | `OK: không eslint-disable, không stopPropagation/preventDefault` |
+
+Danh sách 15 file đã stage (`git diff --cached --stat`; số dòng của `evidence.md` và `tasks.md` còn tăng thêm đúng bằng phần ghi bằng chứng và dấu tick làm sau lệnh này, nên so sánh sau commit theo tên file và số dòng của 13 file còn lại):
+
+```
+ specs/005-search-speaker-and-jump/evidence.md | (tăng sau lệnh này)
+ specs/005-search-speaker-and-jump/plan.md     |   2 +
+ specs/005-search-speaker-and-jump/tasks.md    | (dấu tick, thêm sau lệnh này)
+ src/features/browse/LessonPage.jump.test.tsx  | 275 ++++++++++++++++++++++++++
+ src/features/browse/LessonPage.tsx            |  28 ++-
+ src/features/browse/SearchPage.test.tsx       |  81 ++++++++
+ src/features/browse/SearchPage.tsx            |   7 +-
+ src/features/browse/VocabTab.test.tsx         | 226 +++++++++++++++++++++
+ src/features/browse/VocabTab.tsx              |  70 ++++++-
+ src/features/browse/vocab-filters.test.ts     |  93 +++++++++
+ src/features/browse/vocab-filters.ts          |  32 +++
+ src/i18n/vi.ts                                |   1 +
+ src/lib/lesson-url.test.ts                    |  91 +++++++++
+ src/lib/lesson-url.ts                         |  51 +++++
+ tests/e2e/search-jump.spec.ts                 | 211 ++++++++++++++++++++
+```
+
 ## Thời gian vitest trước/sau
 
 | | Thời gian | File / test |
 |---|---|---|
 | Trước (T002, lần 2) | 56,57 giây | 65 / 509 |
 | Sau Story 1 | 34,08 giây (máy rảnh hơn lúc đo mốc) | 65 / 516 |
-| Sau Story 2 | (chưa làm) | |
+| Sau Story 2 | 62,75 giây (máy có tải hơn lúc đo Story 1) | 68 / 579 |
 
 ## Số liệu cuối
 
-(chưa làm)
+| Mục | Giá trị |
+|---|---|
+| Commit 1 | `88aad6a` `fix(search): bấm loa ở kết quả tìm kiếm chỉ phát âm, không chuyển trang` (13 file) |
+| Commit 2 | `feat(005): bấm từ ở tìm kiếm nhảy tới đúng hàng trong trang bài` (15 file) |
+| vitest cuối | 68 file, 579 test đạt (mốc đầu: 65 file, 509 test; +70 test: 7 ở Story 1, 63 ở Story 2) |
+| e2e cuối | 47 đạt, 1 đỏ (Q-2 `browse.spec.ts`, có sẵn từ trước, `quality-gaps`) (mốc đầu: 34 đạt, 1 đỏ; +13 ca: 3 loa, 10 nhảy tới từ) |
+| `npm run check` | xanh (568 cảnh báo nội dung như mốc); `npm run build` xanh |
+| Không đổi | `tts.ts`, `speakable.ts`, `SpeakButton`, `search-index.ts`, registry, session, grading, pipeline, `content/**`, `public/content/**`, `schemaVersion`, `eslint.config.js`, `package.json` (kiểm bằng `git diff --cached` ở từng commit) |
+| Quyết định còn mở | cuộn tức thì luôn (`behavior: 'instant'`) hay thêm nhánh cuộn mượt khi không bật giảm chuyển động |
+| Hàng bộ lọc che | không chụp được ở nội dung thật (mặc định bộ lọc "Tất cả"); bao bằng test đơn vị |

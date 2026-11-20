@@ -338,3 +338,84 @@ describe('SearchPage — bấm loa không điều hướng (spec 005)', () => {
     expect(items[1].textContent).toContain('nghĩa 2')
   })
 })
+
+describe('SearchPage — liên kết nhảy tới từ (spec 005)', () => {
+  function makeResult(id: string, lesson: number, kana = 'さとう') {
+    return {
+      id,
+      bookId: 'mnn1',
+      lesson,
+      kana,
+      kanji: null,
+      romaji: `romaji-${id}`,
+      meaning: `nghĩa ${id}`,
+      score: 1,
+    }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  async function searchRouted(results: ReturnType<typeof makeResult>[]) {
+    mockSearchVocab.mockReset().mockResolvedValue(results)
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/search']}>
+        <Routes>
+          <Route path="/search" element={<SearchPage />} />
+          <Route
+            path="/b/:bookId/:lesson"
+            element={<div data-testid="lesson-page" />}
+          />
+        </Routes>
+        <LocationProbe />
+      </MemoryRouter>,
+    )
+    fireEvent.change(screen.getByRole('searchbox'), {
+      target: { value: 'sato' },
+    })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300)
+    })
+    return { user, links: screen.getAllByRole('link') }
+  }
+
+  it('(a) liên kết của kết quả mang ?tab=vocab&word=<id>', async () => {
+    const { links } = await searchRouted([
+      makeResult('r-1', 4),
+      makeResult('r-2', 4, 'あなた'),
+    ])
+    expect(links.map((l) => l.getAttribute('href'))).toEqual([
+      '/b/mnn1/4?tab=vocab&word=r-1',
+      '/b/mnn1/4?tab=vocab&word=r-2',
+    ])
+  })
+
+  it('(b) hai kết quả cùng kana khác ID và khác bài: hai liên kết khác nhau', async () => {
+    const { links } = await searchRouted([
+      makeResult('mnn1-l02-b23ffe1b', 2),
+      makeResult('mnn1-l14-97deba9a', 14),
+    ])
+    const hrefs = links.map((l) => l.getAttribute('href'))
+    expect(hrefs).toEqual([
+      '/b/mnn1/2?tab=vocab&word=mnn1-l02-b23ffe1b',
+      '/b/mnn1/14?tab=vocab&word=mnn1-l14-97deba9a',
+    ])
+    expect(new Set(hrefs).size).toBe(2)
+  })
+
+  it('(c) bấm thân hàng (liên kết, không phải loa): sang trang bài kèm tab và từ', async () => {
+    const { user, links } = await searchRouted([makeResult('r-1', 4)])
+
+    await user.click(links[0])
+
+    expect(screen.getByTestId('location').textContent).toBe(
+      '/b/mnn1/4?tab=vocab&word=r-1',
+    )
+    expect(screen.getByTestId('lesson-page')).toBeInTheDocument()
+  })
+})
